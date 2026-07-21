@@ -10,6 +10,7 @@ export default function Register() {
         name: '',
         email: '',
         password: '',
+        username:'',
         password_confirmation: '',
     });
 
