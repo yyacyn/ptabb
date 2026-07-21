@@ -6,7 +6,7 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class ClientController extends Controller
+class ClientsController extends Controller
 {
     /**
      * Display a listing of the clients.

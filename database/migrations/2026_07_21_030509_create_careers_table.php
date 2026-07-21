@@ -14,8 +14,6 @@ return new class extends Migration
         Schema::create('careers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('author_id')->nullable()->constrained('users')->nullOnDelete()->cascadeOnUpdate();
-            $table->string('author_name', 100)->nullable();
-            $table->string('author_role', 50)->nullable();
             $table->string('position', 255);
             $table->string('department', 100)->nullable();
             $table->string('category', 50)->default('corporate');
@@ -26,6 +24,7 @@ return new class extends Migration
             $table->text('responsibilities')->nullable();
             $table->enum('status', ['open', 'closed'])->default('open');
             $table->date('application_deadline')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

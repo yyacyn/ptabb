@@ -26,6 +26,7 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->enum('status', ['published', 'draft'])->default('published');
             $table->integer('view_count')->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

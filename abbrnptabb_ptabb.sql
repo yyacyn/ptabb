@@ -30,8 +30,6 @@ SET time_zone = "+00:00";
 CREATE TABLE `careers` (
   `id` int(11) NOT NULL,
   `author_id` int(11) DEFAULT NULL,
-  `author_name` varchar(100) DEFAULT NULL,
-  `author_role` varchar(50) DEFAULT NULL,
   `position` varchar(255) NOT NULL,
   `department` varchar(100) DEFAULT NULL,
   `category` varchar(50) NOT NULL DEFAULT 'corporate',
@@ -42,6 +40,7 @@ CREATE TABLE `careers` (
   `responsibilities` text DEFAULT NULL,
   `status` enum('open','closed') DEFAULT 'open',
   `application_deadline` date DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -50,15 +49,15 @@ CREATE TABLE `careers` (
 -- Dumping data for table `careers`
 --
 
-INSERT INTO `careers` (`id`, `author_id`, `author_name`, `author_role`, `position`, `department`, `category`, `location`, `employment_type`, `description`, `requirements`, `responsibilities`, `status`, `application_deadline`, `created_at`, `updated_at`) VALUES
-(1, NULL, NULL, NULL, 'General Manager Operations', 'Operations', 'corporate', 'Jakarta HQ', 'fulltime', 'Leading the strategic maritime operations and fleet efficiency.', 'Minimum 10 years experience in senior maritime management.', '', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-03-08 07:51:23'),
-(2, NULL, NULL, NULL, 'Senior Finance Controller', 'Finance', 'corporate', 'Jakarta HQ', 'fulltime', 'Managing corporate financial planning and tax strategy.', 'CA/CPA qualification with 7+ years in maritime finance.', '• Financial reporting\n• Budget management\n• Tax planning\n• Audit coordination', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-01-21 08:14:33'),
-(4, NULL, NULL, NULL, 'Senior Technical Buyer', 'Procurement', 'corporate', 'Jakarta HQ', 'fulltime', 'Managing global supply chain for engine parts and dry-docking.', 'Technical degree with 5 years experience in marine procurement.', '• Vendor management\n• Procurement planning\n• Quality control\n• Inventory management', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-01-21 08:14:33'),
-(5, NULL, NULL, NULL, 'Corporate Legal Counsel', 'Legal', 'corporate', 'Jakarta HQ', 'fulltime', 'Handling maritime contracts, charter parties, and compliance.', 'Master of Law (LLM) with focus on International Maritime Law.', '• Contract drafting\n• Legal compliance\n• Dispute resolution\n• Regulatory advisory', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-01-21 08:14:33'),
-(6, NULL, NULL, NULL, 'Vessel Master (Captain)', 'Deck', 'crew', 'Regional Fleet', 'fulltime', 'Overall command of tanker vessels ensuring safety and compliance.', 'Master Mariner Class I (ANT I) with tanker endorsements.', '• Vessel navigation\n• Crew management\n• Safety procedures\n• Port operations', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-03-08 07:50:25'),
-(7, NULL, NULL, NULL, 'Chief Engineer', 'Engine', 'crew', 'Regional Fleet', 'fulltime', 'Responsible for main engine maintenance and technical operations.', 'Marine Engineer Class I (ATT I) with experience in low-speed engines.', '• Engine maintenance\n• Technical troubleshooting\n• Spare parts management\n• Safety inspections', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-02-21 06:03:42'),
-(8, NULL, NULL, NULL, 'Second Officer', 'Deck', 'crew', 'Regional Fleet', 'fulltime', 'Assisting in navigation watches and safety equipment maintenance.', 'ANT II/III certificate with valid STCW documents.', '• Navigation watch\n• Safety equipment checks\n• Chart updates\n• Port documentation', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-02-21 06:03:42'),
-(9, NULL, NULL, NULL, 'Pumpman / Deck Fitter', 'Engine/Cargo', 'crew', 'Regional Fleet', 'fulltime', 'Specialized maintenance of cargo pumping systems on tankers.', 'Certified Pumpman with specialized tanker training.', '• Pump system maintenance\n• Cargo operations\n• Deck maintenance\n• Safety procedures', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-02-21 06:03:42');
+INSERT INTO `careers` (`id`, `author_id`, `position`, `department`, `category`, `location`, `employment_type`, `description`, `requirements`, `responsibilities`, `status`, `application_deadline`, `created_at`, `updated_at`) VALUES
+(1, NULL, 'General Manager Operations', 'Operations', 'corporate', 'Jakarta HQ', 'fulltime', 'Leading the strategic maritime operations and fleet efficiency.', 'Minimum 10 years experience in senior maritime management.', '', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-03-08 07:51:23'),
+(2, NULL, 'Senior Finance Controller', 'Finance', 'corporate', 'Jakarta HQ', 'fulltime', 'Managing corporate financial planning and tax strategy.', 'CA/CPA qualification with 7+ years in maritime finance.', '• Financial reporting\n• Budget management\n• Tax planning\n• Audit coordination', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-01-21 08:14:33'),
+(4, NULL, 'Senior Technical Buyer', 'Procurement', 'corporate', 'Jakarta HQ', 'fulltime', 'Managing global supply chain for engine parts and dry-docking.', 'Technical degree with 5 years experience in marine procurement.', '• Vendor management\n• Procurement planning\n• Quality control\n• Inventory management', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-01-21 08:14:33'),
+(5, NULL, 'Corporate Legal Counsel', 'Legal', 'corporate', 'Jakarta HQ', 'fulltime', 'Handling maritime contracts, charter parties, and compliance.', 'Master of Law (LLM) with focus on International Maritime Law.', '• Contract drafting\n• Legal compliance\n• Dispute resolution\n• Regulatory advisory', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-01-21 08:14:33'),
+(6, NULL, 'Vessel Master (Captain)', 'Deck', 'crew', 'Regional Fleet', 'fulltime', 'Overall command of tanker vessels ensuring safety and compliance.', 'Master Mariner Class I (ANT I) with tanker endorsements.', '• Vessel navigation\n• Crew management\n• Safety procedures\n• Port operations', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-03-08 07:50:25'),
+(7, NULL, 'Chief Engineer', 'Engine', 'crew', 'Regional Fleet', 'fulltime', 'Responsible for main engine maintenance and technical operations.', 'Marine Engineer Class I (ATT I) with experience in low-speed engines.', '• Engine maintenance\n• Technical troubleshooting\n• Spare parts management\n• Safety inspections', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-02-21 06:03:42'),
+(8, NULL, 'Second Officer', 'Deck', 'crew', 'Regional Fleet', 'fulltime', 'Assisting in navigation watches and safety equipment maintenance.', 'ANT II/III certificate with valid STCW documents.', '• Navigation watch\n• Safety equipment checks\n• Chart updates\n• Port documentation', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-02-21 06:03:42'),
+(9, NULL, 'Pumpman / Deck Fitter', 'Engine/Cargo', 'crew', 'Regional Fleet', 'fulltime', 'Specialized maintenance of cargo pumping systems on tankers.', 'Certified Pumpman with specialized tanker training.', '• Pump system maintenance\n• Cargo operations\n• Deck maintenance\n• Safety procedures', 'open', '2026-03-31', '2026-01-21 08:14:33', '2026-02-21 06:03:42');
 
 -- --------------------------------------------------------
 
@@ -190,7 +189,8 @@ CREATE TABLE `fleets` (
   `lbp` decimal(8,2) DEFAULT NULL,
   `breadth` decimal(8,2) DEFAULT NULL,
   `depth` decimal(8,2) DEFAULT NULL,
-  `speed` decimal(5,2) DEFAULT NULL
+  `speed` decimal(5,2) DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -259,6 +259,7 @@ CREATE TABLE `news` (
   `meta_description` text DEFAULT NULL,
   `status` enum('published','draft') DEFAULT 'published',
   `view_count` int(11) DEFAULT 0,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -352,6 +353,7 @@ CREATE TABLE `pages` (
 CREATE TABLE `page_views` (
   `id` int(11) NOT NULL,
   `page_url` varchar(500) NOT NULL,
+  `route_name` varchar(100) DEFAULT NULL,
   `view_date` date NOT NULL,
   `view_count` int(11) DEFAULT 1,
   `unique_visitors` int(11) DEFAULT 1,
@@ -450,6 +452,7 @@ CREATE TABLE `visitor_analytics` (
   `ip_address` varchar(45) DEFAULT NULL,
   `user_agent` text DEFAULT NULL,
   `page_url` varchar(500) DEFAULT NULL,
+  `route_name` varchar(100) DEFAULT NULL,
   `referrer` varchar(500) DEFAULT NULL,
   `country` varchar(100) DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,

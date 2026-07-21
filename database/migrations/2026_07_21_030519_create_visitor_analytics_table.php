@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->string('page_url', 500)->nullable();
+            $table->string('route_name', 100)->nullable();
             $table->string('referrer', 500)->nullable();
             $table->string('country', 100)->nullable();
             $table->string('city', 100)->nullable();

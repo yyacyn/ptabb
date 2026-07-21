@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Careers extends Model
+class Career extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -23,8 +24,6 @@ class Careers extends Model
      */
     protected $fillable = [
         'author_id',
-        'author_name',
-        'author_role',
         'position',
         'department',
         'category',
@@ -36,4 +35,12 @@ class Careers extends Model
         'status',
         'application_deadline',
     ];
+
+    /**
+     * Get the user who authored this career posting.
+     */
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
 }

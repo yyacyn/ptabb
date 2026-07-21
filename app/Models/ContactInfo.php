@@ -5,15 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Client extends Model
+class ContactInfo extends Model
 {
     use HasFactory;
 
-    protected $table = 'clients';
+    protected $table = 'contact_info';
 
     protected $fillable = [
-        'name',
-        'category',
-        'logo',
+        'type',
+        'label',
+        'value',
+        'icon',
+        'is_primary',
+        'display_order',
     ];
 }

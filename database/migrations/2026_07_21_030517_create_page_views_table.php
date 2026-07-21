@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('page_views', function (Blueprint $table) {
             $table->id();
             $table->string('page_url', 500);
+            $table->string('route_name', 100)->nullable();
             $table->date('view_date');
             $table->integer('view_count')->default(1);
             $table->integer('unique_visitors')->default(1);

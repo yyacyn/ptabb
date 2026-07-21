@@ -5,15 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Client extends Model
+class NewsCategory extends Model
 {
     use HasFactory;
 
-    protected $table = 'clients';
-
     protected $fillable = [
         'name',
-        'category',
-        'logo',
+        'slug',
+        'description',
     ];
+
+    public function news()
+    {
+        return $this->hasMany(News::class);
+    }
 }

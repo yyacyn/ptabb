@@ -37,6 +37,7 @@ return new class extends Migration
             $table->decimal('breadth', 8, 2)->nullable();
             $table->decimal('depth', 8, 2)->nullable();
             $table->decimal('speed', 5, 2)->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
