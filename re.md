@@ -72,7 +72,7 @@ Total admin code:              ~180K    Difficult to audit, test, or extend
 ```
                     ┌─────────────────────────────────┐
                     │         FRONTEND (SPA/SSR)       │
-                    │   Next.js / Nuxt.js              │
+                    │   React.js                       │
                     │   ┌──────┐ ┌──────┐ ┌────────┐  │
                     │   │Fleet │ │News  │ │Careers │  │
                     │   │Page  │ │Page  │ │Page    │  │
