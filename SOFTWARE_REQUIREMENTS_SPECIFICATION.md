@@ -80,6 +80,7 @@ Dokumen ini ditujukan bagi:
 Ruang lingkup proyek rebuild website PT. ABB v2.0 mencakup:
 * **Halaman Publik (Visitor Site):**
   * Landing page interaktif berisi profil perusahaan, ringkasan statistik, slider armada, berita terbaru, logo mitra, dan RAG AI Chatbot.
+  * Halaman profil perusahaan (*Company Profile*) yang komprehensif menyajikan gambaran umum korporat, sejarah & linimasa pencapaian (1999–2026), visi & misi, nilai-nilai utama perusahaan, keanggotaan resmi INSA (Indonesian National Shipowners' Association), struktur kepemimpinan eksekutif, serta sertifikasi keselamatan maritim & mutu (ISO / ISM Code).
   * Halaman armada (*Fleet*) yang terintegrasi dengan Leaflet JS untuk menampilkan peta posisi armada global, detail kapal, modal spesifikasi, rute pelayaran, dan quick-view modal.
   * Halaman layanan (*Services*) yang menampilkan jenis charter (Time/Freight Charter), arsitektur sistem pneumatik, dan peta cakupan operasional berbasis Google GeoChart.
   * Halaman berita/artikel (*News*) dengan tabs kategori (Company News, Office Events, CSR) dan SEO tags dinamis.
@@ -174,6 +175,7 @@ Analisis terhadap hasil elisitasi mengelompokkan kebutuhan ke dalam empat tema b
 | **R-12** | Seluruh form input harus memiliki validasi ketat (Laravel Form Request) & perlindungan CSRF. | Security |
 | **R-13** | Manajemen pengumuman spanduk popup (*notifications*) tipe beranda dan karir. | SDD Elicitation |
 | **R-14** | Manajemen informasi kontak kantor (*contact_info*) seperti alamat, telepon, email, sosial. | SDD Elicitation |
+| **R-15** | Portal halaman profil perusahaan publik (*company_profile*) yang menampilkan latar belakang, visi-misi, sejarah linimasa, jajaran manajemen, dan sertifikasi maritim. | User Story, SDD Elicitation |
 
 ---
 
@@ -202,6 +204,7 @@ Sistem v2.0 ini merupakan **membangun kembali (rebuild) secara total** terhadap 
 | R-11 | **F-11** | RAG AI Chatbot Widget (Sistem Publik) |
 | R-13 | **F-12** | Popup & Notification Banner Manager (Super, HR Admin) |
 | R-14 | **F-13** | Contact Info CMS (Super Admin) |
+| R-15 | **F-14** | Company Profile & Corporate Identity Portal (Sistem Publik / Guest) |
 
 ---
 
@@ -211,8 +214,8 @@ Sistem baru menerapkan hak akses minimal (*least-privilege default*) yang dipeta
 
 | ID-User | User Type | Role | Accessible Features | Description |
 | :---: | :--- | :--- | :--- | :--- |
-| **User01** | Public Visitor | Guest / Warga | Membaca profil, armada, karir, berita, GeoChart layanan, mengirim kontak, RAG Chatbot, popup. | Pengunjung eksternal yang mencari informasi profil perusahaan. |
-| **User02** | Super Admin | IT Department | Mengakses seluruh fitur F-01 s/d F-13 tanpa batasan. | Pengelola penuh sistem, manajemen user, database armada, dan konfigurasi global. |
+| **User01** | Public Visitor | Guest / Warga | Membaca profil perusahaan, visi-misi, sejarah & manajemen, armada, karir, berita, GeoChart layanan, mengirim kontak, RAG Chatbot, popup. | Pengunjung eksternal yang mencari informasi profil perusahaan dan layanan pelayaran. |
+| **User02** | Super Admin | IT Department | Mengakses seluruh fitur F-01 s/d F-14 tanpa batasan. | Pengelola penuh sistem, manajemen user, database armada, dan konfigurasi global. |
 | **User03** | HR Admin | HRD Manager | F-01, F-05 (Karir), F-08 (Inbox HRD), F-12 (Popup Manager). | Pengelola data lamaran, lowongan karir staf, dan spanduk pengumuman karir. |
 | **User04** | Crew Admin | Operation Manager | F-01, F-05 (Karir - Kategori Kru), F-08 (Inbox Crew/Operation). | Pengelola lowongan kerja kru kapal dan peninjauan kebutuhan kualifikasi kru. |
 | **User05** | PR Admin | Public Relations | F-01, F-06 (Berita), F-08 (Inbox General / Commercial), F-07 (Testimoni/Klien). | Pengelola siaran pers, artikel berita, testimoni klien, dan kontak kategori umum. |
@@ -278,6 +281,8 @@ Sistem baru menerapkan hak akses minimal (*least-privilege default*) yang dipeta
 | **UI-11** | AI Chatbot Widget | Guest | Widget balon obrolan pada pojok kanan bawah halaman publik. | Chat window, message history, text input, send button, typing indicator. |
 | **UI-12** | Popup Manager | HRD, Super | Halaman pengelolaan popup spanduk untuk beranda atau karir. | Title, type select (home/career), image uploader, status select (active/inactive). |
 | **UI-13** | Contact Info Editor | Super Admin | Pengelolaan data kontak kantor resmi (HQ). | Label, value, icon class, type (office/phone/email/social). |
+| **UI-14** | Guest Company Profile | Guest | Halaman publik profil perusahaan (About Us, Visi & Misi, Sejarah, Manajemen, INSA & Sertifikasi). | Corporate hero section, company stats counter, vision-mission cards, milestone timeline (1999–2026), INSA membership badge, leadership board profile cards, ISO/ISM safety certifications showcase. |
+| **UI-15** | Guest Services Showcase | Guest | Halaman publik mengenai jenis charter pelayaran, arsitektur sistem pneumatik, dan peta wilayah operasional. | Charter type cards (Time/Freight Charter), pneumatic system diagram, Google GeoChart operational map, inquiry CTA. |
 
 ---
 
@@ -341,6 +346,7 @@ Sistem baru PT. ABB v2.0 menyediakan 13 fitur utama yang dioptimalkan untuk memp
 | **FR-12** | Form CSRF Protection | Sistem harus menolak seluruh request form POST/PUT/DELETE yang tidak menyertakan token CSRF yang valid. |
 | **FR-13** | Popup Spanduk Manager | Sistem harus menyediakan antarmuka CRUD popup pengumuman spanduk (*notifications*) bertipe beranda/karir dengan status aktif/inaktif. (Super & HR Admin). |
 | **FR-14** | Contact Info CMS | Sistem harus mengizinkan Super Admin mengedit alamat kantor, nomor telepon, email resmi, dan media sosial perusahaan. |
+| **FR-15** | Guest Company Profile Portal | Sistem harus menyajikan halaman profil perusahaan yang terstruktur untuk pengunjung publik, mencakup latar belakang korporat, visi & misi, linimasa sejarah, struktur kepemimpinan, dan sertifikasi keselamatan maritim. |
 
 ---
 
@@ -357,6 +363,7 @@ usecaseDiagram
     actor "PR Admin" as pr
 
     guest --> (Melihat Detail Armada & Peta)
+    guest --> (Melihat Profil Perusahaan & Visi Misi)
     guest --> (Mencari Lowongan Kerja)
     guest --> (Mengirim Kontak / Pesan)
     guest --> (Interaksi Chatbot AI)
@@ -511,6 +518,8 @@ Implementasi RAG (Retrieval-Augmented Generation) pada PT. ABB v2.0 dirancang me
 | **UI-11** | F-11 | Chat widget melayang dengan balon teks otomatis dari asisten AI PT. ABB. |
 | **UI-12** | F-12 | Panel daftar spanduk popup pengumuman dengan tombol toggle ON/OFF untuk aktivasi cepat. |
 | **UI-13** | F-13 | Formulir entri data kontak kantor (telepon, alamat, email) dengan tombol urutan tampilan (*display order*). |
+| **UI-14** | F-14 | Landing profil perusahaan publik dengan tab navigasi interaktif (Overview, Visi Misi, Sejarah Timeline, Jajaran Eksekutif, Sertifikasi Safety). |
+| **UI-15** | F-14 | Grid modul layanan charter pelayaran, arsitektur sistem pembongkaran pneumatik, dan visualisasi peta operasional Google GeoChart. |
 
 ---
 
