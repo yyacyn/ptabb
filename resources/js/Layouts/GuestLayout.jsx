@@ -30,16 +30,16 @@ export default function GuestLayout({ children, onScrollToSection }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F5F5] text-[#000000] font-['JetBrains_Mono'] antialiased">
+        <div className="min-h-screen bg-[#F5F5F5] text-[#141B2C] font-['Hanken_Grotesk'] antialiased selection:bg-[#00629D] selection:text-white">
             
-            {/* Outer Page Container */}
-            <div className="max-w-[1318px] mx-auto px-4 sm:px-6 pt-3 pb-3">
+            {/* Outer Page Canvas Container (Figma 1440px Width) */}
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-3 pb-3">
 
                 {/* Shared Navigation Bar */}
                 <Navbar onScrollToSection={onScrollToSection} />
 
                 {/* Page Main Content */}
-                <main>{children}</main>
+                <main className="flex flex-col gap-[7px] mt-[7px]">{children}</main>
 
                 {/* Shared Footer */}
                 <Footer />
