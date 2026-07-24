@@ -39,39 +39,39 @@ export default function Navbar({ onScrollToSection }) {
                     onClick={handleNavClick('about')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
-                    About Us
+                    ABOUT US
                 </a>
                 <a
                     href="#services"
                     onClick={handleNavClick('services')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
-                    Services
+                    SERVICES
                 </a>
                 <a
                     href="#fleet"
                     onClick={handleNavClick('fleet')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
-                    Fleet
+                    FLEET
                 </a>
                 <Link
                     href={route('clients.index')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
-                    Clients
+                    CLIENTS
                 </Link>
                 <Link
                     href={route('news.index')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
-                    News
+                    NEWS
                 </Link>
                 <Link
                     href={route('careers.index')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
-                    Careers
+                    CAREERS
                 </Link>
 
                 {/* Contact Us Pill */}
@@ -79,7 +79,7 @@ export default function Navbar({ onScrollToSection }) {
                     href={route('contacts.index')}
                     className="flex-[151_1_0%] max-w-[151px] h-[42px] bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-white hover:opacity-95 transition-opacity whitespace-nowrap shrink"
                 >
-                    Contact Us
+                    CONTACT US
                 </Link>
 
             </nav>

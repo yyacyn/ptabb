@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
+import TallyNumber from '@/Components/TallyNumber';
 import {
     MapPin,
     ArrowRight,
@@ -19,6 +20,7 @@ import {
 
 export default function Welcome({ auth, clients: initialClients = [] }) {
     const [activeFleetTab, setActiveFleetTab] = useState(0);
+    const [activeRegion, setActiveRegion] = useState('indonesia');
     const [clientsList, setClientsList] = useState(initialClients);
 
     // Fetch all clients from /clients endpoint if not provided via Inertia props
@@ -242,7 +244,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-[8px] border border-[#E5E7EB] py-6 px-4 sm:px-8 mt-[7px] overflow-hidden relative"
+                className="bg-white rounded-[8px] border border-[#E5E7EB] py-6 px-4 sm:px-8  overflow-hidden relative"
             >
                 <p className="text-[11px] sm:text-[12px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-[#404750] mb-6 text-start">
                     TRUSTED BY INDUSTRY LEADERS NATIONALLY &amp; INTERNATIONALLY
@@ -302,7 +304,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="mt-[7px] bg-white rounded-[8px] border border-[#E5E7EB] p-8 sm:p-12 lg:p-14 text-center"
+                className=" bg-white rounded-[8px] border border-[#E5E7EB] p-8 sm:p-12 lg:p-14 text-center"
             >
                 {/* Section Header Info */}
                 <div className="max-w-[1091px] mx-auto flex flex-col items-center gap-3 mb-8">
@@ -344,7 +346,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                                     key={idx}
                                     whileHover={{ y: -4 }}
                                     transition={{ duration: 0.2 }}
-                                    className="group bg-white rounded-[6px] p-8 lg:px-8 lg:py-10 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-all duration-200 cursor-pointer min-h-[380px] flex flex-col justify-between"
+                                    className="group bg-white rounded-[6px] p-8 lg:px-8 lg:py-10 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-all duration-200 min-h-[380px] flex flex-col justify-between"
                                 >
                                     <div>
                                         {/* Icon Box */}
@@ -448,7 +450,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                                 </div>
                                 <div>
                                     <div className="font-['JetBrains_Mono'] font-bold text-[36px] sm:text-[40px] text-white leading-none tracking-tight mb-2">
-                                        {item.stat}
+                                        <TallyNumber value={item.stat} delay={idx * 0.12} />
                                     </div>
                                     <div className="font-['Hanken_Grotesk'] text-[15px] sm:text-[16px] font-normal text-[#8AAFC8] leading-snug">
                                         {item.label}
@@ -469,86 +471,115 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                 transition={{ duration: 0.6 }}
                 className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-10 lg:p-12"
             >
-                <div className="max-w-[800px] flex flex-col gap-4 mb-10">
-                    <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider">
-                        OPERATIONAL COVERAGE
+                {/* Header Row with Inline Top-Right CTA */}
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-10">
+                    <div className="max-w-[780px]">
+                        <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-2">
+                            OPERATIONAL COVERAGE
+                        </div>
+                        <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight">
+                            Strategic Maritime Reach Across Key Global Trade Corridors
+                        </h2>
+                        <p className="font-['Hanken_Grotesk'] font-normal text-[16px] sm:text-[17px] text-[#404750] leading-relaxed mt-3">
+                            Operating a versatile vessel fleet connecting major manufacturing ports, regional distribution hubs, and international maritime channels.
+                        </p>
                     </div>
-                    <h2 className="font-['Hanken_Grotesk'] font-medium text-[28px] sm:text-[40px] lg:text-[50px] leading-[1.1] text-[#141B2C]">
-                        Strategic Maritime Reach Across Key Global Trade Corridors
-                    </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[15px] sm:text-[17px] text-[#404750] leading-relaxed">
-                        Operating a versatile vessel fleet connecting major manufacturing ports, regional distribution hubs, and international maritime channels.
-                    </p>
+
+                    {/* Top-Right Inline Book Shipment Button */}
+                    <div className="shrink-0 pt-1">
+                        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                            <Link
+                                href={route('contacts.index')}
+                                className="bg-[#00629D] hover:bg-[#005285] rounded-[4px] px-[24px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white transition-all duration-200 inline-block"
+                            >
+                                Book Shipment
+                            </Link>
+                        </motion.div>
+                    </div>
                 </div>
 
-                {/* Regional Cards Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-[7px]">
-
-                    {/* Main Featured Indonesia Card */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                        className="lg:col-span-7 bg-[#F5F5F5] rounded-[8px] p-8 border border-[#E5E7EB] flex flex-col justify-between min-h-[380px] relative overflow-hidden group"
-                    >
-                        <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#00629D] text-white font-['JetBrains_Mono'] text-xs font-bold mb-4">
-                                Archipelagic Network
-                            </div>
-                            <h3 className="text-[26px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-2">
-                                Indonesia Domestic Waterways
-                            </h3>
-                            <p className="text-[15px] font-['Hanken_Grotesk'] text-[#404750] max-w-[480px]">
-                                Our foundation. Supporting national distribution networks across the archipelago with dedicated coastal cement carriers and tug &amp; barge fleets.
-                            </p>
-                        </div>
-
-                        <div className="mt-8 relative z-10">
-                            <div className="h-44 rounded-lg overflow-hidden border border-[#E5E7EB] shadow-sm relative">
-                                <img
-                                    src="/images/asuwa1.jpg"
-                                    alt="Indonesian Waters"
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                                <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white px-3 py-1 rounded text-xs font-['JetBrains_Mono']">
-                                    Primary Trade Corridor: Java Sea &amp; Kalimantan
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Secondary Regions Column */}
-                    <div className="lg:col-span-5 flex flex-col gap-[7px]">
-                        {[
-                            { num: "02", name: "Southeast Asia", detail: "Singapore, Malaysia, Vietnam & Thailand Bulk Routes" },
-                            { num: "03", name: "Asia & Far East", detail: "Japan, China & South Korea Deep-Sea Corridors" },
-                            { num: "04", name: "Global Network", detail: "International Charter & Cross-Border Transshipment" }
-                        ].map((corridor, idx) => (
-                            <motion.div
-                                key={idx}
-                                initial={{ opacity: 0, x: 20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: idx * 0.12 }}
-                                whileHover={{ x: 6 }}
-                                className="bg-[#F5F5F5] rounded-[8px] p-6 border border-[#E5E7EB] hover:border-[#00629D] hover:bg-white transition-all duration-300 flex items-center justify-between cursor-pointer"
+                {/* Dynamic Expandable Regions Accordion (Grey Outer Wrapper + Pure White Active Card) */}
+                <div
+                    onMouseLeave={() => setActiveRegion('indonesia')}
+                    className="bg-[#F5F5F5] rounded-[12px] border border-[#E5E7EB] p-1 sm:p-1 flex flex-col lg:flex-row gap-1 h-auto lg:h-[620px] w-full items-stretch"
+                >
+                    {[
+                        {
+                            id: 'indonesia',
+                            title: 'Indonesia',
+                            shortDesc: 'Our foundation. Supporting national distribution networks across the archipelago.',
+                            image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80'
+                        },
+                        {
+                            id: 'southeast-asia',
+                            title: 'Southeast Asia',
+                            shortDesc: 'Key regional routes connecting Singapore, Malaysia, Vietnam, and Thailand bulk terminals.',
+                            image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80'
+                        },
+                        {
+                            id: 'asia-far-east',
+                            title: 'Asia & Far East',
+                            shortDesc: 'Deep-sea trade corridors servicing Japan, China, and South Korea industrial ports.',
+                            image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80'
+                        },
+                        {
+                            id: 'global',
+                            title: 'Global',
+                            shortDesc: 'Worldwide chartering, transshipment, and cross-border maritime bulk logistics.',
+                            image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80'
+                        }
+                    ].map((region) => {
+                        const isActive = activeRegion === region.id;
+                        return (
+                            <div
+                                key={region.id}
+                                onMouseEnter={() => setActiveRegion(region.id)}
+                                className={`rounded-[8px] overflow-hidden transition-all duration-300 ease-out cursor-pointer relative flex flex-col h-[460px] lg:h-full ${isActive
+                                        ? 'lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-6 sm:p-8 justify-between '
+                                        : 'lg:flex-[1_1_0%] border border-[#E5E7EB] items-center justify-center'
+                                    }`}
                             >
-                                <div>
-                                    <div className="text-[12px] font-['JetBrains_Mono'] font-bold text-[#00629D] uppercase tracking-wider mb-1">
-                                        Corridor {corridor.num}
+                                {isActive ? (
+                                    /* Active Expanded Region Panel (Pure White Surface) */
+                                    <div className="h-full flex flex-col justify-between">
+                                        <div>
+                                            <h3 className="text-[28px] sm:text-[36px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-2 tracking-tight">
+                                                {region.title}
+                                            </h3>
+                                            <p className="text-[15px] sm:text-[16px] font-['Hanken_Grotesk'] font-normal text-[#404750] leading-relaxed max-w-[520px]">
+                                                {region.shortDesc}
+                                            </p>
+                                        </div>
+
+                                        <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-sm h-[260px] sm:h-[395px] w-full relative shrink-0">
+                                            <img
+                                                src={region.image}
+                                                alt={region.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                     </div>
-                                    <h4 className="text-[20px] font-['Hanken_Grotesk'] font-bold text-[#141B2C]">
-                                        {corridor.name}
-                                    </h4>
-                                    <p className="text-[14px] font-['Hanken_Grotesk'] text-[#404750]">
-                                        {corridor.detail}
-                                    </p>
-                                </div>
-                                <ChevronRight className="w-6 h-6 text-[#00629D] shrink-0" />
-                            </motion.div>
-                        ))}
-                    </div>
+                                ) : (
+                                    /* Collapsed Vertical Image Strip Panel */
+                                    <>
+                                        <img
+                                            src={region.image}
+                                            alt={region.title}
+                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                        />
+
+                                        <div className="absolute inset-0 bg-gradient-to-b from-[#00629D]/75 via-[#00629D]/40 to-[#141B2C]/85 hover:from-[#00629D]/85 transition-colors duration-300" />
+
+                                        <div className="relative z-10 flex items-center justify-center p-2 h-full w-full">
+                                            <span className="font-['Hanken_Grotesk'] font-bold text-[20px] sm:text-[24px] text-white tracking-wide whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180 drop-shadow-md">
+                                                {region.title}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </motion.div>
 
