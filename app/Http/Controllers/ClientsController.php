@@ -21,7 +21,11 @@ class ClientsController extends Controller
             return response()->json($clients);
         }
 
-        return Inertia::render('Clients/Index', [
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        return Inertia::render('Dashboard/Clients', [
             'clients' => $clients,
         ]);
     }

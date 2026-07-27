@@ -16,7 +16,11 @@ class CareersController extends Controller
             return response()->json($careers);
         }
 
-        return Inertia::render('Careers', [
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        return Inertia::render('Dashboard/Careers', [
             'careers' => $careers,
         ]);
     }
@@ -24,33 +28,32 @@ class CareersController extends Controller
 
     public function store(Request $request)
     {
-        // Validate the request
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'phone' => 'required',
-            'resume' => 'required|file|mimes:pdf,doc,docx|max:10240',
-            'position' => 'required',
+        $validated = $request->validate([
+            'position' => 'required|string|max:255',
+            'department' => 'nullable|string|max:100',
+            'category' => 'nullable|string|max:50',
+            'location' => 'nullable|string|max:100',
+            'employment_type' => 'nullable|in:fulltime,contract,internship',
+            'description' => 'nullable|string',
+            'requirements' => 'nullable|string',
+            'responsibilities' => 'nullable|string',
+            'status' => 'nullable|in:open,closed',
+            'application_deadline' => 'nullable|date',
         ]);
 
-        // Handle file upload
-        $resumePath = null;
-        if ($request->hasFile('resume')) {
-            $resumePath = $request->file('resume')->store('resumes', 'public');
+        if (auth()->check()) {
+            $validated['author_id'] = auth()->id();
         }
 
-        // Store the data in the database
-        $application = new Application();
-        $application->name = $request->name;
-        $application->email = $request->email;
-        $application->phone = $request->phone;
-        $application->resume_path = $resumePath;
-        $application->position = $request->position;
-        $application->save();
+        $career = Career::create($validated);
 
-        // Send notification email to admin
-        Mail::to(config('mail.from.address'))->send(new ApplicationReceived($application));
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Career created successfully.',
+                'career' => $career,
+            ], 201);
+        }
 
-        return redirect()->route('careers.index')->with('success', 'Thank you for your application! We will get back to you soon.');
+        return redirect()->route('careers.index')->with('success', 'Career position created successfully.');
     }
 }

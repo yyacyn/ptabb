@@ -3,13 +3,32 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const authProp = usePage().props.auth;
+    const user = authProp?.user || { name: 'Admin', email: '' };
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    // Redirect unauthenticated access (e.g., direct URL hit after logout)
+    useEffect(() => {
+        if (!authProp?.user) {
+            window.location.href = route('login');
+        }
+    }, [authProp]);
+
+    // Prevent stale BFCache back-button navigation after logout
+    useEffect(() => {
+        const handlePageShow = (event) => {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
+        window.addEventListener('pageshow', handlePageShow);
+        return () => window.removeEventListener('pageshow', handlePageShow);
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -23,12 +42,27 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
+                            <div className="hidden space-x-6 sm:-my-px sm:ms-8 sm:flex">
+                                <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
+                                </NavLink>
+                                <NavLink href={route('fleets.index')} active={route().current('fleets.*')}>
+                                    Fleets
+                                </NavLink>
+                                <NavLink href={route('careers.index')} active={route().current('careers.*')}>
+                                    Careers
+                                </NavLink>
+                                <NavLink href={route('news.index')} active={route().current('news.*')}>
+                                    News
+                                </NavLink>
+                                <NavLink href={route('clients.index')} active={route().current('clients.*')}>
+                                    Clients
+                                </NavLink>
+                                <NavLink href={route('notifications.index')} active={route().current('notifications.*')}>
+                                    Notifications
+                                </NavLink>
+                                <NavLink href={route('voyage-waypoints.index')} active={route().current('voyage-waypoints.*')}>
+                                    Waypoints
                                 </NavLink>
                             </div>
                         </div>
@@ -128,11 +162,26 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
+                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('fleets.index')} active={route().current('fleets.*')}>
+                            Fleets
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('careers.index')} active={route().current('careers.*')}>
+                            Careers
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('news.index')} active={route().current('news.*')}>
+                            News
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('clients.index')} active={route().current('clients.*')}>
+                            Clients
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('notifications.index')} active={route().current('notifications.*')}>
+                            Notifications
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('voyage-waypoints.index')} active={route().current('voyage-waypoints.*')}>
+                            Waypoints
                         </ResponsiveNavLink>
                     </div>
 

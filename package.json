@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "lucide-react": "^1.25.0",
-        "motion": "^12.42.2"
+        "motion": "^12.42.2",
+        "react-quill-new": "^3.8.3"
     }
 }

@@ -2,27 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\News;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Notification;
 
-class NewsController extends Controller
+class NotificationsController extends Controller
 {
     public function index(Request $request)
     {
-        $news = News::all();
+        $notifications = Notification::all();
 
         if ($request->wantsJson()) {
-            return response()->json($news);
+            return response()->json($notifications);
         }
 
         if (!auth()->check()) {
             return redirect()->route('login');
         }
 
-        return Inertia::render('Dashboard/News', [
-            'news' => $news,
+        return Inertia::render('Dashboard/Notifications', [
+            'notifications' => $notifications,
         ]);
     }
-
 }
