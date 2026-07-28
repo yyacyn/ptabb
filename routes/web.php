@@ -31,6 +31,8 @@ Route::get('/', function () {
     ]);
 });
 
+use App\Http\Controllers\MilestonesController;
+
 // Public GET & POST Endpoints (Support JSON responses for Postman & API testing)
 Route::get('/fleets', [FleetsController::class, 'index'])->name('public.fleets');
 Route::get('/clients', [ClientsController::class, 'index'])->name('public.clients');
@@ -40,6 +42,7 @@ Route::get('/notifications', [NotificationsController::class, 'index'])->name('p
 Route::get('/news-category', [NewsCatController::class, 'index'])->name('public.news-category');
 Route::get('/contact-infos', [ContactInfosController::class, 'index'])->name('public.contact-infos');
 Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('public.voyage-waypoints');
+Route::get('/milestones', [MilestonesController::class, 'index'])->name('public.milestones');
 
 // Public Contact Form Submission (Guests & Postman API testing)
 Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.store');
@@ -81,12 +84,20 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     // Careers Management
     Route::get('/careers', [CareersController::class, 'index'])->name('careers.index');
     Route::post('/careers', [CareersController::class, 'store'])->name('careers.store');
+    Route::put('/careers/{id}', [CareersController::class, 'update'])->name('careers.update');
+    Route::delete('/careers/{id}', [CareersController::class, 'destroy'])->name('careers.destroy');
 
     // Clients Management
     Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
     Route::post('/clients', [ClientsController::class, 'store'])->name('clients.store');
     Route::put('/clients/{id}', [ClientsController::class, 'update'])->name('clients.update');
     Route::delete('/clients/{id}', [ClientsController::class, 'destroy'])->name('clients.destroy');
+
+    // Milestones Management
+    Route::get('/milestones', [MilestonesController::class, 'index'])->name('milestones.index');
+    Route::post('/milestones', [MilestonesController::class, 'store'])->name('milestones.store');
+    Route::post('/milestones/{id}', [MilestonesController::class, 'update'])->name('milestones.update');
+    Route::delete('/milestones/{id}', [MilestonesController::class, 'destroy'])->name('milestones.destroy');
 
     // Notifications Management
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');

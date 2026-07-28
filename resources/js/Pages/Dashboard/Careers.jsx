@@ -1,8 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Briefcase, Anchor, Plus, Search, Edit2, Calendar, Clock, X } from 'lucide-react';
+import { Briefcase, Anchor, Plus, Search, Edit2, Clock, Trash2, AlertTriangle } from 'lucide-react';
 
 export default function Careers({ careers = [] }) {
     const authUser = usePage().props.auth.user;
@@ -13,6 +13,27 @@ export default function Careers({ careers = [] }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCareer, setEditingCareer] = useState(null);
+    const [deletingCareer, setDeletingCareer] = useState(null);
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        setCurrentPage(1);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const isPastDeadline = (deadline) => {
+        if (!deadline) return false;
+        const deadlineDate = new Date(deadline + 'T23:59:59');
+        return deadlineDate < new Date();
+    };
 
     const filteredCareers = (careers || []).filter(c => {
         const cat = (c.category || '').toLowerCase();
@@ -27,9 +48,15 @@ export default function Careers({ careers = [] }) {
         return matchesCategory && matchesSearch;
     });
 
+    const totalPages = Math.max(1, Math.ceil(filteredCareers.length / itemsPerPage));
+    const paginatedCareers = filteredCareers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     const defaultCategory = userRole === 'crew_admin' ? 'crew' : 'corporate';
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, put, processing, reset } = useForm({
         position: '',
         department: '',
         category: defaultCategory,
@@ -74,7 +101,7 @@ export default function Careers({ careers = [] }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingCareer) {
-            put(route('careers.store'), {
+            put(route('careers.update', editingCareer.id), {
                 onSuccess: () => closeModal(),
             });
         } else {
@@ -82,6 +109,13 @@ export default function Careers({ careers = [] }) {
                 onSuccess: () => closeModal(),
             });
         }
+    };
+
+    const handleDelete = () => {
+        if (!deletingCareer) return;
+        router.delete(route('careers.destroy', deletingCareer.id), {
+            onSuccess: () => setDeletingCareer(null),
+        });
     };
 
     return (
@@ -115,14 +149,14 @@ export default function Careers({ careers = [] }) {
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
                     
-                    {/* Category Selector Tabs */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[8px] border border-[#E5E7EB] ">
-                        <div className="flex gap-2 w-full sm:w-auto">
+                    {/* Category Selector Tabs & Search */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[8px] border border-[#E5E7EB]">
+                        <div className="flex gap-2 w-full sm:w-auto flex-wrap">
                             {userRole === 'super_admin' && (
                                 <button
-                                    onClick={() => setActiveTab('all')}
-                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all ${
-                                        activeTab === 'all' ? 'bg-[#141B2C] text-white ' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
+                                    onClick={() => handleTabChange('all')}
+                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all cursor-pointer ${
+                                        activeTab === 'all' ? 'bg-[#141B2C] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                     }`}
                                 >
                                     All Vacancies ({(careers || []).length})
@@ -131,9 +165,9 @@ export default function Careers({ careers = [] }) {
 
                             {(userRole === 'super_admin' || userRole === 'hr_admin') && (
                                 <button
-                                    onClick={() => setActiveTab('corporate')}
-                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                                        activeTab === 'corporate' ? 'bg-[#00629D] text-white ' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
+                                    onClick={() => handleTabChange('corporate')}
+                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                        activeTab === 'corporate' ? 'bg-[#00629D] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                     }`}
                                 >
                                     <Briefcase className="w-3.5 h-3.5" /> Corporate Jobs (Darat)
@@ -142,9 +176,9 @@ export default function Careers({ careers = [] }) {
 
                             {(userRole === 'super_admin' || userRole === 'crew_admin') && (
                                 <button
-                                    onClick={() => setActiveTab('crew')}
-                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                                        activeTab === 'crew' ? 'bg-[#00629D] text-white ' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
+                                    onClick={() => handleTabChange('crew')}
+                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                        activeTab === 'crew' ? 'bg-[#00629D] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                     }`}
                                 >
                                     <Anchor className="w-3.5 h-3.5" /> Vessel Crew Jobs (Laut)
@@ -157,81 +191,165 @@ export default function Careers({ careers = [] }) {
                             <input
                                 type="text"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={handleSearchChange}
                                 placeholder="Search by position or dept..."
                                 className="w-full pl-9 pr-4 py-1.5 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
                             />
                         </div>
                     </div>
 
+                    {/* Empty State */}
+                    {filteredCareers.length === 0 && (
+                        <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-12 text-center">
+                            <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                            <h3 className="text-base font-bold text-[#141B2C]">No Vacancies Found</h3>
+                            <p className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] mt-1">
+                                No job postings match your current filter or search criteria.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Job Cards Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredCareers.map((job) => {
-                            const isCrew = (job.category || '').toLowerCase() === 'crew' || (job.category || '').toLowerCase().includes('deck');
+                    {filteredCareers.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {paginatedCareers.map((job) => {
+                                const isCrew = (job.category || '').toLowerCase() === 'crew' || (job.category || '').toLowerCase().includes('deck');
+                                const expired = job.status === 'expired' || isPastDeadline(job.application_deadline);
+                                const displayStatus = expired ? 'expired' : (job.status || 'open');
 
-                            return (
-                                <div 
-                                    key={job.id} 
-                                    className="bg-white rounded-[8px] border border-[#E5E7EB] p-5  hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group"
-                                >
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className={`font-['JetBrains_Mono'] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border flex items-center gap-1 ${
-                                                isCrew 
-                                                    ? 'bg-amber-50 text-amber-900 border-amber-200' 
-                                                    : 'bg-[#F5F5F5] text-[#00629D] border-[#E5E7EB]'
-                                            }`}>
-                                                {isCrew ? <Anchor className="w-3 h-3 text-amber-700" /> : <Briefcase className="w-3 h-3 text-[#00629D]" />}
-                                                {isCrew ? 'Vessel Crew (Laut)' : 'Corporate (Darat)'}
-                                            </span>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${
-                                                job.status === 'open' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                                            }`}>
-                                                {job.status || 'open'}
-                                            </span>
-                                        </div>
-
-                                        <h3 className="font-bold text-lg text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-1">
-                                            {job.position}
-                                        </h3>
-                                        <p className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] font-semibold mb-3">
-                                            {job.department || 'Operations'} &bull; {job.location || 'Jakarta HQ'}
-                                        </p>
-
-                                        {job.description && (
-                                            <p className="text-xs text-[#404750] line-clamp-2 leading-relaxed mb-4">
-                                                {job.description}
-                                            </p>
-                                        )}
-
-                                        <div className="space-y-1.5 font-['JetBrains_Mono'] text-xs text-[#404750] pt-3 border-t border-[#E5E7EB]">
-                                            <div className="flex justify-between">
-                                                <span className="text-[#8AAFC8]">Type:</span>
-                                                <span className="font-bold uppercase">{job.employment_type || 'fulltime'}</span>
+                                return (
+                                    <div 
+                                        key={job.id} 
+                                        className="bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-md p-5 transition-all flex flex-col justify-between group"
+                                    >
+                                        <div>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className={`font-['JetBrains_Mono'] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border flex items-center gap-1 ${
+                                                    isCrew 
+                                                        ? 'bg-amber-50 text-amber-900 border-amber-200' 
+                                                        : 'bg-[#F5F5F5] text-[#00629D] border-[#E5E7EB]'
+                                                }`}>
+                                                    {isCrew ? <Anchor className="w-3 h-3 text-amber-700" /> : <Briefcase className="w-3 h-3 text-[#00629D]" />}
+                                                    {isCrew ? 'Vessel Crew (Laut)' : 'Corporate (Darat)'}
+                                                </span>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${
+                                                    displayStatus === 'open' 
+                                                        ? 'bg-emerald-100 text-emerald-800' 
+                                                        : displayStatus === 'expired'
+                                                            ? 'bg-rose-100 text-rose-800 border border-rose-200' 
+                                                            : 'bg-slate-100 text-slate-800'
+                                                }`}>
+                                                    {displayStatus}
+                                                </span>
                                             </div>
-                                            {job.application_deadline && (
+
+                                            <h3 className="font-bold text-lg text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-1 line-clamp-1">
+                                                {job.position}
+                                            </h3>
+                                            <p className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] font-semibold mb-3 truncate">
+                                                {job.department || 'Operations'} &bull; {job.location || 'Jakarta HQ'}
+                                            </p>
+
+                                            <p 
+                                                className="text-xs text-[#404750] leading-relaxed mb-4 overflow-hidden h-10"
+                                                style={{
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: 'vertical',
+                                                }}
+                                            >
+                                                {job.description || '\u00A0'}
+                                            </p>
+
+                                            <div className="space-y-1.5 font-['JetBrains_Mono'] text-xs text-[#404750] pt-3 border-t border-[#E5E7EB]">
                                                 <div className="flex justify-between">
-                                                    <span className="text-[#8AAFC8]">Deadline:</span>
-                                                    <span className="font-bold text-[#00629D] flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" /> {job.application_deadline}
-                                                    </span>
+                                                    <span className="text-[#8AAFC8]">Type:</span>
+                                                    <span className="font-bold uppercase">{job.employment_type || 'fulltime'}</span>
                                                 </div>
-                                            )}
+                                                <div className="flex justify-between items-center h-5">
+                                                    <span className="text-[#8AAFC8]">Deadline:</span>
+                                                    {job.application_deadline ? (
+                                                        <span className={`font-bold flex items-center gap-1 ${
+                                                            isPastDeadline(job.application_deadline) ? 'text-rose-600' : 'text-[#00629D]'
+                                                        }`}>
+                                                            <Clock className="w-3 h-3" /> {job.application_deadline}
+                                                            {isPastDeadline(job.application_deadline) && (
+                                                                <span className="text-[10px] text-rose-600 font-bold">(Passed)</span>
+                                                            )}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[#8AAFC8] font-medium">&mdash;</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between">
+                                            <button 
+                                                onClick={() => openModal(job)}
+                                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#00629D] hover:underline cursor-pointer"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" /> Edit Vacancy
+                                            </button>
+
+                                            <button 
+                                                onClick={() => setDeletingCareer(job)}
+                                                className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
+                                            </button>
                                         </div>
                                     </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-                                    <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between">
-                                        <button 
-                                            onClick={() => openModal(job)}
-                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#00629D] hover:underline cursor-pointer"
-                                        >
-                                            <Edit2 className="w-3.5 h-3.5" /> Edit Vacancy
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                        <div className="bg-white p-4 rounded-[8px] border border-[#E5E7EB] flex items-center justify-between text-xs font-['JetBrains_Mono']">
+                            <div className="text-[#404750]">
+                                Showing{' '}
+                                <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                {' '}to{' '}
+                                <span className="font-bold text-[#141B2C]">{Math.min(currentPage * itemsPerPage, filteredCareers.length)}</span>
+                                {' '}of{' '}
+                                <span className="font-bold text-[#141B2C]">{filteredCareers.length}</span> Vacancies
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-3 py-1.5 rounded-[4px] border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C] disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                                >
+                                    ← Prev
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-1.5 rounded-[4px] font-semibold cursor-pointer ${
+                                            currentPage === page
+                                                ? 'bg-[#00629D] text-white border border-[#00629D]'
+                                                : 'border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C]'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-3 py-1.5 rounded-[4px] border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C] disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>
@@ -315,6 +433,7 @@ export default function Careers({ careers = [] }) {
                                 >
                                     <option value="open">Open</option>
                                     <option value="closed">Closed</option>
+                                    <option value="expired">Expired</option>
                                 </select>
                             </div>
                         </div>
@@ -354,7 +473,7 @@ export default function Careers({ careers = [] }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Requirements & Experience</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Requirements &amp; Experience</label>
                             <textarea
                                 value={data.requirements}
                                 onChange={(e) => setData('requirements', e.target.value)}
@@ -381,6 +500,44 @@ export default function Careers({ careers = [] }) {
                             </button>
                         </div>
                     </form>
+                </div>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal show={!!deletingCareer} onClose={() => setDeletingCareer(null)} maxWidth="md">
+                <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
+                    <div className="flex items-center gap-3 mb-4 text-rose-600">
+                        <div className="p-2.5 bg-rose-50 rounded-full">
+                            <AlertTriangle className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-[#141B2C]">Delete Career Vacancy</h3>
+                            <p className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] font-medium">Confirmation Required</p>
+                        </div>
+                    </div>
+
+                    <p className="text-sm text-[#404750] mb-6 leading-relaxed">
+                        Are you sure you want to permanently remove the vacancy for{' '}
+                        <strong className="text-[#141B2C]">{deletingCareer?.position}</strong>? 
+                        This action cannot be undone.
+                    </p>
+
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E5E7EB]">
+                        <button
+                            type="button"
+                            onClick={() => setDeletingCareer(null)}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold rounded-[6px] transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleDelete}
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" /> Delete Vacancy
+                        </button>
+                    </div>
                 </div>
             </Modal>
         </AuthenticatedLayout>

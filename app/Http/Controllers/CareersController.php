@@ -25,12 +25,18 @@ class CareersController extends Controller
             abort(403, 'PR Admin is not authorized to access Careers module.');
         }
 
+        // Auto-expire vacancies past application deadline
+        Career::where('status', 'open')
+            ->whereNotNull('application_deadline')
+            ->whereDate('application_deadline', '<', now()->toDateString())
+            ->update(['status' => 'expired']);
+
         if ($user->role === 'hr_admin') {
-            $careers = Career::where('category', 'corporate')->get();
+            $careers = Career::where('category', 'corporate')->latest()->get();
         } elseif ($user->role === 'crew_admin') {
-            $careers = Career::where('category', 'crew')->get();
+            $careers = Career::where('category', 'crew')->latest()->get();
         } else {
-            $careers = Career::all();
+            $careers = Career::latest()->get();
         }
 
         return Inertia::render('Dashboard/Careers', [
@@ -55,9 +61,13 @@ class CareersController extends Controller
             'description' => 'nullable|string',
             'requirements' => 'nullable|string',
             'responsibilities' => 'nullable|string',
-            'status' => 'nullable|in:open,closed',
+            'status' => 'nullable|in:open,closed,expired',
             'application_deadline' => 'nullable|date',
         ]);
+
+        if (!empty($validated['application_deadline']) && strtotime($validated['application_deadline']) < strtotime(date('Y-m-d')) && ($validated['status'] ?? 'open') === 'open') {
+            $validated['status'] = 'expired';
+        }
 
         if (auth()->check()) {
             $validated['author_id'] = auth()->id();
@@ -73,5 +83,66 @@ class CareersController extends Controller
         }
 
         return redirect()->route('careers.index')->with('success', 'Career position created successfully.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if ($user && $user->role === 'pr_admin') {
+            abort(403, 'PR Admin is not authorized to modify Careers.');
+        }
+
+        $career = Career::findOrFail($id);
+
+        if ($user->role === 'hr_admin' && $career->category !== 'corporate') {
+            abort(403, 'Unauthorized.');
+        }
+        if ($user->role === 'crew_admin' && $career->category !== 'crew') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $validated = $request->validate([
+            'position' => 'required|string|max:255',
+            'department' => 'nullable|string|max:100',
+            'category' => 'nullable|string|max:50',
+            'location' => 'nullable|string|max:100',
+            'employment_type' => 'nullable|in:fulltime,contract,internship',
+            'description' => 'nullable|string',
+            'requirements' => 'nullable|string',
+            'responsibilities' => 'nullable|string',
+            'status' => 'nullable|in:open,closed,expired',
+            'application_deadline' => 'nullable|date',
+        ]);
+
+        if (!empty($validated['application_deadline']) && strtotime($validated['application_deadline']) < strtotime(date('Y-m-d')) && ($validated['status'] ?? 'open') === 'open') {
+            $validated['status'] = 'expired';
+        }
+
+        $career->update($validated);
+
+        return redirect()->route('careers.index')->with('success', 'Career position updated successfully.');
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if ($user && $user->role === 'pr_admin') {
+            abort(403, 'PR Admin is not authorized to modify Careers.');
+        }
+
+        $career = Career::findOrFail($id);
+
+        if ($user->role === 'hr_admin' && $career->category !== 'corporate') {
+            abort(403, 'Unauthorized.');
+        }
+        if ($user->role === 'crew_admin' && $career->category !== 'crew') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $career->delete();
+
+        return redirect()->route('careers.index')->with('success', 'Career vacancy deleted successfully.');
     }
 }

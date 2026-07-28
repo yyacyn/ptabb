@@ -249,7 +249,7 @@ export default function Contacts({ contacts = [] }) {
                                 <table className="w-full table-fixed text-left text-xs border-collapse">
                                     <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase tracking-wider">
                                         <tr>
-                                            <th className="p-4 w-[28%]">Sender & Company</th>
+                                            <th className="p-4 w-[18%]">Sender & Company</th>
                                             <th className="p-4 w-[32%]">Subject</th>
                                             <th className="p-4 w-[16%]">Department</th>
                                             <th className="p-4 w-[12%]">Date Sent</th>

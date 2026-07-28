@@ -2,20 +2,71 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Building2, Plus, Search, Image as ImageIcon, Edit2, Trash2 } from 'lucide-react';
+import { Building2, Plus, Search, Image as ImageIcon, Edit2, Trash2, Filter, ArrowUpDown, AlertTriangle } from 'lucide-react';
 
 export default function Clients({ clients = [] }) {
     const [searchTerm, setSearchTerm] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('newest');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
+    const [deletingClient, setDeletingClient] = useState(null);
     const [previewLogo, setPreviewLogo] = useState(null);
 
-    const filteredClients = (clients || []).filter(c => 
-        (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.category || '').toLowerCase().includes(searchTerm.toLowerCase())
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleCategoryChange = (cat) => {
+        setCategoryFilter(cat);
+        setCurrentPage(1);
+    };
+
+    const handleSortChange = (e) => {
+        setSortBy(e.target.value);
+        setCurrentPage(1);
+    };
+
+    // Filter Logic
+    const filteredClients = (clients || []).filter(c => {
+        const matchesCategory = categoryFilter === 'all' || (c.category || '').toLowerCase() === categoryFilter.toLowerCase();
+        const search = searchTerm.toLowerCase();
+        const matchesSearch = 
+            (c.name || '').toLowerCase().includes(search) ||
+            (c.category || '').toLowerCase().includes(search) ||
+            (c.type || '').toLowerCase().includes(search) ||
+            (c.country || '').toLowerCase().includes(search);
+        
+        return matchesCategory && matchesSearch;
+    });
+
+    // Sort Logic
+    const sortedClients = [...filteredClients].sort((a, b) => {
+        if (sortBy === 'name_asc') {
+            return (a.name || '').localeCompare(b.name || '');
+        }
+        if (sortBy === 'name_desc') {
+            return (b.name || '').localeCompare(a.name || '');
+        }
+        if (sortBy === 'oldest') {
+            return (a.id || 0) - (b.id || 0);
+        }
+        // 'newest' default
+        return (b.id || 0) - (a.id || 0);
+    });
+
+    // Pagination Logic
+    const totalPages = Math.max(1, Math.ceil(sortedClients.length / itemsPerPage));
+    const paginatedClients = sortedClients.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
     );
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, reset } = useForm({
         _method: 'POST',
         name: '',
         category: 'Domestic',
@@ -79,10 +130,11 @@ export default function Clients({ clients = [] }) {
         }
     };
 
-    const handleDelete = (client) => {
-        if (confirm(`Are you sure you want to remove ${client.name}?`)) {
-            router.delete(route('clients.destroy', client.id));
-        }
+    const confirmDelete = () => {
+        if (!deletingClient) return;
+        router.delete(route('clients.destroy', deletingClient.id), {
+            onSuccess: () => setDeletingClient(null),
+        });
     };
 
     return (
@@ -94,7 +146,7 @@ export default function Clients({ clients = [] }) {
                             <Building2 className="w-3.5 h-3.5" /> CLIENT PORTFOLIO
                         </div>
                         <h2 className="text-2xl font-bold text-[#141B2C] tracking-tight">
-                            Clients & Strategic Partners
+                            Clients &amp; Strategic Partners
                         </h2>
                     </div>
 
@@ -112,88 +164,197 @@ export default function Clients({ clients = [] }) {
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
                     
-                    {/* Search Bar */}
-                    <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB]  flex items-center justify-between gap-4">
-                        <div className="relative flex-1 max-w-md">
-                            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search client partners..."
-                                className="w-full pl-9 pr-4 py-2 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
-                            />
+                    {/* Controls Bar: Search, Category Filter & Sorting */}
+                    <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto flex-1">
+                            {/* Search Input */}
+                            <div className="relative w-full sm:w-72">
+                                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={handleSearchChange}
+                                    placeholder="Search partner, industry, country..."
+                                    className="w-full pl-9 pr-4 py-1.5 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
+                                />
+                            </div>
+
+                            {/* Category Filter Tabs */}
+                            <div className="flex gap-1 bg-[#F5F5F5] p-1 rounded-[6px] border border-[#E5E7EB] w-full sm:w-auto">
+                                <button
+                                    onClick={() => handleCategoryChange('all')}
+                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-all cursor-pointer ${
+                                        categoryFilter === 'all' ? 'bg-[#00629D] text-white' : 'text-[#404750] hover:text-[#141B2C]'
+                                    }`}
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={() => handleCategoryChange('Domestic')}
+                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-all cursor-pointer ${
+                                        categoryFilter === 'Domestic' ? 'bg-[#00629D] text-white' : 'text-[#404750] hover:text-[#141B2C]'
+                                    }`}
+                                >
+                                    Domestic
+                                </button>
+                                <button
+                                    onClick={() => handleCategoryChange('International')}
+                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-all cursor-pointer ${
+                                        categoryFilter === 'International' ? 'bg-[#00629D] text-white' : 'text-[#404750] hover:text-[#141B2C]'
+                                    }`}
+                                >
+                                    International
+                                </button>
+                            </div>
                         </div>
-                        <span className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
-                            Showing {filteredClients.length} Partners
-                        </span>
+
+                        {/* Sort Controls & Counter */}
+                        <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                            <div className="flex items-center gap-2">
+                                <ArrowUpDown className="w-3.5 h-3.5 text-[#00629D]" />
+                                <span className="text-xs text-[#8AAFC8] font-['JetBrains_Mono']">Sort:</span>
+                                <select
+                                    value={sortBy}
+                                    onChange={handleSortChange}
+                                    className="border border-[#E5E7EB] rounded-[6px] text-xs py-1.5 px-2.5 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white font-semibold cursor-pointer"
+                                >
+                                    <option value="newest">Newest Added</option>
+                                    <option value="name_asc">Name (A &rarr; Z)</option>
+                                    <option value="name_desc">Name (Z &rarr; A)</option>
+                                    <option value="oldest">Oldest First</option>
+                                </select>
+                            </div>
+
+                            <span className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8] whitespace-nowrap">
+                                Total: <strong className="text-[#141B2C]">{sortedClients.length}</strong>
+                            </span>
+                        </div>
                     </div>
+
+                    {/* Empty State */}
+                    {sortedClients.length === 0 && (
+                        <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-12 text-center">
+                            <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                            <h3 className="text-base font-bold text-[#141B2C]">No Partners Found</h3>
+                            <p className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] mt-1">
+                                Try adjusting your search term or category filters.
+                            </p>
+                        </div>
+                    )}
 
                     {/* Client Logo Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {filteredClients.map((item) => {
-                            const logoSrc = getLogoPath(item);
+                    {sortedClients.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {paginatedClients.map((item) => {
+                                const logoSrc = getLogoPath(item);
 
-                            return (
-                                <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5  hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group">
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00629D] uppercase tracking-wider bg-[#F5F5F5] px-2 py-0.5 rounded border border-[#E5E7EB]">
-                                                {item.category || 'Partner'}
-                                            </span>
-                                            <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8]">
-                                                {item.country || 'Indonesia'}
-                                            </span>
-                                        </div>
-
-                                        {/* Client Logo Image Frame */}
-                                        <div className="h-20 w-full bg-[#F5F5F5] rounded-[6px] border border-[#E5E7EB] p-3 flex items-center justify-center mb-4 group-hover:bg-white transition-colors overflow-hidden">
-                                            <img
-                                                src={logoSrc}
-                                                alt={item.name}
-                                                title={item.name}
-                                                className="max-h-full max-w-full object-contain grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100 transition-all duration-300"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none';
-                                                    if (e.currentTarget.nextSibling) {
-                                                        e.currentTarget.nextSibling.style.display = 'flex';
-                                                    }
-                                                }}
-                                            />
-                                            <div className="hidden flex-col items-center justify-center text-slate-400 text-xs">
-                                                <ImageIcon className="w-5 h-5 mb-1" />
-                                                <span>No Image</span>
+                                return (
+                                    <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00629D] uppercase tracking-wider bg-[#F5F5F5] px-2 py-0.5 rounded border border-[#E5E7EB]">
+                                                    {item.category || 'Partner'}
+                                                </span>
+                                                <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8] truncate max-w-[110px]">
+                                                    {item.country || 'Indonesia'}
+                                                </span>
                                             </div>
+
+                                            {/* Client Logo Image Frame */}
+                                            <div className="h-20 w-full bg-[#F5F5F5] rounded-[6px] border border-[#E5E7EB] p-3 flex items-center justify-center mb-4 group-hover:bg-white transition-colors overflow-hidden">
+                                                <img
+                                                    src={logoSrc}
+                                                    alt={item.name}
+                                                    title={item.name}
+                                                    className="max-h-full max-w-full object-contain grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100 transition-all duration-300"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none';
+                                                        if (e.currentTarget.nextSibling) {
+                                                            e.currentTarget.nextSibling.style.display = 'flex';
+                                                        }
+                                                    }}
+                                                />
+                                                <div className="hidden flex-col items-center justify-center text-slate-400 text-xs">
+                                                    <ImageIcon className="w-5 h-5 mb-1" />
+                                                    <span>No Image</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Client Info */}
+                                            <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-1 line-clamp-1">
+                                                {item.name}
+                                            </h3>
+                                            <p className="text-xs text-[#404750] truncate">
+                                                {item.type || 'Industrial Partner'}
+                                            </p>
                                         </div>
 
-                                        {/* Client Info */}
-                                        <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-1">
-                                            {item.name}
-                                        </h3>
-                                        <p className="text-xs text-[#404750]">
-                                            {item.type || 'Industrial Partner'}
-                                        </p>
+                                        {/* Action Bar */}
+                                        <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between text-xs font-semibold">
+                                            <button 
+                                                onClick={() => openModal(item)}
+                                                className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" /> Edit
+                                            </button>
+                                            <button 
+                                                onClick={() => setDeletingClient(item)}
+                                                className="inline-flex items-center gap-1 text-rose-600 hover:underline cursor-pointer"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
+                                            </button>
+                                        </div>
                                     </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-                                    {/* Action Bar */}
-                                    <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between text-xs font-semibold">
-                                        <button 
-                                            onClick={() => openModal(item)}
-                                            className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
-                                        >
-                                            <Edit2 className="w-3.5 h-3.5" /> Edit
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDelete(item)}
-                                            className="inline-flex items-center gap-1 text-red-600 hover:underline cursor-pointer"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" /> Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                        <div className="bg-white p-4 rounded-[8px] border border-[#E5E7EB] flex items-center justify-between text-xs font-['JetBrains_Mono']">
+                            <div className="text-[#404750]">
+                                Showing{' '}
+                                <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                {' '}to{' '}
+                                <span className="font-bold text-[#141B2C]">{Math.min(currentPage * itemsPerPage, sortedClients.length)}</span>
+                                {' '}of{' '}
+                                <span className="font-bold text-[#141B2C]">{sortedClients.length}</span> Client Partners
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-3 py-1.5 rounded-[4px] border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C] disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                                >
+                                    ← Prev
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-1.5 rounded-[4px] font-semibold cursor-pointer ${
+                                            currentPage === page
+                                                ? 'bg-[#00629D] text-white border border-[#00629D]'
+                                                : 'border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C]'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-3 py-1.5 rounded-[4px] border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C] disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>
@@ -310,6 +471,43 @@ export default function Clients({ clients = [] }) {
                             </button>
                         </div>
                     </form>
+                </div>
+            </Modal>
+
+            {/* Delete Partner Confirmation Modal */}
+            <Modal show={!!deletingClient} onClose={() => setDeletingClient(null)} maxWidth="md">
+                <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
+                    <div className="flex items-center gap-3 mb-4 text-rose-600">
+                        <div className="p-2.5 bg-rose-50 rounded-full">
+                            <AlertTriangle className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-[#141B2C]">Remove Client Partner</h3>
+                            <p className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] font-medium">Confirmation Required</p>
+                        </div>
+                    </div>
+
+                    <p className="text-sm text-[#404750] mb-6 leading-relaxed">
+                        Are you sure you want to remove <strong className="text-[#141B2C]">{deletingClient?.name}</strong> from the client portfolio? 
+                        This action cannot be undone.
+                    </p>
+
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E5E7EB]">
+                        <button
+                            type="button"
+                            onClick={() => setDeletingClient(null)}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold rounded-[6px] transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={confirmDelete}
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" /> Remove Partner
+                        </button>
+                    </div>
                 </div>
             </Modal>
         </AuthenticatedLayout>
