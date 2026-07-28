@@ -53,10 +53,6 @@ export default function Login({ status, canResetPassword }) {
 
                     {/* Middle Tagline / Value Text */}
                     <div className="relative z-10 my-auto py-8">
-                        <div className="inline-flex items-center gap-2 font-['JetBrains_Mono'] text-[11px] uppercase tracking-wider text-[#3F96DD] bg-[#00629D]/20 px-3 py-1 rounded-[4px] border border-[#3F96DD]/30 mb-4">
-                            <ShieldCheck className="w-3.5 h-3.5 text-[#3F96DD]" />
-                            SECURE MARITIME PORTAL
-                        </div>
                         <h1 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-white leading-tight tracking-tight mb-4">
                             Ocean-Scale Logistics & Fleet Management
                         </h1>
@@ -66,13 +62,6 @@ export default function Login({ status, canResetPassword }) {
                     </div>
 
                     {/* Bottom Status Telemetry Footer */}
-                    <div className="relative z-10 pt-6 border-t border-white/10 flex items-center justify-between font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8]">
-                        <span>ISO 9001:2015 & 14001 CERTIFIED</span>
-                        <span className="flex items-center gap-1.5 text-emerald-400">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            SYSTEM ONLINE
-                        </span>
-                    </div>
                 </div>
 
                 {/* Right Side: Login Form (5 Columns) */}

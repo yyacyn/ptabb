@@ -551,7 +551,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                     
                                     {/* 1. AI PDF File Input */}
                                     <div className="pb-6 border-b border-[#E5E7EB]">
-                                        <label className="block text-xs font-bold text-[#141B2C] mb-1.5 flex items-center gap-1.5">
+                                        <label className="text-xs font-bold text-[#141B2C] mb-1.5 flex items-center gap-1.5">
                                             <Sparkles className="w-4 h-4 text-amber-500" />
                                             Ship Particular Document (PDF) — AI Intelligent Auto-Fill
                                         </label>

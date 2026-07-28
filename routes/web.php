@@ -16,11 +16,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Client;
 
-/*
-|--------------------------------------------------------------------------
-| Public Visitor Routes
-|--------------------------------------------------------------------------
-*/
+// Public Visitor & API Routes (Postman & Guest Accessible)
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -35,11 +31,23 @@ Route::get('/', function () {
     ]);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Protected Admin Dashboard Management Routes
-|--------------------------------------------------------------------------
-*/
+// Public GET & POST Endpoints (Support JSON responses for Postman & API testing)
+Route::get('/fleets', [FleetsController::class, 'index'])->name('public.fleets');
+Route::get('/clients', [ClientsController::class, 'index'])->name('public.clients');
+Route::get('/careers', [CareersController::class, 'index'])->name('public.careers');
+Route::get('/news', [NewsController::class, 'index'])->name('public.news');
+Route::get('/notifications', [NotificationsController::class, 'index'])->name('public.notifications');
+Route::get('/news-category', [NewsCatController::class, 'index'])->name('public.news-category');
+Route::get('/contact-infos', [ContactInfosController::class, 'index'])->name('public.contact-infos');
+Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('public.voyage-waypoints');
+
+// Public Contact Form Submission (Guests & Postman API testing)
+Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.store');
+
+// AISStream.io Telemetry Ingestion Endpoint
+Route::post('/api/ais/ingest', [\App\Http\Controllers\AisIngestController::class, 'ingest'])->name('ais.ingest');
+
+// Protected Admin Dashboard Management Routes
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
     // Dashboard Overview
     Route::get('/', function () {
@@ -83,15 +91,14 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     // Notifications Management
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
 
-    // Contacts Management
+    // Contacts Admin Management
     Route::get('/contacts', [ContactsController::class, 'index'])->name('contacts.index');
     Route::put('/contacts/{id}', [ContactsController::class, 'update'])->name('contacts.update');
     Route::delete('/contacts/{id}', [ContactsController::class, 'destroy'])->name('contacts.destroy');
 
-    // Auxiliaries
+    // Auxiliaries & Telemetry
     Route::get('/news-category', [NewsCatController::class, 'index'])->name('news-category.index');
     Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('fleet-category.index');
-    Route::get('/contact-infos', [ContactInfosController::class, 'index'])->name('contact-infos.index');
     Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('voyage-waypoints.index');
 
     // Profile Settings

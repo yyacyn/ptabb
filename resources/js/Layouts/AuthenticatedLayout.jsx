@@ -137,6 +137,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </NavLink>
                                 )}
 
+                                {canAccess('fleets') && (
+                                    <NavLink
+                                        href={route('voyage-waypoints.index')}
+                                        active={route().current('voyage-waypoints.*')}
+                                    >
+                                        Voyage
+                                    </NavLink>
+                                )}
+
                                 {canAccess('contacts') && (
                                     <NavLink
                                         href={route('contacts.index')}
@@ -255,6 +264,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('fleets.*')}
                             >
                                 Fleets
+                            </ResponsiveNavLink>
+                        )}
+
+                        {canAccess('fleets') && (
+                            <ResponsiveNavLink
+                                href={route('voyage-waypoints.index')}
+                                active={route().current('voyage-waypoints.*')}
+                            >
+                                Voyage Nav
                             </ResponsiveNavLink>
                         )}
 

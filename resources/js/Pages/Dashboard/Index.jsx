@@ -3,15 +3,14 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { 
     Ship, 
     Briefcase, 
-    Users, 
     Newspaper, 
     Bell, 
     Building2, 
     ArrowRight, 
     Shield, 
-    Anchor,
     Compass,
-    ExternalLink
+    ExternalLink,
+    Mail
 } from 'lucide-react';
 
 export default function Index({ 
@@ -21,7 +20,18 @@ export default function Index({
     careersCount = 12,
     notificationsCount = 2
 }) {
-    const authUser = usePage().props.auth.user;
+    const pageProps = usePage().props;
+    const authUser = pageProps.auth?.user || {};
+    const userRole = authUser.role || 'super_admin';
+
+    // Safe route generator that prevents Ziggy crashes
+    const safeRoute = (routeName, fallback = '#') => {
+        try {
+            return route(routeName);
+        } catch (e) {
+            return fallback;
+        }
+    };
 
     const managementPages = [
         {
@@ -31,7 +41,7 @@ export default function Index({
             description: 'Manage 15+ vessels, AIS satellite coordinates, DWT specs, and PDF particulars.',
             icon: Ship,
             count: `${fleetsCount} Active Vessels`,
-            route: route('fleets.index'),
+            route: safeRoute('fleets.index', '/dashboard/fleets'),
             badge: 'Fleet & Specs'
         },
         {
@@ -41,7 +51,7 @@ export default function Index({
             description: 'Manage Corporate (Darat) & Vessel Crew (Laut) job openings and candidate applications.',
             icon: Briefcase,
             count: `${careersCount} Openings`,
-            route: route('careers.index'),
+            route: safeRoute('careers.index', '/dashboard/careers'),
             badge: 'Jobs (Darat & Laut)'
         },
         {
@@ -51,7 +61,7 @@ export default function Index({
             description: 'Publish company articles, office event coverage, and CSR sustainability projects.',
             icon: Newspaper,
             count: `${newsCount} Articles`,
-            route: route('news.index'),
+            route: safeRoute('news.index', '/dashboard/news'),
             badge: 'PR & Media'
         },
         {
@@ -61,7 +71,7 @@ export default function Index({
             description: 'Manage domestic and international partner logos, testimonials, and corporate profiles.',
             icon: Building2,
             count: `${clientsCount}+ Partners`,
-            route: route('clients.index'),
+            route: safeRoute('clients.index', '/dashboard/clients'),
             badge: 'Partnerships'
         },
         {
@@ -71,8 +81,18 @@ export default function Index({
             description: 'Control home/career page pop-up banners, active warnings, and emergency alerts.',
             icon: Bell,
             count: `${notificationsCount} Active Alerts`,
-            route: route('notifications.index'),
+            route: safeRoute('notifications.index', '/dashboard/notifications'),
             badge: 'Banners'
+        },
+        {
+            id: 'contacts',
+            title: 'Inbox & Contact Submissions',
+            category: 'Customer Support',
+            description: 'Read and respond to contact form inquiries routed by department.',
+            icon: Mail,
+            count: 'Public Inquiries',
+            route: safeRoute('contacts.index', '/dashboard/contacts'),
+            badge: 'Messages'
         },
         {
             id: 'waypoints',
@@ -81,15 +101,14 @@ export default function Index({
             description: 'Manage AIS satellite positioning, GPS waypoints, and active vessel route telemetry.',
             icon: Compass,
             count: 'Live AIS Feed',
-            route: route('voyage-waypoints.index'),
+            route: safeRoute('voyage-waypoints.index', '/dashboard/voyage-waypoints'),
             badge: 'Telemetry'
         },
     ];
-    const userRole = authUser?.role || 'super_admin';
 
     const canAccess = (id) => {
         if (userRole === 'super_admin') return true;
-        if (userRole === 'hr_admin') return ['careers', 'notifications'].includes(id);
+        if (userRole === 'hr_admin') return ['careers', 'notifications', 'contacts'].includes(id);
         if (userRole === 'crew_admin') return ['careers'].includes(id);
         if (userRole === 'pr_admin') return ['news', 'clients'].includes(id);
         return false;
@@ -137,7 +156,7 @@ export default function Index({
                                     <span className="text-emerald-400">ONLINE</span>
                                 </div>
                                 <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
-                                    Welcome back, {authUser.name}
+                                    Welcome back, {authUser.name || 'Admin'}
                                 </h3>
                                 <p className="text-[#8AAFC8] text-sm max-w-[620px] leading-relaxed">
                                     Manage PT. ABB’s digital ecosystem. Use the top navigation bar or the quick management cards below to access dedicated management modules.
@@ -154,7 +173,7 @@ export default function Index({
                             { label: "Pop-up Banners", value: `${notificationsCount}`, sub: "Active Alerts", icon: Bell, color: "text-amber-500" },
                             { label: "Client Partners", value: `${clientsCount}+`, sub: "Domestic & Global", icon: Building2, color: "text-emerald-500" }
                         ].map((stat, idx) => (
-                            <div key={idx} className="bg-white rounded-[8px] p-5 border border-[#E5E7EB]  flex items-center justify-between">
+                            <div key={idx} className="bg-white rounded-[8px] p-5 border border-[#E5E7EB] flex items-center justify-between">
                                 <div>
                                     <div className="font-['JetBrains_Mono'] text-xs text-[#404750] uppercase font-medium">{stat.label}</div>
                                     <div className="text-2xl font-bold font-['JetBrains_Mono'] text-[#141B2C] mt-1">{stat.value}</div>
@@ -186,11 +205,11 @@ export default function Index({
                                 return (
                                     <div 
                                         key={page.id}
-                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-6  flex flex-col justify-between hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.15)] transition-all duration-200 group"
+                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.15)] transition-all duration-200 group"
                                     >
                                         <div>
                                             <div className="flex items-center justify-between mb-4">
-                                                <div className="w-10 h-10 rounded-[8px] bg-gradient-to-r from-[#00629D] to-[#3F96DD] flex items-center justify-center text-white ">
+                                                <div className="w-10 h-10 rounded-[8px] bg-gradient-to-r from-[#00629D] to-[#3F96DD] flex items-center justify-center text-white">
                                                     <IconComponent className="w-5 h-5" />
                                                 </div>
                                                 <span className="font-['JetBrains_Mono'] text-[10px] font-bold uppercase tracking-wider bg-[#F5F5F5] text-[#00629D] border border-[#E5E7EB] px-2.5 py-1 rounded-[4px]">

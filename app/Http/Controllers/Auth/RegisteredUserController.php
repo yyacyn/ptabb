@@ -35,6 +35,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:50|unique:'.User::class,
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'role' => 'nullable|string|in:super_admin,hr_admin,crew_admin,pr_admin',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -42,6 +43,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
+            'role' => $request->role ?? 'super_admin',
             'password' => Hash::make($request->password),
         ]);
 
