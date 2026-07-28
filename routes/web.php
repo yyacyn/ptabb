@@ -14,9 +14,13 @@ use App\Http\Controllers\NotificationsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
 use App\Models\Client;
 
+/*
+|--------------------------------------------------------------------------
+| Public Visitor Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -31,21 +35,14 @@ Route::get('/', function () {
     ]);
 });
 
-// Public GET endpoints (support JSON responses for Postman & API testing)
-Route::get('/fleets', [FleetsController::class, 'index'])->name('fleets.index');
-Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
-Route::get('/careers', [CareersController::class, 'index'])->name('careers.index');
-Route::get('/news', [NewsController::class, 'index'])->name('news.index');
-Route::get('/news-category', [NewsCatController::class, 'index'])->name('news-category.index');
-Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('fleet-category.index');
-Route::get('/contact-infos', [ContactInfosController::class, 'index'])->name('contact-infos.index');
-Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('voyage-waypoints.index');
-Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
-Route::get('/contacts', [ContactsController::class, 'index'])->name('contacts.index');
-
-// Protected Admin Mutation & Dashboard routes
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
+/*
+|--------------------------------------------------------------------------
+| Protected Admin Dashboard Management Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
+    // Dashboard Overview
+    Route::get('/', function () {
         return Inertia::render('Dashboard/Index', [
             'fleetsCount' => \App\Models\Fleet::count(),
             'newsCount' => \App\Models\News::count(),
@@ -55,20 +52,52 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('dashboard');
 
+    // Fleets Management
+    Route::get('/fleets', [FleetsController::class, 'index'])->name('fleets.index');
     Route::get('/fleets/create', [FleetsController::class, 'create'])->name('fleets.create');
     Route::post('/fleets', [FleetsController::class, 'store'])->name('fleets.store');
+    Route::post('/fleets/categories', [FleetsController::class, 'storeCategory'])->name('fleets.categories.store');
+    Route::post('/fleets/parse-pdf', [FleetsController::class, 'parsePdf'])->name('fleets.parse-pdf');
     Route::get('/fleets/{id}/edit', [FleetsController::class, 'edit'])->name('fleets.edit');
     Route::put('/fleets/{id}', [FleetsController::class, 'update'])->name('fleets.update');
     Route::delete('/fleets/{id}', [FleetsController::class, 'destroy'])->name('fleets.destroy');
 
+    // News & Articles Management
+    Route::get('/news', [NewsController::class, 'index'])->name('news.index');
+    Route::get('/news/create', [NewsController::class, 'create'])->name('news.create');
+    Route::post('/news', [NewsController::class, 'store'])->name('news.store');
+    Route::get('/news/{id}/edit', [NewsController::class, 'edit'])->name('news.edit');
+    Route::put('/news/{id}', [NewsController::class, 'update'])->name('news.update');
+    Route::delete('/news/{id}', [NewsController::class, 'destroy'])->name('news.destroy');
+
+    // Careers Management
+    Route::get('/careers', [CareersController::class, 'index'])->name('careers.index');
     Route::post('/careers', [CareersController::class, 'store'])->name('careers.store');
 
+    // Clients Management
+    Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
+    Route::post('/clients', [ClientsController::class, 'store'])->name('clients.store');
+    Route::put('/clients/{id}', [ClientsController::class, 'update'])->name('clients.update');
+    Route::delete('/clients/{id}', [ClientsController::class, 'destroy'])->name('clients.destroy');
+
+    // Notifications Management
+    Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
+
+    // Contacts Management
+    Route::get('/contacts', [ContactsController::class, 'index'])->name('contacts.index');
+    Route::put('/contacts/{id}', [ContactsController::class, 'update'])->name('contacts.update');
+    Route::delete('/contacts/{id}', [ContactsController::class, 'destroy'])->name('contacts.destroy');
+
+    // Auxiliaries
+    Route::get('/news-category', [NewsCatController::class, 'index'])->name('news-category.index');
+    Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('fleet-category.index');
+    Route::get('/contact-infos', [ContactInfosController::class, 'index'])->name('contact-infos.index');
+    Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('voyage-waypoints.index');
+
+    // Profile Settings
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/contacts', [ContactsController::class, 'index'])->name('contacts.index');
-
 require __DIR__.'/auth.php';
-

@@ -9,27 +9,36 @@ use Inertia\Inertia;
 class ContactsController extends Controller
 {
     /**
-     * Display a listing of the contacts.
-     *
-     * Supports Inertia rendering for frontend and JSON responses for API testing.
+     * Display a listing of the contact messages.
      */
     public function index(Request $request)
     {
-        $contacts = Contact::all();
+        $query = Contact::query();
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            // BR-04: HRD-routed contact messages filtered out from Crew/PR admins at query level
+            if (in_array($user->role, ['crew_admin', 'pr_admin'])) {
+                $query->where(function($q) {
+                    $q->whereNull('department')
+                      ->orWhere('department', '!=', 'hrd');
+                });
+            }
+        }
+
+        $contacts = $query->latest()->get();
 
         if ($request->wantsJson()) {
             return response()->json($contacts);
         }
 
-        return Inertia::render('Contacts/Index', [
+        return Inertia::render('Dashboard/Contacts', [
             'contacts' => $contacts,
         ]);
     }
 
     /**
-     * Store a newly created contact in storage.
-     *
-     * Supports both standard web form submission and JSON API requests.
+     * Store a newly created contact message from public form.
      */
     public function store(Request $request)
     {
@@ -39,26 +48,22 @@ class ContactsController extends Controller
             'phone' => 'nullable|string|max:20',
             'company' => 'nullable|string|max:255',
             'subject' => 'required|string|max:255',
-            'department' => 'nullable|string|max:100',
+            'department' => 'nullable|string|in:commercial,operation,hrd,general',
             'message' => 'required|string|max:2000',
             'ip_address' => 'nullable|string|max:45',
-            'status' => 'nullable|string|in:pending,read,replied|max:50',
+            'status' => 'nullable|string|in:new,read,replied',
         ]);
 
-        // Get IP address if not provided
         if (empty($validated['ip_address'])) {
             $validated['ip_address'] = $request->ip();
         }
 
-        // Default status to 'pending' if not provided
         if (empty($validated['status'])) {
-            $validated['status'] = 'pending';
+            $validated['status'] = 'new';
         }
 
-        // Create the contact
         $contact = Contact::create($validated);
 
-        // Check if it's an API request
         if ($request->wantsJson()) {
             return response()->json([
                 'message' => 'Contact message received successfully',
@@ -66,8 +71,7 @@ class ContactsController extends Controller
             ], 201);
         }
 
-        // Return to Inertia page with success message
-        return Inertia::location(route('contact.index'))->with('success', 'Thank you for your message! We will get back to you soon.');
+        return redirect()->back()->with('success', 'Thank you for your message! We will get back to you soon.');
     }
 
     /**
@@ -77,8 +81,7 @@ class ContactsController extends Controller
     {
         $contact = Contact::findOrFail($id);
 
-        // Mark as read if it's a web request
-        if (!request()->wantsJson()) {
+        if ($contact->status === 'new') {
             $contact->status = 'read';
             $contact->save();
         }
@@ -87,28 +90,30 @@ class ContactsController extends Controller
             return response()->json($contact);
         }
 
-        return Inertia::render('Contacts/Show', [
-            'contact' => $contact,
-        ]);
+        return response()->json($contact);
     }
 
     /**
-     * Update the status of the specified contact (e.g., mark as replied).
+     * Update the status of the specified contact (e.g., mark as read or replied).
      */
     public function update(Request $request, string $id)
     {
         $contact = Contact::findOrFail($id);
 
         $validated = $request->validate([
-            'status' => 'required|string|in:pending,read,replied|max:50',
+            'status' => 'required|string|in:new,read,replied',
         ]);
 
         $contact->update($validated);
 
-        return response()->json([
-            'message' => 'Contact status updated successfully',
-            'data' => $contact,
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Contact status updated successfully',
+                'data' => $contact,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Message status updated.');
     }
 
     /**
@@ -119,20 +124,12 @@ class ContactsController extends Controller
         $contact = Contact::findOrFail($id);
         $contact->delete();
 
-        return response()->json([
-            'message' => 'Contact deleted successfully',
-        ]);
-    }
+        if (request()->wantsJson()) {
+            return response()->json([
+                'message' => 'Contact deleted successfully',
+            ]);
+        }
 
-    /**
-     * Get unread contacts count.
-     */
-    public function unreadCount()
-    {
-        $count = Contact::where('status', 'pending')->count();
-
-        return response()->json([
-            'count' => $count,
-        ]);
+        return redirect()->back()->with('success', 'Contact message deleted successfully.');
     }
 }

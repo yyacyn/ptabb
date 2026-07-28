@@ -1,13 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Building2, Plus, Search, Image as ImageIcon, Edit2 } from 'lucide-react';
+import { Building2, Plus, Search, Image as ImageIcon, Edit2, Trash2 } from 'lucide-react';
 
 export default function Clients({ clients = [] }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
+    const [previewLogo, setPreviewLogo] = useState(null);
 
     const filteredClients = (clients || []).filter(c => 
         (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -15,36 +16,45 @@ export default function Clients({ clients = [] }) {
     );
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
+        _method: 'POST',
         name: '',
         category: 'Domestic',
         type: 'Cement Manufacturer',
         country: 'Indonesia',
-        logo: '',
+        logo: null,
     });
 
     const getLogoPath = (item) => {
         if (!item) return '/images/clients/placeholder.png';
-        if (item.logo) {
-            return item.logo.startsWith('/') ? item.logo : `/images/clients/${item.logo}`;
-        }
-        if (item.logo_path) {
-            return item.logo_path.startsWith('/') ? item.logo_path : `/images/clients/${item.logo_path}`;
-        }
-        return '/images/clients/placeholder.png';
+        const logoFile = item.logo || item.logo_path || item.pathfile || item.image || item.featured_image;
+        if (!logoFile) return '/images/clients/placeholder.png';
+
+        if (logoFile.startsWith('http://') || logoFile.startsWith('https://')) return logoFile;
+        if (logoFile.startsWith('/images/') || logoFile.startsWith('/storage/')) return logoFile;
+        if (logoFile.startsWith('assets/images/clients/')) return `/${logoFile.replace('assets/images/clients/', 'images/clients/')}`;
+        if (logoFile.startsWith('../assets/images/clients/')) return `/${logoFile.replace('../assets/images/clients/', 'images/clients/')}`;
+        if (logoFile.startsWith('images/') || logoFile.startsWith('storage/')) return `/${logoFile}`;
+
+        const filename = logoFile.split('/').pop();
+        return `/images/clients/${filename}`;
     };
 
     const openModal = (client = null) => {
         setEditingClient(client);
         if (client) {
+            setPreviewLogo(getLogoPath(client));
             setData({
+                _method: 'PUT',
                 name: client.name || '',
                 category: client.category || 'Domestic',
                 type: client.type || '',
                 country: client.country || 'Indonesia',
-                logo: client.logo || '',
+                logo: null,
             });
         } else {
+            setPreviewLogo(null);
             reset();
+            setData('_method', 'POST');
         }
         setIsModalOpen(true);
     };
@@ -52,12 +62,27 @@ export default function Clients({ clients = [] }) {
     const closeModal = () => {
         setIsModalOpen(false);
         setEditingClient(null);
+        setPreviewLogo(null);
         reset();
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        closeModal();
+        if (editingClient) {
+            post(route('clients.update', editingClient.id), {
+                onSuccess: () => closeModal(),
+            });
+        } else {
+            post(route('clients.store'), {
+                onSuccess: () => closeModal(),
+            });
+        }
+    };
+
+    const handleDelete = (client) => {
+        if (confirm(`Are you sure you want to remove ${client.name}?`)) {
+            router.delete(route('clients.destroy', client.id));
+        }
     };
 
     return (
@@ -77,46 +102,42 @@ export default function Clients({ clients = [] }) {
                         onClick={() => openModal()}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
                     >
-                        <Plus className="w-4 h-4" /> Add Partner Logo
+                        <Plus className="w-4 h-4" /> Add New Partner
                     </button>
                 </div>
             }
         >
-            <Head title="Clients Management — PT. ABB" />
+            <Head title="Client Partners — PT. ABB" />
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
                     
                     {/* Search Bar */}
-                    <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] shadow-sm flex items-center justify-between gap-4">
+                    <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB]  flex items-center justify-between gap-4">
                         <div className="relative flex-1 max-w-md">
                             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search client partner..."
+                                placeholder="Search client partners..."
                                 className="w-full pl-9 pr-4 py-2 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
                             />
                         </div>
                         <span className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
-                            Showing {filteredClients.length} Client Logos
+                            Showing {filteredClients.length} Partners
                         </span>
                     </div>
 
-                    {/* Client Logos Grid */}
+                    {/* Client Logo Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {filteredClients.map((item) => {
                             const logoSrc = getLogoPath(item);
 
                             return (
-                                <div 
-                                    key={item.id} 
-                                    className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 shadow-sm hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group"
-                                >
+                                <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5  hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group">
                                     <div>
-                                        {/* Category Badge & Country */}
-                                        <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center justify-between mb-3">
                                             <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00629D] uppercase tracking-wider bg-[#F5F5F5] px-2 py-0.5 rounded border border-[#E5E7EB]">
                                                 {item.category || 'Partner'}
                                             </span>
@@ -158,11 +179,16 @@ export default function Clients({ clients = [] }) {
                                     <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between text-xs font-semibold">
                                         <button 
                                             onClick={() => openModal(item)}
-                                            className="inline-flex items-center gap-1 text-[#00629D] hover:underline"
+                                            className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
                                         >
                                             <Edit2 className="w-3.5 h-3.5" /> Edit
                                         </button>
-                                        <button className="text-red-600 hover:underline">Remove</button>
+                                        <button 
+                                            onClick={() => handleDelete(item)}
+                                            className="inline-flex items-center gap-1 text-red-600 hover:underline cursor-pointer"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" /> Remove
+                                        </button>
                                     </div>
                                 </div>
                             );
@@ -182,7 +208,7 @@ export default function Clients({ clients = [] }) {
                                 {editingClient ? `Edit Partner: ${editingClient.name}` : 'Add Client Partner'}
                             </h3>
                         </div>
-                        <button onClick={closeModal} className="text-slate-400 hover:text-[#141B2C] text-xl">&times;</button>
+                        <button onClick={closeModal} className="text-slate-400 hover:text-[#141B2C] text-xl cursor-pointer">&times;</button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -224,25 +250,47 @@ export default function Clients({ clients = [] }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Industry / Business Type</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Industry Type</label>
                             <input
                                 type="text"
                                 value={data.type}
                                 onChange={(e) => setData('type', e.target.value)}
-                                placeholder="e.g. Cement Manufacturer / Shipping & Logistics"
+                                placeholder="e.g. Cement Manufacturer / Shipping Line"
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
                         </div>
 
+                        {/* Partner Logo File Upload */}
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Logo Filename / URL</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                Partner Logo File Upload (Optional when editing)
+                            </label>
                             <input
-                                type="text"
-                                value={data.logo}
-                                onChange={(e) => setData('logo', e.target.value)}
-                                placeholder="e.g. padang.png or 1777649829_PT__Semen_Padan.png"
-                                className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        setData('logo', file);
+                                        setPreviewLogo(URL.createObjectURL(file));
+                                    }
+                                }}
+                                className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 bg-[#F5F5F5] file:mr-3 file:py-1 file:px-2.5 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
                             />
+                            <p className="text-[11px] text-slate-400 mt-1">Leave blank to keep existing logo</p>
+
+                            {previewLogo && (
+                                <div className="mt-3 flex items-center gap-3 bg-[#F5F5F5] p-3 rounded-[6px] border border-[#E5E7EB]">
+                                    <img
+                                        src={previewLogo}
+                                        alt="Logo Preview"
+                                        className="h-10 max-w-[140px] object-contain"
+                                    />
+                                    <span className="text-[11px] font-['JetBrains_Mono'] text-[#404750]">
+                                        Logo Preview
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
@@ -258,7 +306,7 @@ export default function Clients({ clients = [] }) {
                                 disabled={processing}
                                 className="px-5 py-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold rounded-[6px] hover:shadow-md transition-all"
                             >
-                                {editingClient ? 'Update Partner' : 'Save Partner'}
+                                {editingClient ? 'Save Changes' : 'Add Partner'}
                             </button>
                         </div>
                     </form>

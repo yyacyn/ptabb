@@ -2,24 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\Fleet;
 use App\Models\FleetCategory;
+use App\Services\PdfAiParserService;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class FleetsController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $fleets = Fleet::with('category')->get();
-
-        if ($request->wantsJson()) {
-            return response()->json($fleets);
-        }
-
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
+        $fleets = Fleet::with('category')->latest()->get();
 
         return Inertia::render('Dashboard/Fleets', [
             'fleets' => $fleets,
@@ -44,6 +37,42 @@ class FleetsController extends Controller
         ]);
     }
 
+    public function storeCategory(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:fleet_categories,name',
+            'description' => 'nullable|string',
+        ]);
+
+        $validated['slug'] = \Illuminate\Support\Str::slug($validated['name']);
+
+        $category = FleetCategory::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'category' => $category,
+                'categories' => FleetCategory::all(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Category added successfully.');
+    }
+
+    public function parsePdf(Request $request, PdfAiParserService $parserService)
+    {
+        $request->validate([
+            'ship_particular_pdf' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $file = $request->file('ship_particular_pdf');
+        $tempPath = $file->getRealPath();
+
+        $result = $parserService->parsePdfDocument($tempPath);
+
+        return response()->json($result);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -58,6 +87,12 @@ class FleetsController extends Controller
             'capacity' => 'nullable|numeric',
             'gross_tonnage' => 'nullable|numeric',
             'net_tonnage' => 'nullable|numeric',
+            'light_ship' => 'nullable|numeric',
+            'summer_draft' => 'nullable|numeric',
+            'port_of_registry' => 'nullable|string|max:100',
+            'call_sign' => 'nullable|string|max:50',
+            'mmsi' => 'nullable|string|max:50',
+            'hull_no' => 'nullable|string|max:50',
             'flag' => 'nullable|string|max:100',
             'classification_society' => 'nullable|string|max:100',
             'loa' => 'nullable|numeric',
@@ -65,8 +100,9 @@ class FleetsController extends Controller
             'breadth' => 'nullable|numeric',
             'depth' => 'nullable|numeric',
             'speed' => 'nullable|numeric',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:200',
             'voyage_description' => 'nullable|string',
+            'particulars_data' => 'nullable|array',
         ]);
 
         if ($request->hasFile('featured_image')) {
@@ -100,6 +136,12 @@ class FleetsController extends Controller
             'capacity' => 'nullable|numeric',
             'gross_tonnage' => 'nullable|numeric',
             'net_tonnage' => 'nullable|numeric',
+            'light_ship' => 'nullable|numeric',
+            'summer_draft' => 'nullable|numeric',
+            'port_of_registry' => 'nullable|string|max:100',
+            'call_sign' => 'nullable|string|max:50',
+            'mmsi' => 'nullable|string|max:50',
+            'hull_no' => 'nullable|string|max:50',
             'flag' => 'nullable|string|max:100',
             'classification_society' => 'nullable|string|max:100',
             'loa' => 'nullable|numeric',
@@ -107,8 +149,9 @@ class FleetsController extends Controller
             'breadth' => 'nullable|numeric',
             'depth' => 'nullable|numeric',
             'speed' => 'nullable|numeric',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:200',
             'voyage_description' => 'nullable|string',
+            'particulars_data' => 'nullable|array',
         ]);
 
         if ($request->hasFile('featured_image')) {

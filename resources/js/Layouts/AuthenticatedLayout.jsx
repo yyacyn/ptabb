@@ -4,17 +4,16 @@ import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import { Toaster, toast } from 'sonner';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const authProp = usePage().props.auth;
-    const user = authProp?.user || { name: 'Admin', email: '' };
+    const pageProps = usePage().props;
+    const authProp = pageProps.auth;
+    const user = authProp?.user;
+    const flash = pageProps.flash || {};
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
-
-    // Redirect unauthenticated access (e.g., direct URL hit after logout)
     useEffect(() => {
-        if (!authProp?.user) {
+        if (!user) {
             window.location.href = route('login');
         }
     }, [authProp]);
@@ -30,45 +29,131 @@ export default function AuthenticatedLayout({ header, children }) {
         return () => window.removeEventListener('pageshow', handlePageShow);
     }, []);
 
+    // Global Sonner Toast listener for Laravel Inertia flash messages
+    useEffect(() => {
+        if (flash.success || flash.message) {
+            toast.success(flash.success || flash.message);
+        } else if (flash.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
+
+    const [showingNavigationDropdown, setShowingNavigationDropdown] =
+        useState(false);
+
+    if (!user) {
+        return null;
+    }
+
+    const userRole = user.role || 'super_admin';
+
+    const canAccess = (module) => {
+        if (userRole === 'super_admin') return true;
+        if (userRole === 'hr_admin') return ['dashboard', 'careers', 'notifications'].includes(module);
+        if (userRole === 'crew_admin') return ['dashboard', 'careers'].includes(module);
+        if (userRole === 'pr_admin') return ['dashboard', 'news', 'clients'].includes(module);
+        return false;
+    };
+
+    const getRoleBadge = (role) => {
+        switch (role) {
+            case 'super_admin':
+                return { label: 'Super Admin', bg: 'bg-[#141B2C]', text: 'text-white' };
+            case 'hr_admin':
+                return { label: 'HR Admin', bg: 'bg-emerald-700', text: 'text-white' };
+            case 'crew_admin':
+                return { label: 'Crew Admin', bg: 'bg-indigo-700', text: 'text-white' };
+            case 'pr_admin':
+                return { label: 'PR Admin', bg: 'bg-[#00629D]', text: 'text-white' };
+            default:
+                return { label: 'Admin', bg: 'bg-slate-700', text: 'text-white' };
+        }
+    };
+
+    const badge = getRoleBadge(userRole);
+
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 font-['Hanken_Grotesk']">
             <nav className="border-b border-gray-100 bg-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/">
+                                <Link href={route('dashboard')}>
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-6 sm:-my-px sm:ms-8 sm:flex">
-                                <NavLink href={route('dashboard')} active={route().current('dashboard')}>
+                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink
+                                    href={route('dashboard')}
+                                    active={route().current('dashboard')}
+                                >
                                     Dashboard
                                 </NavLink>
-                                <NavLink href={route('fleets.index')} active={route().current('fleets.*')}>
-                                    Fleets
-                                </NavLink>
-                                <NavLink href={route('careers.index')} active={route().current('careers.*')}>
-                                    Careers
-                                </NavLink>
-                                <NavLink href={route('news.index')} active={route().current('news.*')}>
-                                    News
-                                </NavLink>
-                                <NavLink href={route('clients.index')} active={route().current('clients.*')}>
-                                    Clients
-                                </NavLink>
-                                <NavLink href={route('notifications.index')} active={route().current('notifications.*')}>
-                                    Notifications
-                                </NavLink>
-                                <NavLink href={route('voyage-waypoints.index')} active={route().current('voyage-waypoints.*')}>
-                                    Waypoints
-                                </NavLink>
+
+                                {canAccess('fleets') && (
+                                    <NavLink
+                                        href={route('fleets.index')}
+                                        active={route().current('fleets.*')}
+                                    >
+                                        Fleets
+                                    </NavLink>
+                                )}
+
+                                {canAccess('news') && (
+                                    <NavLink
+                                        href={route('news.index')}
+                                        active={route().current('news.*')}
+                                    >
+                                        News & Articles
+                                    </NavLink>
+                                )}
+
+                                {canAccess('careers') && (
+                                    <NavLink
+                                        href={route('careers.index')}
+                                        active={route().current('careers.*')}
+                                    >
+                                        Careers
+                                    </NavLink>
+                                )}
+
+                                {canAccess('clients') && (
+                                    <NavLink
+                                        href={route('clients.index')}
+                                        active={route().current('clients.*')}
+                                    >
+                                        Client
+                                    </NavLink>
+                                )}
+
+                                {canAccess('notifications') && (
+                                    <NavLink
+                                        href={route('notifications.index')}
+                                        active={route().current('notifications.*')}
+                                    >
+                                        Pop-up Alerts
+                                    </NavLink>
+                                )}
+
+                                {canAccess('contacts') && (
+                                    <NavLink
+                                        href={route('contacts.index')}
+                                        active={route().current('contacts.*')}
+                                    >
+                                        Contact Messages
+                                    </NavLink>
+                                )}
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
+                        <div className="hidden sm:flex sm:items-center sm:ms-6">
+                            <div className="ms-3 relative flex items-center gap-3">
+                                <span className={`px-2.5 py-1 rounded-[4px] text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${badge.bg} ${badge.text}`}>
+                                    {badge.label}
+                                </span>
+
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <span className="inline-flex rounded-md">
@@ -96,11 +181,6 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content>
                                         <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
-                                            Profile
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
                                             as="button"
@@ -116,7 +196,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             <button
                                 onClick={() =>
                                     setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
+                                        (previousState) => !previousState
                                     )
                                 }
                                 className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
@@ -162,27 +242,66 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
+                        <ResponsiveNavLink
+                            href={route('dashboard')}
+                            active={route().current('dashboard')}
+                        >
                             Dashboard
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('fleets.index')} active={route().current('fleets.*')}>
-                            Fleets
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('careers.index')} active={route().current('careers.*')}>
-                            Careers
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('news.index')} active={route().current('news.*')}>
-                            News
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('clients.index')} active={route().current('clients.*')}>
-                            Clients
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('notifications.index')} active={route().current('notifications.*')}>
-                            Notifications
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('voyage-waypoints.index')} active={route().current('voyage-waypoints.*')}>
-                            Waypoints
-                        </ResponsiveNavLink>
+
+                        {canAccess('fleets') && (
+                            <ResponsiveNavLink
+                                href={route('fleets.index')}
+                                active={route().current('fleets.*')}
+                            >
+                                Fleets
+                            </ResponsiveNavLink>
+                        )}
+
+                        {canAccess('news') && (
+                            <ResponsiveNavLink
+                                href={route('news.index')}
+                                active={route().current('news.*')}
+                            >
+                                News
+                            </ResponsiveNavLink>
+                        )}
+
+                        {canAccess('careers') && (
+                            <ResponsiveNavLink
+                                href={route('careers.index')}
+                                active={route().current('careers.*')}
+                            >
+                                Vacancies
+                            </ResponsiveNavLink>
+                        )}
+
+                        {canAccess('clients') && (
+                            <ResponsiveNavLink
+                                href={route('clients.index')}
+                                active={route().current('clients.*')}
+                            >
+                                Client Partners
+                            </ResponsiveNavLink>
+                        )}
+
+                        {canAccess('notifications') && (
+                            <ResponsiveNavLink
+                                href={route('notifications.index')}
+                                active={route().current('notifications.*')}
+                            >
+                                Pop-up Alerts
+                            </ResponsiveNavLink>
+                        )}
+
+                        {canAccess('contacts') && (
+                            <ResponsiveNavLink
+                                href={route('contacts.index')}
+                                active={route().current('contacts.*')}
+                            >
+                                Contacts
+                            </ResponsiveNavLink>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
@@ -196,12 +315,9 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
                             <ResponsiveNavLink
-                                method="post"
                                 href={route('logout')}
+                                method="post"
                                 as="button"
                             >
                                 Log Out
@@ -220,6 +336,9 @@ export default function AuthenticatedLayout({ header, children }) {
             )}
 
             <main>{children}</main>
+
+            {/* Official Sonner Toast Container — Positioned Bottom-Right with Rich Colors */}
+            <Toaster position="bottom-right" richColors closeButton />
         </div>
     );
 }

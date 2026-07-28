@@ -20,9 +20,13 @@ class VoyageWaypointsController extends Controller
             return redirect()->route('login');
         }
 
+        $user = $request->user();
+        if ($user->role !== 'super_admin') {
+            abort(403, 'Only Super Admin can access Voyage Waypoints management.');
+        }
+
         return Inertia::render('Dashboard/VoyageWaypoints', [
             'voyage_waypoints' => $voyage_waypoints,
         ]);
     }
-
 }

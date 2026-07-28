@@ -83,8 +83,19 @@ export default function Index({
             count: 'Live AIS Feed',
             route: route('voyage-waypoints.index'),
             badge: 'Telemetry'
-        }
+        },
     ];
+    const userRole = authUser?.role || 'super_admin';
+
+    const canAccess = (id) => {
+        if (userRole === 'super_admin') return true;
+        if (userRole === 'hr_admin') return ['careers', 'notifications'].includes(id);
+        if (userRole === 'crew_admin') return ['careers'].includes(id);
+        if (userRole === 'pr_admin') return ['news', 'clients'].includes(id);
+        return false;
+    };
+
+    const visiblePages = managementPages.filter(page => canAccess(page.id));
 
     return (
         <AuthenticatedLayout
@@ -112,7 +123,7 @@ export default function Index({
             <Head title="Dashboard — PT. ABB" />
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
-                <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+                <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
                     
                     {/* Welcome Hero Banner */}
                     <div className="bg-[#141B2C] text-white rounded-[10px] p-6 sm:p-8 relative overflow-hidden shadow-lg border border-white/10">
@@ -143,7 +154,7 @@ export default function Index({
                             { label: "Pop-up Banners", value: `${notificationsCount}`, sub: "Active Alerts", icon: Bell, color: "text-amber-500" },
                             { label: "Client Partners", value: `${clientsCount}+`, sub: "Domestic & Global", icon: Building2, color: "text-emerald-500" }
                         ].map((stat, idx) => (
-                            <div key={idx} className="bg-white rounded-[8px] p-5 border border-[#E5E7EB] shadow-sm flex items-center justify-between">
+                            <div key={idx} className="bg-white rounded-[8px] p-5 border border-[#E5E7EB]  flex items-center justify-between">
                                 <div>
                                     <div className="font-['JetBrains_Mono'] text-xs text-[#404750] uppercase font-medium">{stat.label}</div>
                                     <div className="text-2xl font-bold font-['JetBrains_Mono'] text-[#141B2C] mt-1">{stat.value}</div>
@@ -170,16 +181,16 @@ export default function Index({
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                            {managementPages.map((page) => {
+                            {visiblePages.map((page) => {
                                 const IconComponent = page.icon;
                                 return (
                                     <div 
                                         key={page.id}
-                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 shadow-sm flex flex-col justify-between hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.15)] transition-all duration-200 group"
+                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-6  flex flex-col justify-between hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.15)] transition-all duration-200 group"
                                     >
                                         <div>
                                             <div className="flex items-center justify-between mb-4">
-                                                <div className="w-10 h-10 rounded-[8px] bg-gradient-to-r from-[#00629D] to-[#3F96DD] flex items-center justify-center text-white shadow-sm">
+                                                <div className="w-10 h-10 rounded-[8px] bg-gradient-to-r from-[#00629D] to-[#3F96DD] flex items-center justify-center text-white ">
                                                     <IconComponent className="w-5 h-5" />
                                                 </div>
                                                 <span className="font-['JetBrains_Mono'] text-[10px] font-bold uppercase tracking-wider bg-[#F5F5F5] text-[#00629D] border border-[#E5E7EB] px-2.5 py-1 rounded-[4px]">

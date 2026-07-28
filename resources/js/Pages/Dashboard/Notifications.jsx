@@ -79,7 +79,7 @@ export default function Notifications({ notifications = [] }) {
                     {/* Notifications List */}
                     <div className="space-y-4">
                         {(notifications || []).map((item) => (
-                            <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 shadow-sm flex items-center justify-between gap-4 hover:border-[#00629D] transition-all">
+                            <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5  flex items-center justify-between gap-4 hover:border-[#00629D] transition-all">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                         <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00629D] uppercase tracking-wider bg-[#F5F5F5] px-2 py-0.5 rounded border border-[#E5E7EB]">

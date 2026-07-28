@@ -10,14 +10,27 @@ class CareersController extends Controller
 {
     public function index(Request $request)
     {
-        $careers = Career::all();
-
         if ($request->wantsJson()) {
-            return response()->json($careers);
+            return response()->json(Career::all());
         }
 
         if (!auth()->check()) {
             return redirect()->route('login');
+        }
+
+        $user = $request->user();
+
+        // RBAC Enforcement (rule.md & BR-01)
+        if ($user->role === 'pr_admin') {
+            abort(403, 'PR Admin is not authorized to access Careers module.');
+        }
+
+        if ($user->role === 'hr_admin') {
+            $careers = Career::where('category', 'corporate')->get();
+        } elseif ($user->role === 'crew_admin') {
+            $careers = Career::where('category', 'crew')->get();
+        } else {
+            $careers = Career::all();
         }
 
         return Inertia::render('Dashboard/Careers', [
@@ -25,9 +38,14 @@ class CareersController extends Controller
         ]);
     }
 
-
     public function store(Request $request)
     {
+        $user = $request->user();
+
+        if ($user && $user->role === 'pr_admin') {
+            abort(403, 'PR Admin is not authorized to modify Careers.');
+        }
+
         $validated = $request->validate([
             'position' => 'required|string|max:255',
             'department' => 'nullable|string|max:100',

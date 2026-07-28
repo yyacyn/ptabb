@@ -20,6 +20,11 @@ class NotificationsController extends Controller
             return redirect()->route('login');
         }
 
+        $user = $request->user();
+        if (!in_array($user->role, ['super_admin', 'hr_admin'])) {
+            abort(403, 'Only Super Admin and HR Admin can access Notifications management.');
+        }
+
         return Inertia::render('Dashboard/Notifications', [
             'notifications' => $notifications,
         ]);

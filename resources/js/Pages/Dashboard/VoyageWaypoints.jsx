@@ -74,7 +74,7 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
                     
-                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-[8px] border border-[#E5E7EB]  overflow-hidden">
                         <table className="w-full text-left text-xs">
                             <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase">
                                 <tr>

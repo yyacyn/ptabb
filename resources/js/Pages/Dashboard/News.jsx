@@ -1,27 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import Modal from '@/Components/Modal';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { Newspaper, Plus, Search, Calendar, Edit2, Filter, ArrowUpDown, Eye } from 'lucide-react';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
 
 export default function News({ news = [] }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingArticle, setEditingArticle] = useState(null);
-
     const getNewsImage = (item) => {
         if (!item || !item.featured_image) return '/images/news/top.jpg';
         let img = item.featured_image;
         if (img.startsWith('http://') || img.startsWith('https://')) return img;
-        if (img.startsWith('/images/')) return img;
+        if (img.startsWith('/images/') || img.startsWith('/storage/')) return img;
         if (img.startsWith('assets/images/news/')) return `/${img.replace('assets/images/news/', 'images/news/')}`;
         if (img.startsWith('../assets/images/news/')) return `/${img.replace('../assets/images/news/', 'images/news/')}`;
-        if (img.startsWith('images/')) return `/${img}`;
+        if (img.startsWith('images/') || img.startsWith('storage/')) return `/${img}`;
         const filename = img.split('/').pop();
         return `/images/news/${filename}`;
     };
@@ -73,53 +67,6 @@ export default function News({ news = [] }) {
             return 0;
         });
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
-        title: '',
-        category: 'Company News',
-        published_at: new Date().toISOString().split('T')[0],
-        status: 'published',
-        featured_image: '',
-        content: '',
-    });
-
-    const openModal = (article = null) => {
-        setEditingArticle(article);
-        if (article) {
-            setData({
-                title: article.title || '',
-                category: article.category || 'Company News',
-                published_at: article.published_at || article.publish_date || new Date().toISOString().split('T')[0],
-                status: article.status || 'published',
-                featured_image: article.featured_image || '',
-                content: article.content || '',
-            });
-        } else {
-            reset();
-        }
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setEditingArticle(null);
-        reset();
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        closeModal();
-    };
-
-    const modules = {
-        toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            ['link', 'image'],
-            ['clean']
-        ],
-    };
-
     return (
         <AuthenticatedLayout
             header={
@@ -133,12 +80,12 @@ export default function News({ news = [] }) {
                         </h2>
                     </div>
 
-                    <button 
-                        onClick={() => openModal()}
+                    <Link 
+                        href={route('news.create')}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
                     >
                         <Plus className="w-4 h-4" /> Create Article
-                    </button>
+                    </Link>
                 </div>
             }
         >
@@ -148,7 +95,7 @@ export default function News({ news = [] }) {
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
                     
                     {/* Category Tabs, Search & Sort Control Bar */}
-                    <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] shadow-sm space-y-4">
+                    <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB]  space-y-4">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             
                             {/* Category Filter Pills */}
@@ -162,7 +109,7 @@ export default function News({ news = [] }) {
                                         onClick={() => setSelectedCategory(cat.value)}
                                         className={`px-3.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all cursor-pointer ${
                                             selectedCategory === cat.value
-                                                ? 'bg-[#141B2C] text-white shadow-sm'
+                                                ? 'bg-[#141B2C] text-white '
                                                 : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                         }`}
                                     >
@@ -189,7 +136,7 @@ export default function News({ news = [] }) {
                                     <select
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
-                                        className="border border-[#E5E7EB] rounded-[8px] text-xs py-1.5 px-2.5 focus:border-[#00629D] focus:ring-[#00629D] font-medium"
+                                        className="border border-[#E5E7EB] rounded-[8px] text-xs py-1.5 px-4.5 focus:border-[#00629D] focus:ring-[#00629D] font-medium"
                                     >
                                         <option value="newest">Sort: Newest First</option>
                                         <option value="oldest">Sort: Oldest First</option>
@@ -214,7 +161,7 @@ export default function News({ news = [] }) {
                             const categoryName = item.category?.name || item.category || 'Company News';
 
                             return (
-                                <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 shadow-sm flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all group">
+                                <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-4  flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all group">
                                     <div>
                                         {/* Featured Image Thumbnail */}
                                         <div className="h-44 w-full bg-[#141B2C] rounded-[6px] overflow-hidden relative mb-3.5 border border-[#E5E7EB]">
@@ -259,12 +206,12 @@ export default function News({ news = [] }) {
                                     </div>
 
                                     <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs font-semibold">
-                                        <button 
-                                            onClick={() => openModal(item)}
+                                        <Link 
+                                            href={route('news.edit', item.id)}
                                             className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
                                         >
                                             <Edit2 className="w-3.5 h-3.5" /> Edit Article
-                                        </button>
+                                        </Link>
 
                                         {item.author && (
                                             <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8]">
@@ -279,126 +226,6 @@ export default function News({ news = [] }) {
 
                 </div>
             </div>
-
-            {/* ReactQuill News Article Modal */}
-            <Modal show={isModalOpen} onClose={closeModal} maxWidth="2xl">
-                <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
-                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
-                        <div className="flex items-center gap-2">
-                            <Newspaper className="w-5 h-5 text-[#00629D]" />
-                            <h3 className="text-lg font-bold text-[#141B2C]">
-                                {editingArticle ? `Edit Article: ${editingArticle.title}` : 'Create New Press Release'}
-                            </h3>
-                        </div>
-                        <button onClick={closeModal} className="text-slate-400 hover:text-[#141B2C] text-xl">&times;</button>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Article Title *</label>
-                            <input
-                                type="text"
-                                value={data.title}
-                                onChange={(e) => setData('title', e.target.value)}
-                                placeholder="e.g. Annual Medical Check-Up 2026 at TZU CHI Hospital"
-                                required
-                                className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-[#141B2C] mb-1">Category</label>
-                                <select
-                                    value={data.category}
-                                    onChange={(e) => setData('category', e.target.value)}
-                                    className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
-                                >
-                                    <option value="Company News">Company News</option>
-                                    <option value="Office Events">Office Events</option>
-                                    <option value="CSR & Sustainability">CSR & Sustainability</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-[#141B2C] mb-1">Publish Date</label>
-                                <input
-                                    type="date"
-                                    value={data.published_at}
-                                    onChange={(e) => setData('published_at', e.target.value)}
-                                    className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-[#141B2C] mb-1">Status</label>
-                                <select
-                                    value={data.status}
-                                    onChange={(e) => setData('status', e.target.value)}
-                                    className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
-                                >
-                                    <option value="published">Published</option>
-                                    <option value="draft">Draft</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Featured Image Input */}
-                        <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Featured Image Filename / Path</label>
-                            <input
-                                type="text"
-                                value={data.featured_image}
-                                onChange={(e) => setData('featured_image', e.target.value)}
-                                placeholder="e.g. 1779185004_annual-medical-check-up-2026-a.jpg"
-                                className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
-                            />
-                            {data.featured_image && (
-                                <div className="mt-2">
-                                    <span className="text-[11px] font-bold text-[#141B2C] block mb-1">Image Preview:</span>
-                                    <img
-                                        src={getNewsImage({ featured_image: data.featured_image })}
-                                        alt="Preview"
-                                        className="h-28 w-auto rounded-[6px] border border-[#E5E7EB] object-cover"
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ReactQuill Rich Text Editor */}
-                        <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Article Body (Rich Text Editor) *</label>
-                            <div className="bg-white rounded-[6px] border border-[#E5E7EB] overflow-hidden">
-                                <ReactQuill
-                                    theme="snow"
-                                    value={data.content}
-                                    onChange={(val) => setData('content', val)}
-                                    modules={modules}
-                                    placeholder="Write your press release content here..."
-                                    className="h-48 mb-12 text-xs font-['Hanken_Grotesk']"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={closeModal}
-                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold rounded-[6px]"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="px-5 py-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold rounded-[6px] hover:shadow-md transition-all"
-                            >
-                                {editingArticle ? 'Update Article' : 'Publish Article'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </Modal>
         </AuthenticatedLayout>
     );
 }

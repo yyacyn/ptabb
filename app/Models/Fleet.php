@@ -31,12 +31,23 @@ class Fleet extends Model
         'classification_society',
         'gross_tonnage',
         'net_tonnage',
+        'light_ship',
+        'summer_draft',
+        'port_of_registry',
+        'call_sign',
+        'mmsi',
+        'hull_no',
         'vessel_type',
         'loa',
         'lbp',
         'breadth',
         'depth',
         'speed',
+        'particulars_data',
+    ];
+
+    protected $casts = [
+        'particulars_data' => 'array',
     ];
 
     public function category()

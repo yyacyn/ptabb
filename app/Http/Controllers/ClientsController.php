@@ -25,8 +25,101 @@ class ClientsController extends Controller
             return redirect()->route('login');
         }
 
+        $user = $request->user();
+        if (!in_array($user->role, ['super_admin', 'pr_admin'])) {
+            abort(403, 'Only Super Admin and PR Admin can access Clients management.');
+        }
+
         return Inertia::render('Dashboard/Clients', [
             'clients' => $clients,
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        $user = $request->user();
+        if ($user && !in_array($user->role, ['super_admin', 'pr_admin'])) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'nullable|string|max:50',
+            'type' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'logo' => 'nullable',
+        ]);
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('clients', 'public');
+            $validated['logo'] = '/storage/' . $path;
+        }
+
+        $client = Client::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Partner added successfully.',
+                'client' => $client,
+            ], 201);
+        }
+
+        return redirect()->route('clients.index')->with('success', 'Partner added successfully.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user && !in_array($user->role, ['super_admin', 'pr_admin'])) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $client = Client::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'nullable|string|max:50',
+            'type' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'logo' => 'nullable',
+        ]);
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('clients', 'public');
+            $validated['logo'] = '/storage/' . $path;
+        } else {
+            // Retain existing logo untouched when no new image file is uploaded
+            unset($validated['logo']);
+        }
+
+        $client->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Partner updated successfully.',
+                'client' => $client,
+            ]);
+        }
+
+        return redirect()->route('clients.index')->with('success', 'Partner updated successfully.');
+    }
+
+    public function destroy($id)
+    {
+        $user = auth()->user();
+        if ($user && !in_array($user->role, ['super_admin', 'pr_admin'])) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $client = Client::findOrFail($id);
+        $client->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'message' => 'Partner removed successfully.',
+            ]);
+        }
+
+        return redirect()->route('clients.index')->with('success', 'Partner removed successfully.');
     }
 }

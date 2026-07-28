@@ -1,0 +1,569 @@
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, usePage } from '@inertiajs/react';
+import { useState, useMemo } from 'react';
+import { Mail, Search, Filter, ArrowUpDown, Trash2, Eye, CheckCircle2, MessageSquare, Clock, User, Building2, Phone, Shield, X } from 'lucide-react';
+import axios from 'axios';
+
+export default function Contacts({ contacts = [] }) {
+    const pageProps = usePage().props;
+    const userRole = pageProps.auth?.user?.role || 'super_admin';
+
+    const [contactList, setContactList] = useState(contacts || []);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedDepartment, setSelectedDepartment] = useState('ALL');
+    const [selectedStatus, setSelectedStatus] = useState('ALL');
+    const [sortBy, setSortBy] = useState('newest');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    // Active Selected Message Modal State
+    const [selectedMessage, setSelectedMessage] = useState(null);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+    // Delete Confirmation Modal State
+    const [messageToDelete, setMessageToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // Department Badge Color Map
+    const getDepartmentBadge = (dept) => {
+        switch ((dept || '').toLowerCase()) {
+            case 'commercial':
+                return { label: 'Commercial & Charter', bg: 'bg-blue-50 text-[#00629D] border-blue-200' };
+            case 'operation':
+            case 'operations':
+                return { label: 'Operations', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
+            case 'hrd':
+                return { label: 'HRD / Careers', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+            default:
+                return { label: 'General Inquiry', bg: 'bg-slate-100 text-slate-700 border-slate-200' };
+        }
+    };
+
+    // Status Badge Color Map
+    const getStatusBadge = (status) => {
+        switch ((status || '').toLowerCase()) {
+            case 'new':
+            case 'pending':
+                return { label: 'New / Unread', bg: 'bg-blue-600 text-white' };
+            case 'read':
+                return { label: 'Read', bg: 'bg-slate-200 text-[#404750]' };
+            case 'replied':
+                return { label: 'Replied', bg: 'bg-emerald-600 text-white' };
+            default:
+                return { label: status || 'New', bg: 'bg-slate-200 text-slate-700' };
+        }
+    };
+
+    // Filter & Sort Messages
+    const filteredMessages = useMemo(() => {
+        let result = (contactList || []).filter(item => {
+            const name = item.name || '';
+            const email = item.email || '';
+            const company = item.company || '';
+            const subject = item.subject || '';
+            const message = item.message || '';
+            const dept = item.department || '';
+            const status = item.status || '';
+
+            const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                message.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesDept = selectedDepartment === 'ALL' || dept.toLowerCase() === selectedDepartment.toLowerCase();
+            const matchesStatus = selectedStatus === 'ALL' || status.toLowerCase() === selectedStatus.toLowerCase();
+
+            return matchesSearch && matchesDept && matchesStatus;
+        });
+
+        return result.sort((a, b) => {
+            const dateA = new Date(a.created_at || 0);
+            const dateB = new Date(b.created_at || 0);
+            const nameA = (a.name || '').toLowerCase();
+            const nameB = (b.name || '').toLowerCase();
+
+            if (sortBy === 'oldest') return dateA - dateB;
+            if (sortBy === 'name_asc') return nameA.localeCompare(nameB);
+            return dateB - dateA; // default newest
+        });
+    }, [contactList, searchTerm, selectedDepartment, selectedStatus, sortBy]);
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredMessages.length / itemsPerPage) || 1;
+    const paginatedMessages = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredMessages.slice(start, start + itemsPerPage);
+    }, [filteredMessages, currentPage, itemsPerPage]);
+
+    // Open Message Reader & Mark as Read
+    const handleOpenMessage = async (msg) => {
+        setSelectedMessage(msg);
+
+        // Auto mark as read if status is 'new'
+        if (msg.status === 'new' || msg.status === 'pending') {
+            try {
+                const res = await axios.put(route('contacts.update', msg.id), { status: 'read' });
+                if (res.data && res.data.data) {
+                    setContactList(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'read' } : m));
+                    setSelectedMessage(prev => prev ? { ...prev, status: 'read' } : null);
+                }
+            } catch (err) {
+                console.error('Failed to update message status:', err);
+            }
+        }
+    };
+
+    // Update Message Status (e.g. Replied)
+    const handleStatusUpdate = async (newStatus) => {
+        if (!selectedMessage) return;
+
+        setIsUpdatingStatus(true);
+        try {
+            const res = await axios.put(route('contacts.update', selectedMessage.id), { status: newStatus });
+            if (res.data && res.data.data) {
+                setContactList(prev => prev.map(m => m.id === selectedMessage.id ? { ...m, status: newStatus } : m));
+                setSelectedMessage(prev => prev ? { ...prev, status: newStatus } : null);
+            }
+        } catch (err) {
+            console.error('Failed to update message status:', err);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    // Delete Message Action
+    const handleDeleteConfirm = async () => {
+        if (!messageToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await axios.delete(route('contacts.destroy', messageToDelete.id));
+            setContactList(prev => prev.filter(m => m.id !== messageToDelete.id));
+            if (selectedMessage && selectedMessage.id === messageToDelete.id) {
+                setSelectedMessage(null);
+            }
+            setMessageToDelete(null);
+        } catch (err) {
+            console.error('Failed to delete message:', err);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    return (
+        <AuthenticatedLayout
+            header={
+                <div className="flex items-center justify-between font-['Hanken_Grotesk']">
+                    <div>
+                        <div className="font-['JetBrains_Mono'] text-[11px] font-bold text-[#00629D] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <Mail className="w-3.5 h-3.5" /> INBOX & CONTACT MESSAGES
+                        </div>
+                        <h2 className="text-2xl font-bold text-[#141B2C] tracking-tight flex items-center gap-2">
+                            Contact Form Submissions
+                        </h2>
+                    </div>
+
+                    <div className="font-['JetBrains_Mono'] text-xs text-[#404750] bg-white border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Total Messages: <span className="font-bold text-[#141B2C]">{contactList.length}</span>
+                    </div>
+                </div>
+            }
+        >
+            <Head title="Contact Messages — PT. ABB" />
+
+            <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
+                <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
+
+                    {/* Toolbar Filters & Search */}
+                    <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-4">
+
+                        {/* Search Input */}
+                        <div className="relative flex-1 max-w-md">
+                            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                                placeholder="Search by name, email, company, or subject..."
+                                className="w-full pl-9 pr-4 py-2 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
+                            />
+                        </div>
+
+                        {/* Dropdown Filters */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-1.5 text-xs text-[#404750]">
+                                <Filter className="w-3.5 h-3.5 text-[#00629D]" />
+                                <span className="font-bold">Filter:</span>
+                            </div>
+
+                            {/* Department Filter */}
+                            <select
+                                value={selectedDepartment}
+                                onChange={(e) => { setSelectedDepartment(e.target.value); setCurrentPage(1); }}
+                                className="border border-[#E5E7EB] rounded-[8px] text-xs py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
+                            >
+                                <option value="ALL">All Departments</option>
+                                <option value="commercial">Commercial / Charter</option>
+                                <option value="operation">Operations</option>
+                                {['super_admin', 'hr_admin'].includes(userRole) && (
+                                    <option value="hrd">HRD / Careers</option>
+                                )}
+                                <option value="general">General Inquiry</option>
+                            </select>
+
+                            {/* Status Filter */}
+                            <select
+                                value={selectedStatus}
+                                onChange={(e) => { setSelectedStatus(e.target.value); setCurrentPage(1); }}
+                                className="border border-[#E5E7EB] rounded-[8px] text-xs py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
+                            >
+                                <option value="ALL">All Statuses</option>
+                                <option value="new">New (Unread)</option>
+                                <option value="read">Read</option>
+                                <option value="replied">Replied</option>
+                            </select>
+
+                            {/* Sort Selector */}
+                            <div className="flex items-center gap-1 border-l border-[#E5E7EB] pl-3">
+                                <ArrowUpDown className="w-3.5 h-3.5 text-[#00629D]" />
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="border border-[#E5E7EB] rounded-[8px] text-xs py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
+                                >
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="name_asc">Sender Name (A–Z)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* Contact Messages Table */}
+                    <div className="bg-white rounded-[10px] border border-[#E5E7EB]  overflow-hidden">
+                        {paginatedMessages.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full table-fixed text-left text-xs border-collapse">
+                                    <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase tracking-wider">
+                                        <tr>
+                                            <th className="p-4 w-[28%]">Sender & Company</th>
+                                            <th className="p-4 w-[32%]">Subject</th>
+                                            <th className="p-4 w-[16%]">Department</th>
+                                            <th className="p-4 w-[12%]">Date Sent</th>
+                                            <th className="p-4 w-[8%]">Status</th>
+                                            <th className="p-4 w-[4%] text-right"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[#E5E7EB] text-[#141B2C]">
+                                        {paginatedMessages.map((msg) => {
+                                            const deptBadge = getDepartmentBadge(msg.department);
+                                            const statusBadge = getStatusBadge(msg.status);
+                                            const isUnread = msg.status === 'new' || msg.status === 'pending';
+
+                                            return (
+                                                <tr
+                                                    key={msg.id}
+                                                    onClick={() => handleOpenMessage(msg)}
+                                                    className={`hover:bg-blue-50/50 transition-colors cursor-pointer ${isUnread ? 'font-semibold bg-blue-50/20' : ''
+                                                        }`}
+                                                >
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            {isUnread && (
+                                                                <span className="w-2 h-2 rounded-full bg-[#00629D] shrink-0"></span>
+                                                            )}
+                                                            <div className="min-w-0">
+                                                                <div className="font-bold text-[#141B2C] truncate">
+                                                                    {msg.name}
+                                                                </div>
+                                                                <div className="text-[11px] text-[#8AAFC8] font-['JetBrains_Mono'] truncate max-w-[200px]">
+                                                                    {msg.email} {msg.company ? `• ${msg.company}` : ''}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td style={{ maxWidth: '240px', overflow: 'hidden' }} className="p-4">
+                                                        <div className="w-full truncate whitespace-nowrap text-[#141B2C] font-medium" title={msg.subject || 'No Subject'}>
+                                                            {msg.subject || 'No Subject'}
+                                                        </div>
+                                                        <div className="w-full truncate whitespace-nowrap text-[11px] text-[#404750] font-normal" title={msg.message}>
+                                                            {msg.message}
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="p-4">
+                                                        <span className={`inline-block px-2.5 py-1 rounded-[4px] text-[10px] font-['JetBrains_Mono'] font-bold border ${deptBadge.bg}`}>
+                                                            {deptBadge.label}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="p-4 font-['JetBrains_Mono'] text-[11px] text-[#404750] whitespace-nowrap">
+                                                        {msg.created_at ? new Date(msg.created_at).toLocaleDateString('en-GB', {
+                                                            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                        }) : '-'}
+                                                    </td>
+
+                                                    <td className="p-4">
+                                                        <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${statusBadge.bg}`}>
+                                                            {statusBadge.label}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleOpenMessage(msg)}
+                                                                className="p-1.5 text-[#00629D] hover:bg-blue-50 rounded-[6px] transition-colors"
+                                                                title="Read Message"
+                                                            >
+                                                                <Eye className="w-4 h-4" />
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setMessageToDelete(msg)}
+                                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-[6px] transition-colors"
+                                                                title="Delete Message"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            /* Empty State */
+                            <div className="p-12 text-center space-y-3">
+                                <Mail className="w-12 h-12 text-slate-300 mx-auto" />
+                                <h3 className="text-base font-bold text-[#141B2C]">No Contact Messages</h3>
+                                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                                    No contact submissions match your active filter criteria.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                        <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4 font-['Hanken_Grotesk']">
+                            <div className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
+                                Showing <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                                <span className="font-bold text-[#141B2C]">{Math.min(currentPage * itemsPerPage, filteredMessages.length)}</span> of{' '}
+                                <span className="font-bold text-[#141B2C]">{filteredMessages.length}</span> messages
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${currentPage === page
+                                                ? 'bg-[#00629D] text-white'
+                                                : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D]'
+                                            }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            </div>
+
+            {/* MESSAGE DETAIL READER MODAL */}
+            {selectedMessage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-[1000px] p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+
+                        {/* Modal Header */}
+                        <div className="flex items-start justify-between border-b border-[#E5E7EB] pb-3 gap-4">
+                            <div className="min-w-0 flex-1">
+                                <div className="font-['JetBrains_Mono'] text-[10px] text-[#00629D] font-bold uppercase tracking-wider mb-0.5">
+                                    CONTACT MESSAGE READER
+                                </div>
+                                <h3 className="text-base font-bold text-[#141B2C] truncate" title={selectedMessage.subject || 'No Subject Line'}>
+                                    {selectedMessage.subject || 'No Subject Line'}
+                                </h3>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setSelectedMessage(null)}
+                                className="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer shrink-0"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* 30 / 70 Side-by-Side Flex Layout */}
+                        <div className="flex gap-4 items-start w-full">
+
+                            {/* LEFT SIDEBAR (30% Width) — Sender Info & Actions */}
+                            <div style={{ width: '30%', flexShrink: 0 }} className="space-y-3 bg-[#F5F5F5] rounded-[10px] p-3 border border-[#E5E7EB]">
+
+                                {/* Badges */}
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase block">
+                                        Status & Category
+                                    </span>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${getStatusBadge(selectedMessage.status).bg}`}>
+                                            {getStatusBadge(selectedMessage.status).label}
+                                        </span>
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold border ${getDepartmentBadge(selectedMessage.department).bg}`}>
+                                            {getDepartmentBadge(selectedMessage.department).label}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Sender Details */}
+                                <div className="space-y-2 pt-2 border-t border-[#E5E7EB] text-xs">
+                                    <div>
+                                        <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Sender Name</span>
+                                        <span className="font-bold text-[#141B2C] flex items-center gap-1.5 mt-0.5">
+                                            <User className="w-3.5 h-3.5 text-[#00629D] shrink-0" />
+                                            {selectedMessage.name}
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Email</span>
+                                        <a href={`mailto:${selectedMessage.email}`} className="text-[#00629D] hover:underline font-['JetBrains_Mono'] break-all block mt-0.5">
+                                            {selectedMessage.email}
+                                        </a>
+                                    </div>
+
+                                    {selectedMessage.company && (
+                                        <div>
+                                            <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Company</span>
+                                            <span className="font-semibold text-[#141B2C] flex items-center gap-1.5 mt-0.5">
+                                                <Building2 className="w-3.5 h-3.5 text-[#00629D] shrink-0" />
+                                                {selectedMessage.company}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {selectedMessage.phone && (
+                                        <div>
+                                            <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Phone</span>
+                                            <a href={`tel:${selectedMessage.phone}`} className="text-[#00629D] hover:underline font-['JetBrains_Mono'] block mt-0.5">
+                                                {selectedMessage.phone}
+                                            </a>
+                                        </div>
+                                    )}
+
+                                    <div>
+                                        <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Date Received</span>
+                                        <span className="font-['JetBrains_Mono'] text-[10px] text-[#404750] block mt-0.5">
+                                            {new Date(selectedMessage.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
+
+                                    {selectedMessage.ip_address && (
+                                        <div>
+                                            <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">IP Address</span>
+                                            <span className="font-['JetBrains_Mono'] text-[10px] text-[#404750] block mt-0.5">
+                                                {selectedMessage.ip_address}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="pt-2 border-t border-[#E5E7EB] space-y-1.5">
+                                    <a
+                                        href={`mailto:${selectedMessage.email}?subject=RE: ${encodeURIComponent(selectedMessage.subject || 'Inquiry')}`}
+                                        className="w-full bg-[#00629D] hover:bg-[#3F96DD] text-white text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
+                                    >
+                                        <MessageSquare className="w-3.5 h-3.5" /> Reply via Email
+                                    </a>
+
+                                    {selectedMessage.status !== 'replied' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleStatusUpdate('replied')}
+                                            disabled={isUpdatingStatus}
+                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
+                                        >
+                                            <CheckCircle2 className="w-3.5 h-3.5" /> Mark Replied
+                                        </button>
+                                    )}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setMessageToDelete(selectedMessage)}
+                                        className="w-full border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" /> Delete Message
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            {/* RIGHT MAIN PANEL (70% Width) — Message Body Only */}
+                            <div style={{ width: '70%', flexGrow: 1, minWidth: 0 }} className="space-y-2">
+                                <label className="text-xs font-bold text-[#141B2C] uppercase tracking-wider font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                    <MessageSquare className="w-3.5 h-3.5 text-[#00629D]" />
+                                    Message Body
+                                </label>
+
+                                <div className="bg-white border border-[#E5E7EB] rounded-[10px] p-4 text-xs leading-relaxed text-[#141B2C] whitespace-pre-wrap font-normal min-h-[240px] max-h-[380px] overflow-y-auto ">
+                                    {selectedMessage.message}
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+            {/* DELETE CONFIRMATION MODAL */}
+            {messageToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center">
+                        <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+                            <Trash2 className="w-6 h-6" />
+                        </div>
+
+                        <h3 className="text-lg font-bold text-[#141B2C]">Delete Message?</h3>
+                        <p className="text-xs text-[#404750] leading-relaxed">
+                            Are you sure you want to delete this message from <span className="font-bold">{messageToDelete.name}</span>? This action cannot be undone.
+                        </p>
+
+                        <div className="pt-2 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setMessageToDelete(null)}
+                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold px-4 py-2 rounded-[6px] transition-all cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDeleteConfirm}
+                                disabled={isDeleting}
+                                className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-5 py-2 rounded-[6px] transition-all cursor-pointer "
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+        </AuthenticatedLayout>
+    );
+}

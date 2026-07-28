@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -28,5 +27,36 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isHrAdmin(): bool
+    {
+        return $this->role === 'hr_admin';
+    }
+
+    public function isCrewAdmin(): bool
+    {
+        return $this->role === 'crew_admin';
+    }
+
+    public function isPrAdmin(): bool
+    {
+        return $this->role === 'pr_admin';
+    }
+
+    public function canAccessModule(string $module): bool
+    {
+        return match ($this->role) {
+            'super_admin' => true,
+            'hr_admin' => in_array($module, ['dashboard', 'careers', 'notifications']),
+            'crew_admin' => in_array($module, ['dashboard', 'careers']),
+            'pr_admin' => in_array($module, ['dashboard', 'news', 'clients']),
+            default => false,
+        };
     }
 }
