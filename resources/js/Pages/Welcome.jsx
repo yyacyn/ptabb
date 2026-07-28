@@ -608,7 +608,8 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                     {/* Fleet Tab Selector */}
                     <div className="flex items-center gap-2 bg-[#F5F5F5] p-1.5 rounded-[6px] self-start md:self-auto">
                         {fleetVessels.map((vessel, idx) => (
-                            <motion.button
+                            <button
+                                type="button"
                                 key={idx}
                                 onClick={() => setActiveFleetTab(idx)}
                                 whileHover={{ scale: 1.04 }}
@@ -619,7 +620,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                                     }`}
                             >
                                 {idx + 1}. {vessel.name.split(' ')[0]}
-                            </motion.button>
+                            </button>
                         ))}
                     </div>
                 </div>

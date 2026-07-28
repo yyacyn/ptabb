@@ -50,6 +50,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
             <div className="fixed bottom-6 right-6 z-50">
                 {!chatOpen ? (
                     <button
+                        type="button"
                         onClick={() => setChatOpen(true)}
                         className="w-14 h-14 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white rounded-full flex items-center justify-center shadow-lg hover:opacity-95 transition-opacity"
                         title="Chat with Us"
@@ -68,7 +69,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                                     <div className="text-[11px] font-['JetBrains_Mono'] text-[#8AAFC8]">PT. PABB Live Support</div>
                                 </div>
                             </div>
-                            <button onClick={() => setChatOpen(false)} className="text-white/80 hover:text-white text-xl leading-none">&times;</button>
+                            <button type="button" onClick={() => setChatOpen(false)} className="text-white/80 hover:text-white text-xl leading-none">&times;</button>
                         </div>
 
                         <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#F5F5F5] text-[13px]">

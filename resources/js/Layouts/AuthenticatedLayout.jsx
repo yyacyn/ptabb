@@ -49,7 +49,7 @@ export default function AuthenticatedLayout({ header, children }) {
         } else if (flash.error) {
             toast.error(flash.error);
         }
-    }, [flash]);
+    }, [flash.success, flash.message, flash.error]);
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -107,7 +107,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     {/* Sidebar Brand Header */}
                     <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
                         <Link href={route('dashboard')} className="flex items-center gap-3 group">
-                            <div className="p-1.5 bg-white/10 rounded-[6px] group-hover:bg-white/20 transition-all">
+                            <div className="p-1.5 bg-white/10 rounded-[6px] group-hover:bg-white/20 transition-colors">
                                 <ApplicationLogo className="h-7 w-auto fill-current text-white" />
                             </div>
                             <div>
@@ -135,7 +135,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`flex items-center justify-between px-3 py-2.5 rounded-[8px] text-xs font-semibold transition-all group ${
+                                    className={`flex items-center justify-between px-3 py-2.5 rounded-[8px] text-xs font-semibold transition-colors group ${
                                         isActive
                                             ? 'bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white shadow-md font-bold'
                                             : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
@@ -193,6 +193,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 </Link>
 
                 <button
+                    type="button"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     className="p-1.5 text-slate-300 hover:text-white rounded-[6px] hover:bg-slate-800 cursor-pointer"
                 >
@@ -213,7 +214,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     <ApplicationLogo className="h-6 w-auto fill-current text-white" />
                                     <span className="font-bold text-sm">PT. ABB Dashboard</span>
                                 </div>
-                                <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
+                                <button type="button" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>

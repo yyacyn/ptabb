@@ -161,7 +161,7 @@ export default function Login({ status, canResetPassword }) {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="group w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white rounded-[8px] px-6 py-3 font-['Hanken_Grotesk'] font-semibold text-sm transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] disabled:opacity-50 cursor-pointer mt-2"
+                            className="group w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white rounded-[8px] px-6 py-3 font-['Hanken_Grotesk'] font-semibold text-sm transition-transform duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] disabled:opacity-50 cursor-pointer mt-2"
                         >
                             {processing ? 'Authenticating...' : 'Sign in to Dashboard'}
                             <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1" />

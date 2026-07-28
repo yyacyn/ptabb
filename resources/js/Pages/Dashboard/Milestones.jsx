@@ -97,7 +97,10 @@ export default function Milestones({ milestones = [] }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingMilestone) {
-            post(route('milestones.update', editingMilestone.id), {
+            router.post(route('milestones.update', editingMilestone.id), {
+                ...data,
+                _method: 'put',
+            }, {
                 onSuccess: () => closeModal(),
             });
         } else {
@@ -128,6 +131,7 @@ export default function Milestones({ milestones = [] }) {
                     </div>
 
                     <button 
+                        type="button"
                         onClick={() => openModal()}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
                     >
@@ -234,12 +238,14 @@ export default function Milestones({ milestones = [] }) {
                                     {/* Action Bar */}
                                     <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between text-xs font-semibold">
                                         <button 
+                                            type="button"
                                             onClick={() => openModal(item)}
                                             className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
                                         >
                                             <Edit2 className="w-3.5 h-3.5" /> Edit
                                         </button>
                                         <button 
+                                            type="button"
                                             onClick={() => setDeletingMilestone(item)}
                                             className="inline-flex items-center gap-1 text-rose-600 hover:underline cursor-pointer"
                                         >
@@ -265,6 +271,7 @@ export default function Milestones({ milestones = [] }) {
 
                             <div className="flex items-center gap-1">
                                 <button
+                                    type="button"
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
                                     className="px-3 py-1.5 rounded-[4px] border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C] disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
@@ -274,6 +281,7 @@ export default function Milestones({ milestones = [] }) {
 
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                     <button
+                                        type="button"
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
                                         className={`px-3 py-1.5 rounded-[4px] font-semibold cursor-pointer ${
@@ -287,6 +295,7 @@ export default function Milestones({ milestones = [] }) {
                                 ))}
 
                                 <button
+                                    type="button"
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                     disabled={currentPage === totalPages}
                                     className="px-3 py-1.5 rounded-[4px] border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C] disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
@@ -310,7 +319,7 @@ export default function Milestones({ milestones = [] }) {
                                 {editingMilestone ? `Edit Milestone: ${editingMilestone.year}` : 'Add Company Milestone'}
                             </h3>
                         </div>
-                        <button onClick={closeModal} className="text-slate-400 hover:text-[#141B2C] text-xl cursor-pointer">&times;</button>
+                        <button type="button" onClick={closeModal} className="text-slate-400 hover:text-[#141B2C] text-xl cursor-pointer">&times;</button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">

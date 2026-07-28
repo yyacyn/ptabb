@@ -1,37 +1,23 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ClientsController;
+use App\Http\Controllers\AisIngestController;
 use App\Http\Controllers\CareersController;
-use App\Http\Controllers\NewsController;
-use App\Http\Controllers\NewsCatController;
+use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ContactsController;
-use App\Http\Controllers\FleetsController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FleetCatController;
-use App\Http\Controllers\ContactInfosController;
-use App\Http\Controllers\VoyageWaypointsController;
+use App\Http\Controllers\FleetsController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MilestonesController;
+use App\Http\Controllers\NewsCatController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NotificationsController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VoyageWaypointsController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Models\Client;
 
 // Public Visitor & API Routes (Postman & Guest Accessible)
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'clients' => Client::all(),
-        'fleets' => \App\Models\Fleet::all(),
-        'news' => \App\Models\News::all(),
-        'notifications' => \App\Models\Notification::where('status', 'active')->get(),
-        'careers' => \App\Models\Career::where('status', 'open')->get(),
-    ]);
-});
-
-use App\Http\Controllers\MilestonesController;
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Public GET & POST Endpoints (Support JSON responses for Postman & API testing)
 Route::get('/fleets', [FleetsController::class, 'index'])->name('public.fleets');
@@ -40,7 +26,6 @@ Route::get('/careers', [CareersController::class, 'index'])->name('public.career
 Route::get('/news', [NewsController::class, 'index'])->name('public.news');
 Route::get('/notifications', [NotificationsController::class, 'index'])->name('public.notifications');
 Route::get('/news-category', [NewsCatController::class, 'index'])->name('public.news-category');
-Route::get('/contact-infos', [ContactInfosController::class, 'index'])->name('public.contact-infos');
 Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('public.voyage-waypoints');
 Route::get('/milestones', [MilestonesController::class, 'index'])->name('public.milestones');
 
@@ -48,20 +33,12 @@ Route::get('/milestones', [MilestonesController::class, 'index'])->name('public.
 Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.store');
 
 // AISStream.io Telemetry Ingestion Endpoint
-Route::post('/api/ais/ingest', [\App\Http\Controllers\AisIngestController::class, 'ingest'])->name('ais.ingest');
+Route::post('/api/ais/ingest', [AisIngestController::class, 'ingest'])->name('ais.ingest');
 
 // Protected Admin Dashboard Management Routes
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
     // Dashboard Overview
-    Route::get('/', function () {
-        return Inertia::render('Dashboard/Index', [
-            'fleetsCount' => \App\Models\Fleet::count(),
-            'newsCount' => \App\Models\News::count(),
-            'clientsCount' => \App\Models\Client::count(),
-            'careersCount' => \App\Models\Career::count(),
-            'notificationsCount' => \App\Models\Notification::count(),
-        ]);
-    })->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Fleets Management
     Route::get('/fleets', [FleetsController::class, 'index'])->name('fleets.index');
@@ -96,7 +73,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     // Milestones Management
     Route::get('/milestones', [MilestonesController::class, 'index'])->name('milestones.index');
     Route::post('/milestones', [MilestonesController::class, 'store'])->name('milestones.store');
-    Route::post('/milestones/{id}', [MilestonesController::class, 'update'])->name('milestones.update');
+    Route::put('/milestones/{id}', [MilestonesController::class, 'update'])->name('milestones.update');
     Route::delete('/milestones/{id}', [MilestonesController::class, 'destroy'])->name('milestones.destroy');
 
     // Notifications Management

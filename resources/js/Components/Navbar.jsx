@@ -109,6 +109,7 @@ export default function Navbar({ onScrollToSection }) {
                     </Link>
 
                     <button
+                        type="button"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="h-[42px] w-[42px] bg-white rounded-[8px] border border-[#E5E7EB] flex items-center justify-center text-[#141B2C] shrink-0"
                         aria-label="Toggle navigation menu"

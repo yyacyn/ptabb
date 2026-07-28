@@ -217,7 +217,7 @@ function GlobalFleetMapViewer({ waypoints = [], onSelectVessel }) {
                 markersRef.current.set(vessel.id, newMarker);
             }
         });
-    }, [waypoints]);
+    }, [waypoints, onSelectVessel]);
 
     return (
         <div className="bg-white p-4 rounded-[8px] border border-[#E5E7EB] shadow-sm">

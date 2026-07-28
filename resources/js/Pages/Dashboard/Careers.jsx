@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
 import { Head, useForm, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Briefcase, Anchor, Plus, Search, Edit2, Clock, Trash2, AlertTriangle } from 'lucide-react';
+import { Briefcase, Anchor, Plus, Search, Edit2, Clock, Trash2, AlertTriangle, ArrowUpDown } from 'lucide-react';
 
 export default function Careers({ careers = [] }) {
     const authUser = usePage().props.auth.user;
@@ -11,6 +11,7 @@ export default function Careers({ careers = [] }) {
     const defaultTab = userRole === 'crew_admin' ? 'crew' : (userRole === 'hr_admin' ? 'corporate' : 'all');
     const [activeTab, setActiveTab] = useState(defaultTab);
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('newest');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCareer, setEditingCareer] = useState(null);
     const [deletingCareer, setDeletingCareer] = useState(null);
@@ -26,6 +27,11 @@ export default function Careers({ careers = [] }) {
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleSortChange = (e) => {
+        setSortBy(e.target.value);
         setCurrentPage(1);
     };
 
@@ -48,8 +54,29 @@ export default function Careers({ careers = [] }) {
         return matchesCategory && matchesSearch;
     });
 
-    const totalPages = Math.max(1, Math.ceil(filteredCareers.length / itemsPerPage));
-    const paginatedCareers = filteredCareers.slice(
+    const sortedCareers = [...filteredCareers].sort((a, b) => {
+        if (sortBy === 'oldest') {
+            return (a.id || 0) - (b.id || 0);
+        }
+        if (sortBy === 'title_asc') {
+            return (a.position || '').localeCompare(b.position || '');
+        }
+        if (sortBy === 'deadline_asc') {
+            if (!a.application_deadline) return 1;
+            if (!b.application_deadline) return -1;
+            return new Date(a.application_deadline) - new Date(b.application_deadline);
+        }
+        if (sortBy === 'status_open') {
+            const isClosedA = a.status === 'closed' || a.status === 'expired' || isPastDeadline(a.application_deadline);
+            const isClosedB = b.status === 'closed' || b.status === 'expired' || isPastDeadline(b.application_deadline);
+            if (isClosedA === isClosedB) return (b.id || 0) - (a.id || 0);
+            return isClosedA ? 1 : -1;
+        }
+        return (b.id || 0) - (a.id || 0);
+    });
+
+    const totalPages = Math.max(1, Math.ceil(sortedCareers.length / itemsPerPage));
+    const paginatedCareers = sortedCareers.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
@@ -186,15 +213,33 @@ export default function Careers({ careers = [] }) {
                             )}
                         </div>
 
-                        <div className="relative w-full sm:w-64">
-                            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={handleSearchChange}
-                                placeholder="Search by position or dept..."
-                                className="w-full pl-9 pr-4 py-1.5 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
-                            />
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                            <div className="flex items-center gap-2">
+                                <ArrowUpDown className="w-3.5 h-3.5 text-[#00629D]" />
+                                <span className="text-xs text-[#8AAFC8] font-['JetBrains_Mono']">Sort:</span>
+                                <select
+                                    value={sortBy}
+                                    onChange={handleSortChange}
+                                    className="border border-[#E5E7EB] rounded-[6px] text-xs py-1.5 px-2.5 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white font-semibold cursor-pointer"
+                                >
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="title_asc">Position A → Z</option>
+                                    <option value="deadline_asc">Nearest Deadline</option>
+                                    <option value="status_open">Open Vacancies First</option>
+                                </select>
+                            </div>
+
+                            <div className="relative w-full sm:w-64">
+                                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={handleSearchChange}
+                                    placeholder="Search by position or dept..."
+                                    className="w-full pl-9 pr-4 py-1.5 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -214,8 +259,8 @@ export default function Careers({ careers = [] }) {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {paginatedCareers.map((job) => {
                                 const isCrew = (job.category || '').toLowerCase() === 'crew' || (job.category || '').toLowerCase().includes('deck');
-                                const expired = job.status === 'expired' || isPastDeadline(job.application_deadline);
-                                const displayStatus = expired ? 'expired' : (job.status || 'open');
+                                const expired = job.status === 'expired' || job.status === 'closed' || isPastDeadline(job.application_deadline);
+                                const displayStatus = expired ? (job.status === 'closed' ? 'closed' : 'expired') : (job.status || 'open');
 
                                 return (
                                     <div 
@@ -235,7 +280,7 @@ export default function Careers({ careers = [] }) {
                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${
                                                     displayStatus === 'open' 
                                                         ? 'bg-emerald-100 text-emerald-800' 
-                                                        : displayStatus === 'expired'
+                                                        : displayStatus === 'expired' || displayStatus === 'closed'
                                                             ? 'bg-rose-100 text-rose-800 border border-rose-200' 
                                                             : 'bg-slate-100 text-slate-800'
                                                 }`}>
@@ -268,14 +313,13 @@ export default function Careers({ careers = [] }) {
                                                 </div>
                                                 <div className="flex justify-between items-center h-5">
                                                     <span className="text-[#8AAFC8]">Deadline:</span>
-                                                    {job.application_deadline ? (
-                                                        <span className={`font-bold flex items-center gap-1 ${
-                                                            isPastDeadline(job.application_deadline) ? 'text-rose-600' : 'text-[#00629D]'
-                                                        }`}>
+                                                    {isPastDeadline(job.application_deadline) || job.status === 'closed' || job.status === 'expired' ? (
+                                                        <span className="font-bold flex items-center gap-1 text-rose-600">
+                                                            <Clock className="w-3 h-3" /> Closed
+                                                        </span>
+                                                    ) : job.application_deadline ? (
+                                                        <span className="font-bold flex items-center gap-1 text-[#00629D]">
                                                             <Clock className="w-3 h-3" /> {job.application_deadline}
-                                                            {isPastDeadline(job.application_deadline) && (
-                                                                <span className="text-[10px] text-rose-600 font-bold">(Passed)</span>
-                                                            )}
                                                         </span>
                                                     ) : (
                                                         <span className="text-[#8AAFC8] font-medium">&mdash;</span>
