@@ -1,0 +1,1 @@
+import e from"./News-CN2AOa-R.js";export{e as default};
