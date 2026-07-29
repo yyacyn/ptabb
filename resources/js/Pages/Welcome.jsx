@@ -380,7 +380,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <h2 className="font-['Hanken_Grotesk'] font-medium text-[32px] sm:text-[44px] lg:text-[50px] leading-[1.12] text-[#141B2C] max-w-[920px]">
                         Connecting Industrial Supply Chains Across Regional and International Waters
                     </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[15px] sm:text-[16px] text-[#404750] max-w-[850px] leading-relaxed mt-1">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[850px] leading-relaxed mt-1">
                         High-capacity vessel solutions custom-engineered for uninterrupted transport of bulk cement, industrial raw materials, and heavy logistics across both domestic waterways and international maritime corridors.
                     </p>
                 </div>
@@ -471,7 +471,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                         <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[44px] leading-[1.1] text-white tracking-tight">
                             Built on Ocean-Scale Operations
                         </h2>
-                        <p className="font-['Hanken_Grotesk'] font-normal text-[16px] sm:text-[17px] text-[#8AAFC8] leading-relaxed max-w-[580px]">
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#8AAFC8] leading-relaxed max-w-[580px]">
                             Decades of maritime experience reflected in continuous fleet expansion, high-tonnage cargo delivery, and industry-leading voyage reliability.
                         </p>
                     </div>
@@ -547,7 +547,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                         <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight">
                             Strategic Maritime Reach Across Key Global Trade Corridors
                         </h2>
-                        <p className="font-['Hanken_Grotesk'] font-normal text-[16px] sm:text-[17px] text-[#404750] leading-relaxed mt-3">
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] leading-relaxed mt-3">
                             Operating a versatile vessel fleet connecting major manufacturing ports, regional distribution hubs, and international maritime channels.
                         </p>
                     </div>
@@ -668,7 +668,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <h2 className="font-['Hanken_Grotesk'] font-medium text-[32px] sm:text-[44px] lg:text-[50px] leading-[1.12] text-[#141B2C] max-w-[920px]">
                         Engineered for High-Tonnage Cargo Precision
                     </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[15px] sm:text-[16px] text-[#404750] max-w-[850px] leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[850px] leading-relaxed">
                         Explore operational specifications, DWT capacities, and pneumatic cargo handling systems across our active fleet.
                     </p>
                 </div>

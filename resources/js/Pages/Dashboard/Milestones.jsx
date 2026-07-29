@@ -216,12 +216,12 @@ export default function Milestones({ milestones = [] }) {
                                         )}
 
                                         {/* Title & Description */}
-                                        <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-2 line-clamp-1">
+                                        <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-2 line-clamp-1 break-words">
                                             {item.milestone || item.milestones}
                                         </h3>
                                         
                                         <p 
-                                            className="text-xs text-[#404750] leading-relaxed mb-4 overflow-hidden h-10"
+                                            className="text-xs text-[#404750] leading-relaxed mb-4 overflow-hidden h-10 break-words"
                                             style={{
                                                 display: '-webkit-box',
                                                 WebkitLineClamp: 2,
@@ -323,10 +323,11 @@ export default function Milestones({ milestones = [] }) {
                         <div>
                             <label className="block text-xs font-bold text-[#141B2C] mb-1">Year *</label>
                             <input
-                                type="text"
+                                type="number"
+                                min="1900"
                                 value={data.year}
                                 onChange={(e) => setData('year', e.target.value)}
-                                placeholder="e.g. 1998 / 2024"
+                                placeholder="e.g. 1999"
                                 required
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
@@ -345,12 +346,20 @@ export default function Milestones({ milestones = [] }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Description</label>
+                            <div className="flex items-center justify-between mb-1">
+                                <label className="block text-xs font-bold text-[#141B2C]">Description</label>
+                                <span className={`text-[11px] font-['JetBrains_Mono'] ${
+                                    (data.description || '').length >= 200 ? 'text-rose-600 font-bold' : 'text-[#8AAFC8]'
+                                }`}>
+                                    {(data.description || '').length}/200
+                                </span>
+                            </div>
                             <textarea
                                 value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
+                                onChange={(e) => setData('description', e.target.value.slice(0, 200))}
+                                maxLength={200}
                                 rows={3}
-                                placeholder="Key achievements and historical context..."
+                                placeholder="Key achievements and historical context (max 200 characters)..."
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
                         </div>

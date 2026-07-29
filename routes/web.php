@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\AisIngestController;
 use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ClientsController;
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 
 // Public Visitor & API Routes (Postman & Guest Accessible)
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about-us', [AboutUsController::class, 'index'])->name('public.about');
+Route::get('/about', function () {
+    return redirect()->route('public.about');
+});
 
 // Public GET & POST Endpoints (Support JSON responses for Postman & API testing)
 Route::get('/fleets', [FleetsController::class, 'index'])->name('public.fleets');
@@ -34,8 +39,9 @@ Route::get('/milestones', [MilestonesController::class, 'index'])->name('public.
 // Public Contact Form Submission (Guests & Postman API testing)
 Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.store');
 
-// AISStream.io Telemetry Ingestion Endpoint
+// AISStream.io Telemetry Ingestion Endpoint & Simulator Trigger
 Route::post('/api/ais/ingest', [AisIngestController::class, 'ingest'])->name('ais.ingest');
+Route::get('/api/ais/simulate', [AisIngestController::class, 'simulate'])->name('ais.simulate');
 
 Route::get('/setup-storage-link', function () {
     $target = storage_path('app/public');

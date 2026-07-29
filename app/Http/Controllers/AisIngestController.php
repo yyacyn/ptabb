@@ -87,4 +87,62 @@ class AisIngestController extends Controller
 
         return response()->json(['status' => 'skipped', 'reason' => 'No existing fleets found in database'], 200);
     }
+
+    /**
+     * Trigger a single simulated AIS telemetry tick across all database vessels.
+     * Can be invoked via web endpoint or cPanel cron job.
+     */
+    public function simulate(Request $request)
+    {
+        $fleets = Fleet::all();
+        if ($fleets->isEmpty()) {
+            return response()->json(['status' => 'error', 'message' => 'No fleets found in database to simulate AIS data for.'], 404);
+        }
+
+        $simulated = [];
+
+        foreach ($fleets as $index => $fleet) {
+            // Generate realistic coordinates around Indonesian maritime shipping lanes
+            $baseLat = -6.12 + (($index * 2.5) % 12) - 4;
+            $baseLng = 106.84 + (($index * 4.2) % 25) - 5;
+
+            // Random slight drift simulation
+            $lat = round($baseLat + (rand(-100, 100) / 1000), 6);
+            $lng = round($baseLng + (rand(-100, 100) / 1000), 6);
+            $sog = rand(8, 16);
+            $cog = rand(0, 360);
+
+            VoyageWaypoint::updateOrCreate(
+                [
+                    'fleet_id' => $fleet->id,
+                    'sequence' => 1
+                ],
+                [
+                    'waypoint_type' => 'transit',
+                    'port_name' => "Live Position ({$sog} kts)",
+                    'country' => 'Indonesia',
+                    'latitude' => $lat,
+                    'longitude' => $lng,
+                    'notes' => "SOG: {$sog} kts | COG: {$cog}° | Source: Simulated AIS Telemetry",
+                    'updated_at' => now(),
+                ]
+            );
+
+            $simulated[] = [
+                'fleet_id' => $fleet->id,
+                'ship_name' => $fleet->ship_name,
+                'latitude' => $lat,
+                'longitude' => $lng,
+                'speed' => "{$sog} kts",
+                'heading' => "{$cog}°"
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Simulated AIS telemetry broadcast updated successfully.',
+            'timestamp' => now()->toIso8601String(),
+            'vessels' => $simulated
+        ], 200);
+    }
 }

@@ -28,9 +28,9 @@ class MilestonesController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'year' => 'required|string|max:20',
+            'year' => 'required|integer|min:1900',
             'milestone' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:200',
             'image' => 'nullable|image|max:10240',
         ]);
 
@@ -56,9 +56,9 @@ class MilestonesController extends Controller
         $milestone = Milestone::findOrFail($id);
 
         $validated = $request->validate([
-            'year' => 'required|string|max:20',
+            'year' => 'required|integer|min:1900|max:2099',
             'milestone' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:200',
             'image' => 'nullable',
         ]);
 

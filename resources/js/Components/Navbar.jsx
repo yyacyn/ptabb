@@ -34,13 +34,12 @@ export default function Navbar({ onScrollToSection }) {
                 </Link>
 
                 {/* 6 Middle Nav Pills */}
-                <a
-                    href="#about"
-                    onClick={handleNavClick('about')}
+                <Link
+                    href="/about-us"
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
                     ABOUT US
-                </a>
+                </Link>
                 <a
                     href="#services"
                     onClick={handleNavClick('services')}
@@ -121,7 +120,7 @@ export default function Navbar({ onScrollToSection }) {
                 {/* Mobile Menu Dropdown */}
                 {mobileMenuOpen && (
                     <div className="mt-[7px] bg-white rounded-[8px] border border-[#E5E7EB] p-3 shadow-md grid grid-cols-2 gap-2">
-                        <a href="#about" onClick={handleNavClick('about')} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">About Us</a>
+                        <Link href="/about-us" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">About Us</Link>
                         <a href="#services" onClick={handleNavClick('services')} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Services</a>
                         <a href="#fleet" onClick={handleNavClick('fleet')} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Fleet</a>
                         <Link href={route('clients.index')} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Clients</Link>

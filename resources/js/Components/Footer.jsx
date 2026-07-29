@@ -39,10 +39,10 @@ export default function Footer() {
                     <h4 className="text-[16px] font-bold text-[#141B2C] mb-1">Company</h4>
                     <ul className="space-y-2 text-[15px] font-medium text-[#141B2C]">
                         <li>
-                            <a href="#about" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
+                            <Link href="/about-us" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
                                 <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 About Us
-                            </a>
+                            </Link>
                         </li>
                         <li>
                             <a href="#fleet" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
