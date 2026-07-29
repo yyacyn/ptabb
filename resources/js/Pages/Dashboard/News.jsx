@@ -30,18 +30,18 @@ export default function News({ news = [] }) {
     const filteredNews = (news || [])
         .filter(n => {
             const cat = n.category?.name || n.category || '';
-            const matchesCategory = selectedCategory === 'all' || 
-                                   cat.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-                                   (selectedCategory === 'Company News' && (cat === '3' || cat.includes('News'))) ||
-                                   (selectedCategory === 'Office Events' && (cat === '4' || cat.includes('Events') || cat.includes('Dinner') || cat.includes('Outing'))) ||
-                                   (selectedCategory === 'CSR & Sustainability' && (cat === '5' || cat.includes('CSR') || cat.includes('Green') || cat.includes('Eco')));
-           
+            const matchesCategory = selectedCategory === 'all' ||
+                cat.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+                (selectedCategory === 'Company News' && (cat === '3' || cat.includes('News'))) ||
+                (selectedCategory === 'Office Events' && (cat === '4' || cat.includes('Events') || cat.includes('Dinner') || cat.includes('Outing'))) ||
+                (selectedCategory === 'CSR & Sustainability' && (cat === '5' || cat.includes('CSR') || cat.includes('Green') || cat.includes('Eco')));
+
             const query = searchTerm.toLowerCase();
             const matchesSearch = (n.title || '').toLowerCase().includes(query) ||
-                                  (n.excerpt || '').toLowerCase().includes(query) ||
-                                  (n.author || '').toLowerCase().includes(query) ||
-                                  (n.content || '').toLowerCase().includes(query);
-           
+                (n.excerpt || '').toLowerCase().includes(query) ||
+                (n.author || '').toLowerCase().includes(query) ||
+                (n.content || '').toLowerCase().includes(query);
+
             return matchesCategory && matchesSearch;
         })
         .sort((a, b) => {
@@ -80,7 +80,7 @@ export default function News({ news = [] }) {
                         </h2>
                     </div>
 
-                    <Link 
+                    <Link
                         href={route('news.create')}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
                     >
@@ -93,11 +93,11 @@ export default function News({ news = [] }) {
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
-                    
+
                     {/* Category Tabs, Search & Sort Control Bar */}
                     <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB]  space-y-4">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                            
+
                             {/* Category Filter Pills */}
                             <div className="flex flex-wrap gap-2 items-center">
                                 <span className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8] font-bold uppercase mr-1 flex items-center gap-1">
@@ -107,11 +107,10 @@ export default function News({ news = [] }) {
                                     <button
                                         key={cat.value}
                                         onClick={() => setSelectedCategory(cat.value)}
-                                        className={`px-3.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all cursor-pointer ${
-                                            selectedCategory === cat.value
+                                        className={`px-3.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all cursor-pointer ${selectedCategory === cat.value
                                                 ? 'bg-[#141B2C] text-white '
                                                 : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
-                                        }`}
+                                            }`}
                                     >
                                         {cat.label}
                                     </button>
@@ -187,9 +186,8 @@ export default function News({ news = [] }) {
                                             <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8] flex items-center gap-1">
                                                 <Calendar className="w-3 h-3" /> {item.published_at || item.publish_date || '2026-04-01'}
                                             </span>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${
-                                                item.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                                            }`}>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${item.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                                }`}>
                                                 {item.status || 'published'}
                                             </span>
                                         </div>
@@ -206,7 +204,7 @@ export default function News({ news = [] }) {
                                     </div>
 
                                     <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs font-semibold">
-                                        <Link 
+                                        <Link
                                             href={route('news.edit', item.id)}
                                             className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
                                         >

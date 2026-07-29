@@ -18,12 +18,26 @@ import {
     Zap
 } from 'lucide-react';
 
-export default function Welcome({ auth, clients: initialClients = [] }) {
+export default function Welcome({ auth, clients: initialClients = [], fleets: initialFleets = [] }) {
     const [activeFleetTab, setActiveFleetTab] = useState(0);
+    const [heroVesselIndex, setHeroVesselIndex] = useState(0);
     const [activeRegion, setActiveRegion] = useState('indonesia');
     const [clientsList, setClientsList] = useState(initialClients);
+    const [fleetsList, setFleetsList] = useState(initialFleets);
 
-    // Fetch all clients from /clients endpoint if not provided via Inertia props
+    // Auto-rotate Hero active vessel every 3 seconds (3000ms)
+    useEffect(() => {
+        const vesselsCount = (fleetsList && fleetsList.length > 0) ? fleetsList.length : fleetVessels.length;
+        if (vesselsCount <= 1) return;
+
+        const interval = setInterval(() => {
+            setHeroVesselIndex(prev => (prev + 1) % vesselsCount);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [fleetsList]);
+
+    // Fetch all clients & fleets from API endpoints if not provided via Inertia props
     useEffect(() => {
         if (!initialClients || initialClients.length === 0) {
             fetch('/clients', {
@@ -37,7 +51,20 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                 })
                 .catch(err => console.error("Error loading clients:", err));
         }
-    }, [initialClients]);
+
+        if (!initialFleets || initialFleets.length === 0) {
+            fetch('/fleets', {
+                headers: { 'Accept': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        setFleetsList(data);
+                    }
+                })
+                .catch(err => console.error("Error loading fleets:", err));
+        }
+    }, [initialClients, initialFleets]);
 
     // Ensure page always loads at top and clears any auto-scroll anchor hash
     useEffect(() => {
@@ -51,6 +78,14 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    const safeRoute = (routeName, fallback = '#') => {
+        try {
+            return route(routeName);
+        } catch (e) {
+            return fallback;
         }
     };
 
@@ -98,7 +133,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
             year: "2018",
             flagClass: "Indonesia (BKI Class)",
             status: "Active - In Service",
-            image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=800&q=80",
+            image: "/images/card_bulk_vessel.png",
             route: "Samarinda &rarr; Java Sea"
         },
         {
@@ -197,42 +232,73 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="lg:col-span-7 bg-white rounded-[8px] overflow-hidden relative min-h-[380px] lg:min-h-[606px] border border-[#E5E7EB] group"
+                    className="lg:col-span-7 bg-[#141B2C] rounded-[8px] overflow-hidden relative min-h-[380px] lg:min-h-[606px] border border-[#E5E7EB] group"
                 >
-                    <motion.img
-                        src="/images/asuwa1.jpg"
-                        alt="Active Vessel - ASUWA 1"
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/75 rounded-[8px]" />
+                    {(() => {
+                        const vessels = (fleetsList && fleetsList.length > 0) ? fleetsList : fleetVessels;
+                        const safeIdx = Math.min(heroVesselIndex, vessels.length - 1);
+                        const heroVessel = vessels[safeIdx];
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="absolute bottom-6 sm:bottom-10 left-6 sm:left-[51px] flex flex-col gap-[5px] text-white z-10"
-                    >
-                        <div className="font-['JetBrains_Mono'] font-bold text-[11px] sm:text-[12px] text-white uppercase tracking-wide">
-                            Active Vessel
-                        </div>
+                        const heroImage = heroVessel?.featured_image_url
+                            || (heroVessel?.featured_image
+                                ? (heroVessel.featured_image.startsWith('/') || heroVessel.featured_image.startsWith('http')
+                                    ? heroVessel.featured_image
+                                    : `/images/fleet/${heroVessel.featured_image}`)
+                                : (heroVessel?.image || "/images/asuwa1.jpg"));
+                        const heroName = heroVessel?.ship_name || heroVessel?.name || "ASUWA 1";
+                        const heroArea = heroVessel?.operational_area || "Indonesia Archipelago";
+                        const heroStatus = heroVessel?.status
+                            ? (heroVessel.status.includes('service') || heroVessel.status === 'Active' ? 'Active - In Service' : heroVessel.status.replace('_', ' '))
+                            : "Active Vessel";
+                        const heroImo = heroVessel?.imo_number ? `IMO: ${heroVessel.imo_number}` : "IMO: 9812345";
+                        const heroType = heroVessel?.vessel_type || heroVessel?.type || "Pneumatic Bulk Cement";
 
-                        <div className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] text-white leading-none">
-                            ASUWA 1
-                        </div>
+                        return (
+                            <AnimatePresence initial={false}>
+                                <motion.div
+                                    key={safeIdx}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                                    className="absolute inset-0 w-full h-full"
+                                >
+                                    <img
+                                        src={heroImage}
+                                        alt={heroName}
+                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        onError={(e) => {
+                                            e.currentTarget.src = '/images/card_bulk_vessel.png';
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/75 rounded-[8px]" />
 
-                        <div className="flex flex-wrap items-center gap-2 font-['Hanken_Grotesk'] font-bold text-[12px] text-white">
-                            <span className="font-['JetBrains_Mono'] font-medium text-white/80">From</span>
-                            <span>Tokyo, Japan</span>
-                            <span className="font-['JetBrains_Mono'] font-medium text-white/80 ml-2">To</span>
-                            <span>Jakarta, Indonesia</span>
-                        </div>
+                                    <div className="absolute bottom-6 sm:bottom-10 left-6 sm:left-[51px] flex flex-col gap-[5px] text-white z-10">
+                                        <div className="font-['JetBrains_Mono'] font-bold text-[11px] sm:text-[12px] text-white uppercase tracking-wide flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                            {heroStatus}
+                                        </div>
 
-                        <div className="flex items-center gap-1.5 font-['JetBrains_Mono'] font-medium text-[12px] text-white/70">
-                            <MapPin className="w-3.5 h-3.5 text-white/70 shrink-0" />
-                            <span>48.8584° N, 2.2945° E</span>
-                        </div>
-                    </motion.div>
+                                        <div className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] text-white leading-none">
+                                            {heroName}
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-2 font-['Hanken_Grotesk'] font-bold text-[12px] text-white">
+                                            <span className="font-['JetBrains_Mono'] font-medium text-white/80">Type</span>
+                                            <span>{heroType}</span>
+                                            <span className="font-['JetBrains_Mono'] font-medium text-white/80 ml-2">Area</span>
+                                            <span>{heroArea}</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 font-['JetBrains_Mono'] font-medium text-[12px] text-white/70">
+                                            <MapPin className="w-3.5 h-3.5 text-white/70" />
+                                            <span>{heroImo}</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </AnimatePresence>
+                        );
+                    })()}
                 </motion.div>
 
             </div>
@@ -377,9 +443,10 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                         <Link
                             href={route('contacts.index')}
-                            className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-block"
+                            className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                         >
                             Book Shipment
+                            <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
                         </Link>
                     </motion.div>
                 </div>
@@ -395,7 +462,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                 className="bg-[#141B2C] text-white rounded-[8px] p-6 sm:p-10 lg:p-12 lg:px-20 relative overflow-hidden"
             >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    
+
                     {/* Left Info Column */}
                     <div className="lg:col-span-7 flex flex-col gap-3">
                         <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#8AAFC8] tracking-wider">
@@ -490,9 +557,10 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                             <Link
                                 href={route('contacts.index')}
-                                className="bg-[#00629D] hover:bg-[#005285] rounded-[4px] px-[24px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white transition-all duration-200 inline-block"
+                                className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                             >
                                 Book Shipment
+                                <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
                             </Link>
                         </motion.div>
                     </div>
@@ -535,8 +603,8 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                                 key={region.id}
                                 onMouseEnter={() => setActiveRegion(region.id)}
                                 className={`rounded-[8px] overflow-hidden transition-all duration-300 ease-out cursor-pointer relative flex flex-col h-[460px] lg:h-full ${isActive
-                                        ? 'lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-6 sm:p-8 justify-between '
-                                        : 'lg:flex-[1_1_0%] border border-[#E5E7EB] items-center justify-center'
+                                    ? 'lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-6 sm:p-8 justify-between '
+                                    : 'lg:flex-[1_1_0%] border border-[#E5E7EB] items-center justify-center'
                                     }`}
                             >
                                 {isActive ? (
@@ -586,128 +654,186 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
             {/* 6. Featured Fleet Register Section */}
             <motion.div
                 id="fleet"
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6 }}
-                className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-10 lg:p-12"
+                viewport={{ once: true }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="bg-white rounded-[8px] border border-[#E5E7EB] p-8 sm:p-12 lg:p-14"
             >
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-                    <div className="max-w-[700px]">
-                        <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-2">
-                            FEATURED FLEET
-                        </div>
-                        <h2 className="font-['Hanken_Grotesk'] font-medium text-[28px] sm:text-[40px] lg:text-[48px] leading-[1.1] text-[#141B2C]">
-                            Engineered for High-Tonnage Cargo Precision
-                        </h2>
-                        <p className="font-['Hanken_Grotesk'] font-medium text-[15px] sm:text-[17px] text-[#404750] mt-2">
-                            Explore operational specifications, DWT capacities, and pneumatic cargo handling systems across our active fleet.
-                        </p>
+                {/* Section Header (Left-Aligned) */}
+                <div className="flex flex-col gap-3 mb-10">
+                    <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider">
+                        FEATURED FLEET
                     </div>
+                    <h2 className="font-['Hanken_Grotesk'] font-medium text-[32px] sm:text-[44px] lg:text-[50px] leading-[1.12] text-[#141B2C] max-w-[920px]">
+                        Engineered for High-Tonnage Cargo Precision
+                    </h2>
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[15px] sm:text-[16px] text-[#404750] max-w-[850px] leading-relaxed">
+                        Explore operational specifications, DWT capacities, and pneumatic cargo handling systems across our active fleet.
+                    </p>
+                </div>
 
-                    {/* Fleet Tab Selector */}
-                    <div className="flex items-center gap-2 bg-[#F5F5F5] p-1.5 rounded-[6px] self-start md:self-auto">
-                        {fleetVessels.map((vessel, idx) => (
+                {/* Layer 2: Gray Band Wrapper with overflow-hidden for smooth horizontal slide */}
+                <div className="bg-[#F5F5F5] rounded-[8px] border border-[#E5E7EB] p-1 mb-8 overflow-hidden">
+                    <AnimatePresence mode="wait" custom={activeFleetTab}>
+                        {(() => {
+                            const currentVessel = (fleetsList && fleetsList.length > 0)
+                                ? fleetsList[Math.min(activeFleetTab, fleetsList.length - 1)]
+                                : fleetVessels[Math.min(activeFleetTab, fleetVessels.length - 1)];
+
+                            const vesselName = currentVessel.ship_name || currentVessel.name || 'MV. IRIANA';
+                            const vesselType = currentVessel.vessel_type || currentVessel.type || 'Pneumatic Bulk Cement';
+                            const dwtVal = currentVessel.dwt ? `${Number(currentVessel.dwt).toLocaleString()} DWT` : (currentVessel.dwt || '11,040 DWT');
+                            const capacityVal = currentVessel.capacity ? `${Number(currentVessel.capacity).toLocaleString()} MT` : (currentVessel.capacity || '8,860 MT');
+                            const yearVal = currentVessel.build_year || currentVessel.year || '2015';
+                            const flagClassVal = currentVessel.flag
+                                ? `${currentVessel.flag} ${currentVessel.classification_society ? '(' + currentVessel.classification_society + ' Class)' : ''}`
+                                : (currentVessel.flagClass || 'Indonesia (RINA Class)');
+                            const statusVal = currentVessel.status
+                                ? (currentVessel.status.includes('service') || currentVessel.status === 'Active' ? 'Active - In Service' : currentVessel.status.replace('_', ' '))
+                                : 'Active - In Service';
+                            const imageVal = currentVessel.featured_image_url
+                                || (currentVessel.featured_image
+                                    ? (currentVessel.featured_image.startsWith('/') || currentVessel.featured_image.startsWith('http')
+                                        ? currentVessel.featured_image
+                                        : `/images/fleet/${currentVessel.featured_image}`)
+                                    : (currentVessel.image || '/images/asuwa1.jpg'));
+
+                            const rawDesc = currentVessel.description || 'Pneumatic bulk cement carrier engineered for high-tonnage cargo precision, efficient pneumatic discharge operations, and reliable regional maritime transport.';
+                            const descVal = rawDesc.length > 200 ? `${rawDesc.substring(0, 200)}...` : rawDesc;
+
+                            return (
+                                <motion.div
+                                    key={activeFleetTab}
+                                    initial={{ x: 60 }}
+                                    animate={{ x: 0 }}
+                                    exit={{ x: -60 }}
+                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    className="grid grid-cols-1 lg:grid-cols-12 gap-1 items-stretch"
+                                >
+                                    {/* Left Specs Panel */}
+                                    <div className="lg:col-span-5 bg-white rounded-[6px] border border-[#E5E7EB] p-6 sm:p-8 lg:p-10 flex flex-col justify-between">
+                                        <div>
+                                            <h3 className="text-[24px] sm:text-[28px] lg:text-[32px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] leading-tight tracking-tight mb-2">
+                                                {vesselName}
+                                            </h3>
+
+                                            <p className="font-['Hanken_Grotesk'] font-normal text-[13px] sm:text-[14px] text-[#404750] leading-relaxed mb-5">
+                                                {descVal}
+                                            </p>
+
+                                            {/* 6 Specs Grid */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {/* Card 1 */}
+                                                <div className="bg-white rounded-[6px] border border-[#E5E7EB] p-3.5 flex flex-col justify-between">
+                                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold uppercase text-[#00629D] tracking-wider">Vessel Type</span>
+                                                    <span className="text-[14px] sm:text-[15px] font-['Hanken_Grotesk'] font-medium text-[#141B2C] leading-snug mt-1.5">{vesselType}</span>
+                                                </div>
+
+                                                {/* Card 2 */}
+                                                <div className="bg-white rounded-[6px] border border-[#E5E7EB] p-3.5 flex flex-col justify-between">
+                                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold uppercase text-[#00629D] tracking-wider">Deadweight (DWT)</span>
+                                                    <span className="text-[14px] sm:text-[15px] font-['Hanken_Grotesk'] font-medium text-[#141B2C] mt-1.5">{dwtVal}</span>
+                                                </div>
+
+                                                {/* Card 3 */}
+                                                <div className="bg-white rounded-[6px] border border-[#E5E7EB] p-3.5 flex flex-col justify-between">
+                                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold uppercase text-[#00629D] tracking-wider">Cargo Capacity</span>
+                                                    <span className="text-[14px] sm:text-[15px] font-['Hanken_Grotesk'] font-medium text-[#141B2C] mt-1.5">{capacityVal}</span>
+                                                </div>
+
+                                                {/* Card 4 */}
+                                                <div className="bg-white rounded-[6px] border border-[#E5E7EB] p-3.5 flex flex-col justify-between">
+                                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold uppercase text-[#00629D] tracking-wider">Year Built</span>
+                                                    <span className="text-[14px] sm:text-[15px] font-['Hanken_Grotesk'] font-medium text-[#141B2C] mt-1.5">{yearVal}</span>
+                                                </div>
+
+                                                {/* Card 5 */}
+                                                <div className="bg-white rounded-[6px] border border-[#E5E7EB] p-3.5 flex flex-col justify-between">
+                                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold uppercase text-[#00629D] tracking-wider">Flag &amp; Class</span>
+                                                    <span className="text-[14px] sm:text-[15px] font-['Hanken_Grotesk'] font-medium text-[#141B2C] leading-snug mt-1.5">{flagClassVal}</span>
+                                                </div>
+
+                                                {/* Card 6 */}
+                                                <div className="bg-white rounded-[6px] border border-[#E5E7EB] p-3.5 flex flex-col justify-between">
+                                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold uppercase text-[#00629D] tracking-wider">Operational Status</span>
+                                                    <span className="text-[14px] sm:text-[15px] font-['Hanken_Grotesk'] font-medium text-[#141B2C] leading-snug mt-1.5">{statusVal}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons Row */}
+                                        <div className="flex flex-wrap items-center gap-3 pt-3 mt-3 border-[#E5E7EB]">
+                                            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                                                <Link
+                                                    href={route('contacts.index')}
+                                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
+                                                >
+                                                    Book Shipment
+                                                    <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
+                                                </Link>
+                                            </motion.div>
+
+                                            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                                                <Link
+                                                    href={safeRoute('fleets.index', '/fleets')}
+                                                    className="group rounded-[4px] border border-[#404750] px-[24px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] hover:text-[#00629D] hover:border-[#00629D] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.2)] inline-flex items-center gap-2"
+                                                >
+                                                    View Full Specs
+                                                    <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
+                                                </Link>
+                                            </motion.div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Vessel Image Frame */}
+                                    <div className="lg:col-span-7 bg-[#141B2C] rounded-[6px] overflow-hidden border border-[#E5E7EB] relative group h-[380px] sm:h-[440px] lg:h-[525px] w-full">
+                                        <img
+                                            src={imageVal}
+                                            alt={vesselName}
+                                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                            onError={(e) => {
+                                                e.currentTarget.src = '/images/card_bulk_vessel.png';
+                                            }}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                                    </div>
+                                </motion.div>
+                            );
+                        })()}
+                    </AnimatePresence>
+                </div>
+
+                {/* Bottom Pagination Bar */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Numbered Tab Controls */}
+                    <div className="flex items-center gap-2">
+                        {((fleetsList && fleetsList.length > 0 ? fleetsList : fleetVessels).slice(0, 5)).map((vessel, idx) => (
                             <button
-                                type="button"
                                 key={idx}
+                                type="button"
                                 onClick={() => setActiveFleetTab(idx)}
-                                whileHover={{ scale: 1.04 }}
-                                whileTap={{ scale: 0.96 }}
-                                className={`px-4 py-2 rounded-[4px] font-['JetBrains_Mono'] text-[13px] font-bold transition-all ${activeFleetTab === idx
-                                        ? 'bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white shadow-sm'
-                                        : 'text-[#141B2C] hover:bg-white'
+                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center transition-all cursor-pointer ${activeFleetTab === idx
+                                        ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white shadow-xs border border-transparent'
+                                        : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
                                     }`}
                             >
-                                {idx + 1}. {vessel.name.split(' ')[0]}
+                                {idx + 1}
                             </button>
                         ))}
                     </div>
-                </div>
 
-                {/* Active Vessel Animated Display Box */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeFleetTab}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        transition={{ duration: 0.35, ease: "easeOut" }}
-                        className="grid grid-cols-1 lg:grid-cols-12 gap-[7px] bg-[#F5F5F5] rounded-[8px] p-2 border border-[#E5E7EB]"
-                    >
-                        {/* Vessel Specs Sheet */}
-                        <div className="lg:col-span-5 bg-white rounded-[8px] p-6 sm:p-8 flex flex-col justify-between">
-                            <div>
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#00629D]/10 text-[#00629D] font-['JetBrains_Mono'] text-xs font-bold mb-4">
-                                    {fleetVessels[activeFleetTab].status}
-                                </div>
-                                <h3 className="text-[28px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-1">
-                                    {fleetVessels[activeFleetTab].name}
-                                </h3>
-                                <p className="text-[15px] font-['Hanken_Grotesk'] text-[#404750] mb-6">
-                                    {fleetVessels[activeFleetTab].type}
-                                </p>
-
-                                {/* 6-Grid Spec Table */}
-                                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#E5E7EB]">
-                                    <div className="bg-[#F5F5F5] rounded-[6px] p-3">
-                                        <div className="text-[11px] font-['Hanken_Grotesk'] font-bold text-[#404750]">Vessel Type</div>
-                                        <div className="text-[13px] font-['JetBrains_Mono'] font-bold text-[#141B2C] mt-1">{fleetVessels[activeFleetTab].type.split(' ')[0]}</div>
-                                    </div>
-                                    <div className="bg-[#F5F5F5] rounded-[6px] p-3">
-                                        <div className="text-[11px] font-['Hanken_Grotesk'] font-bold text-[#404750]">Deadweight (DWT)</div>
-                                        <div className="text-[13px] font-['JetBrains_Mono'] font-bold text-[#141B2C] mt-1">{fleetVessels[activeFleetTab].dwt}</div>
-                                    </div>
-                                    <div className="bg-[#F5F5F5] rounded-[6px] p-3">
-                                        <div className="text-[11px] font-['Hanken_Grotesk'] font-bold text-[#404750]">Cargo Capacity</div>
-                                        <div className="text-[13px] font-['JetBrains_Mono'] font-bold text-[#141B2C] mt-1">{fleetVessels[activeFleetTab].capacity}</div>
-                                    </div>
-                                    <div className="bg-[#F5F5F5] rounded-[6px] p-3">
-                                        <div className="text-[11px] font-['Hanken_Grotesk'] font-bold text-[#404750]">Year Built</div>
-                                        <div className="text-[13px] font-['JetBrains_Mono'] font-bold text-[#141B2C] mt-1">{fleetVessels[activeFleetTab].year}</div>
-                                    </div>
-                                    <div className="bg-[#F5F5F5] rounded-[6px] p-3 col-span-2">
-                                        <div className="text-[11px] font-['Hanken_Grotesk'] font-bold text-[#404750]">Flag &amp; Classification</div>
-                                        <div className="text-[13px] font-['JetBrains_Mono'] font-bold text-[#141B2C] mt-1">{fleetVessels[activeFleetTab].flagClass}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 pt-4 border-t border-[#E5E7EB]">
-                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-                                    <Link
-                                        href={route('contacts.index')}
-                                        className="w-full bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] py-[11px] px-[20px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all inline-flex items-center justify-center gap-2 shadow-sm"
-                                    >
-                                        Book Shipment
-                                        <ArrowRight className="w-4 h-4" />
-                                    </Link>
-                                </motion.div>
-                            </div>
-                        </div>
-
-                        {/* Vessel Photo Display */}
-                        <div className="lg:col-span-7 rounded-[8px] overflow-hidden min-h-[360px] lg:min-h-[440px] relative border border-[#E5E7EB] group">
-                            <motion.img
-                                key={fleetVessels[activeFleetTab].image}
-                                initial={{ scale: 1.08, opacity: 0.8 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ duration: 0.5 }}
-                                src={fleetVessels[activeFleetTab].image}
-                                alt={fleetVessels[activeFleetTab].name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-                            <div className="absolute bottom-6 left-6 text-white z-10">
-                                <div className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8] uppercase">Current Voyage</div>
-                                <div className="font-['Hanken_Grotesk'] font-bold text-xl text-white">
-                                    {fleetVessels[activeFleetTab].route}
-                                </div>
-                            </div>
-                        </div>
+                    {/* Right See More Fleet Button */}
+                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                        <Link
+                            href={safeRoute('fleets.index', '/fleets')}
+                            className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
+                        >
+                            See More Fleet
+                            <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
+                        </Link>
                     </motion.div>
-                </AnimatePresence>
+                </div>
             </motion.div>
 
             {/* 7. Call To Action Conversion Banner */}
@@ -731,7 +857,7 @@ export default function Welcome({ auth, clients: initialClients = [] }) {
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
                         <Link
                             href={route('contacts.index')}
-                            className="group bg-white text-[#00629D] rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-lg active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
                         >
                             Request Charter Proposal
                             <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />

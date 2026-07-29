@@ -6,12 +6,8 @@ import {
     Newspaper,
     Ship,
     Globe,
-    Plus,
-    FileText,
-    AlertTriangle,
     Bell,
-    ExternalLink,
-    ChevronRight,
+    Users,
     ArrowRight
 } from 'lucide-react';
 
@@ -65,16 +61,23 @@ export default function Index({
         }
     };
 
+    // Role-Based UI Display Logic
+    const canManageFleet = userRole === 'super_admin';
+    const canManageCareers = ['super_admin', 'hr_admin', 'crew_admin'].includes(userRole);
+    const canManageNews = ['super_admin', 'pr_admin'].includes(userRole);
+    const canManageClients = ['super_admin', 'pr_admin'].includes(userRole);
+    const canManageNotifications = ['super_admin', 'hr_admin'].includes(userRole);
+
     return (
         <AuthenticatedLayout
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-['Hanken_Grotesk']">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141B2C] flex items-center gap-2">
-                            Good morning, {userName}
+                            Hello, {userName}
                         </h1>
                         <p className="font-['JetBrains_Mono'] text-xs font-medium text-[#8AAFC8] mt-1">
-                            {formattedDate} &bull;
+                            {formattedDate} &bull; <span className="uppercase text-[#00629D] font-bold">{userRole.replace('_', ' ')}</span>
                         </p>
                     </div>
 
@@ -94,10 +97,10 @@ export default function Index({
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1280px] mx-auto px-4 sm:px-6 space-y-6">
 
-                    {/* Top 4 Stats Cards Grid */}
+                    {/* Top Stats Cards Grid (Scoped by Role) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-                        {/* Stat Card 1: Unread Messages */}
+                        {/* Stat Card 1: Unread Messages (Visible to all admins) */}
                         <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between">
                                 <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
@@ -118,49 +121,93 @@ export default function Index({
                             </div>
                         </div>
 
-                        {/* Stat Card 2: Open Vacancies */}
-                        <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
-                            <div className="flex items-center justify-between">
-                                <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-500 inline-block" />
-                                    OPEN VACANCIES
-                                </span>
-                                <div className="p-2 rounded-md bg-amber-50 text-amber-600 border border-amber-200">
-                                    <Briefcase className="w-4 h-4" />
+                        {/* Stat Card 2: Open Vacancies (Visible to Super, HR, Crew Admins) */}
+                        {canManageCareers ? (
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
+                                        <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-500 inline-block" />
+                                        OPEN VACANCIES
+                                    </span>
+                                    <div className="p-2 rounded-md bg-amber-50 text-amber-600 border border-amber-200">
+                                        <Briefcase className="w-4 h-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-5">
+                                    <div className="text-4xl font-extrabold text-amber-600">
+                                        {applicationsCount}
+                                    </div>
+                                    <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
+                                        {userRole === 'hr_admin' ? 'Corporate positions' : userRole === 'crew_admin' ? 'Crew positions' : 'Active job openings'}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="mt-5">
-                                <div className="text-4xl font-extrabold text-amber-600">
-                                    {applicationsCount}
+                        ) : (
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
+                                        <span className="w-2.5 h-2.5 rounded-[2px] bg-blue-500 inline-block" />
+                                        CLIENT PARTNERS
+                                    </span>
+                                    <div className="p-2 rounded-md bg-blue-50 text-blue-600 border border-blue-200">
+                                        <Users className="w-4 h-4" />
+                                    </div>
                                 </div>
-                                <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
-                                    Active job openings
-                                </p>
+                                <div className="mt-5">
+                                    <div className="text-4xl font-extrabold text-blue-600">
+                                        {clientsCount}
+                                    </div>
+                                    <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
+                                        Partner companies
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        {/* Stat Card 3: Drafts Unpublished */}
-                        <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
-                            <div className="flex items-center justify-between">
-                                <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-[2px] bg-slate-400 inline-block" />
-                                    DRAFTS UNPUBLISHED
-                                </span>
-                                <div className="p-2 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
-                                    <Newspaper className="w-4 h-4" />
+                        {/* Stat Card 3: Drafts / News (Visible to Super, PR Admins) */}
+                        {canManageNews ? (
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
+                                        <span className="w-2.5 h-2.5 rounded-[2px] bg-slate-400 inline-block" />
+                                        DRAFTS UNPUBLISHED
+                                    </span>
+                                    <div className="p-2 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                                        <Newspaper className="w-4 h-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-5">
+                                    <div className="text-4xl font-extrabold text-[#141B2C]">
+                                        {draftsCount}
+                                    </div>
+                                    <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
+                                        News articles ({newsCount} total)
+                                    </p>
                                 </div>
                             </div>
-                            <div className="mt-5">
-                                <div className="text-4xl font-extrabold text-[#141B2C]">
-                                    {draftsCount}
+                        ) : (
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
+                                        <span className="w-2.5 h-2.5 rounded-[2px] bg-indigo-500 inline-block" />
+                                        SITE NOTIFICATIONS
+                                    </span>
+                                    <div className="p-2 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200">
+                                        <Bell className="w-4 h-4" />
+                                    </div>
                                 </div>
-                                <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
-                                    News articles
-                                </p>
+                                <div className="mt-5">
+                                    <div className="text-4xl font-extrabold text-indigo-600">
+                                        {notificationsCount}
+                                    </div>
+                                    <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
+                                        {activeBannersCount} active banners
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        {/* Stat Card 4: Active Vessels */}
+                        {/* Stat Card 4: Active Vessels (Visible to all, managed by Super Admin) */}
                         <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between">
                                 <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
@@ -201,7 +248,7 @@ export default function Index({
                                 </div>
 
                                 <div className="space-y-3">
-                                    {/* Alert 1 */}
+                                    {/* Alert 1: Unread Messages */}
                                     <div className="bg-rose-50 border border-rose-200 rounded-[8px] p-4 flex items-start gap-3.5">
                                         <div className="p-2 bg-rose-200 text-rose-900 rounded-md shrink-0">
                                             <Mail className="w-4 h-4" />
@@ -216,41 +263,30 @@ export default function Index({
                                         </div>
                                     </div>
 
-                                    {/* Alert 2 */}
-                                    <div className="bg-amber-50 border border-amber-200 rounded-[8px] p-4 flex items-start gap-3.5">
-                                        <div className="p-2 bg-amber-200 text-amber-900 rounded-md shrink-0">
-                                            <Bell className="w-4 h-4" />
+                                    {/* Alert 2: Active Banners */}
+                                    {canManageNotifications && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-[8px] p-4 flex items-start gap-3.5">
+                                            <div className="p-2 bg-amber-200 text-amber-900 rounded-md shrink-0">
+                                                <Bell className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-sm text-amber-900 leading-snug">
+                                                    {activeBannersCount > 0 ? `${activeBannersCount} Pop-up banner active` : 'No active alert banners'}
+                                                </h4>
+                                                <p className="text-xs text-amber-700 mt-1 font-['JetBrains_Mono'] font-medium">
+                                                    {activeBannersCount > 0 ? 'BR-06 compliant (max 1/type)' : 'All pop-ups disabled'}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-sm text-amber-900 leading-snug">
-                                                {activeBannersCount > 0 ? `${activeBannersCount} Pop-up banner still active` : 'No active alert banners'}
-                                            </h4>
-                                            <p className="text-xs text-amber-700 mt-1 font-['JetBrains_Mono'] font-medium">
-                                                {activeBannersCount > 0 ? 'Check if still needed' : 'All pop-ups disabled'}
-                                            </p>
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* QUICK ACTIONS Box */}
+                            {/* QUICK ACTIONS Box (Strictly Filtered by Role) */}
                             <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 space-y-3 shadow-xs">
                                 <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] block mb-2">
                                     QUICK ACTIONS
                                 </span>
-
-                                <Link
-                                    href={safeRoute('news.index', '/dashboard/news')}
-                                    className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
-                                            <Newspaper className="w-4 h-4" />
-                                        </div>
-                                        <span>Add news article</span>
-                                    </div>
-                                    <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
-                                </Link>
 
                                 <Link
                                     href={safeRoute('contacts.index', '/dashboard/contacts')}
@@ -265,18 +301,50 @@ export default function Index({
                                     <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
                                 </Link>
 
-                                <Link
-                                    href={safeRoute('careers.index', '/dashboard/careers')}
-                                    className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
-                                            <Briefcase className="w-4 h-4" />
+                                {canManageCareers && (
+                                    <Link
+                                        href={safeRoute('careers.index', '/dashboard/careers')}
+                                        className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                                <Briefcase className="w-4 h-4" />
+                                            </div>
+                                            <span>Manage job vacancies</span>
                                         </div>
-                                        <span>Review applications</span>
-                                    </div>
-                                    <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
-                                </Link>
+                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
+                                    </Link>
+                                )}
+
+                                {canManageNews && (
+                                    <Link
+                                        href={safeRoute('news.index', '/dashboard/news')}
+                                        className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                                <Newspaper className="w-4 h-4" />
+                                            </div>
+                                            <span>Add news article</span>
+                                        </div>
+                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
+                                    </Link>
+                                )}
+
+                                {canManageFleet && (
+                                    <Link
+                                        href={safeRoute('fleets.index', '/dashboard/fleets')}
+                                        className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                                <Ship className="w-4 h-4" />
+                                            </div>
+                                            <span>Manage vessel fleet</span>
+                                        </div>
+                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
+                                    </Link>
+                                )}
                             </div>
 
                         </div>
@@ -288,9 +356,6 @@ export default function Index({
                                     <div className="flex items-center justify-between pb-4 border-b border-[#E5E7EB] mb-4">
                                         <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750]">
                                             RECENT ACTIVITY
-                                        </span>
-                                        <span className="font-['JetBrains_Mono'] text-xs font-semibold text-[#8AAFC8]">
-                                            Live DB Stream
                                         </span>
                                     </div>
 
@@ -311,7 +376,7 @@ export default function Index({
                                             ))
                                         ) : (
                                             <div className="py-8 text-center text-xs text-[#8AAFC8] font-['JetBrains_Mono']">
-                                                No recent activity recorded yet.
+                                                No recent activity recorded for your role scope.
                                             </div>
                                         )}
                                     </div>

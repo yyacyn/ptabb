@@ -8,10 +8,12 @@ export default function Footer() {
                 {/* Brand Column */}
                 <div className="md:col-span-5 flex flex-col gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-[#00629D] text-white flex items-center justify-center font-bold text-lg">
-                            ABB
-                        </div>
-                        <span className="text-[20px] lg:text-[22px] font-bold text-[#141B2C]">
+                        <img
+                            src="/images/logo-abb1.png"
+                            alt="PT. ABB Logo"
+                            className="h-10 w-auto object-contain shrink-0"
+                        />
+                        <span className="text-[18px] lg:text-[20px] font-bold text-[#141B2C] leading-snug">
                             PT Pelayaran Andalas Bahtera Baruna
                         </span>
                     </div>
@@ -21,46 +23,48 @@ export default function Footer() {
                     </p>
 
                     <div className="pt-2">
-                        <div className="text-[12px] font-['JetBrains_Mono'] font-bold text-[#404750] uppercase tracking-wider mb-2">
-                            Proud Member of
+                        <div className="text-[13px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-2">
+                            Proud Member of:
                         </div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#F5F5F5] border border-[#E5E7EB] text-[13px] font-semibold text-[#141B2C]">
-                            INSA (Indonesian National Shipowners' Association)
-                        </div>
+                        <img
+                            src="/images/insa.png"
+                            alt="INSA Logo"
+                            className="h-16 w-auto object-contain"
+                        />
                     </div>
                 </div>
 
                 {/* Quick Links Column */}
                 <div className="md:col-span-3 flex flex-col gap-3">
                     <h4 className="text-[16px] font-bold text-[#141B2C] mb-1">Company</h4>
-                    <ul className="space-y-2 text-[15px] font-medium text-[#404750]">
+                    <ul className="space-y-2 text-[15px] font-medium text-[#141B2C]">
                         <li>
-                            <a href="#about" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5">
-                                <ChevronRight className="w-3.5 h-3.5 text-[#00629D]" />
+                            <a href="#about" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
+                                <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 About Us
                             </a>
                         </li>
                         <li>
-                            <a href="#fleet" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5">
-                                <ChevronRight className="w-3.5 h-3.5 text-[#00629D]" />
+                            <a href="#fleet" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
+                                <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Our Fleet
                             </a>
                         </li>
                         <li>
-                            <a href="#clients" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5">
-                                <ChevronRight className="w-3.5 h-3.5 text-[#00629D]" />
-                                Clients & Partners
+                            <a href="#clients" className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
+                                <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
+                                Clients &amp; Partners
                             </a>
                         </li>
                         <li>
-                            <Link href={route('careers.index')} className="hover:text-[#00629D] transition-colors flex items-center gap-1.5">
-                                <ChevronRight className="w-3.5 h-3.5 text-[#00629D]" />
+                            <Link href={route('careers.index')} className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
+                                <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Careers
                             </Link>
                         </li>
                         <li>
-                            <Link href={route('contacts.index')} className="hover:text-[#00629D] transition-colors flex items-center gap-1.5">
-                                <ChevronRight className="w-3.5 h-3.5 text-[#00629D]" />
+                            <Link href={route('contacts.index')} className="hover:text-[#00629D] transition-colors flex items-center gap-1.5 font-semibold">
+                                <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Contact Us
                             </Link>
                         </li>

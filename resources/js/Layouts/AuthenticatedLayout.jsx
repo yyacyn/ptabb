@@ -17,6 +17,7 @@ import {
     User as UserIcon,
     ChevronRight,
     Flag,
+    Building
 } from 'lucide-react';
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -94,6 +95,8 @@ export default function AuthenticatedLayout({ header, children }) {
         { name: 'Client Partners', href: route('clients.index'), icon: Users, pattern: 'clients.*', module: 'clients' },
         { name: 'Pop-up Alerts', href: route('notifications.index'), icon: Bell, pattern: 'notifications.*', module: 'notifications' },
         { name: 'Contact Messages', href: route('contacts.index'), icon: Mail, pattern: 'contacts.*', module: 'contacts' },
+        { name: 'System Users', href: route('users.index'), icon: UserIcon, pattern: 'users.*', module: 'users' },
+        { name: 'HQ Contact Info', href: route('contact-info.index'), icon: Building, pattern: 'contact-info.*', module: 'contact_info' },
     ];
 
     const accessibleNavItems = navItems.filter(item => canAccess(item.module));

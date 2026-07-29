@@ -58,7 +58,6 @@ export default function Milestones({ milestones = [] }) {
 
     const { data, setData, post, processing, reset } = useForm({
         year: new Date().getFullYear().toString(),
-        milestones: '',
         milestone: '',
         description: '',
         image: null,
@@ -71,7 +70,6 @@ export default function Milestones({ milestones = [] }) {
             setPreviewImage(item.image || null);
             setData({
                 year: item.year || '',
-                milestones: title,
                 milestone: title,
                 description: item.description || '',
                 image: null,
@@ -80,7 +78,6 @@ export default function Milestones({ milestones = [] }) {
             setPreviewImage(null);
             reset({
                 year: new Date().getFullYear().toString(),
-                milestones: '',
                 milestone: '',
             });
         }
@@ -165,7 +162,7 @@ export default function Milestones({ milestones = [] }) {
                                 <select
                                     value={sortBy}
                                     onChange={handleSortChange}
-                                    className="border border-[#E5E7EB] rounded-[6px] text-xs py-1.5 px-2.5 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white font-semibold cursor-pointer"
+                                    className="border border-[#E5E7EB] rounded-[6px] text-xs py-1.5 px-2.5 pr-9 focus:border-[#00629D] focus:ring-[#00629D] bg-white  cursor-pointer"
                                 >
                                     <option value="year_desc">Year (Newest &rarr; Oldest)</option>
                                     <option value="year_asc">Year (Oldest &rarr; Newest)</option>
@@ -339,11 +336,8 @@ export default function Milestones({ milestones = [] }) {
                             <label className="block text-xs font-bold text-[#141B2C] mb-1">Milestone Headline / Title *</label>
                             <input
                                 type="text"
-                                value={data.milestones || data.milestone}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setData(data => ({ ...data, milestones: val, milestone: val }));
-                                }}
+                                value={data.milestone}
+                                onChange={(e) => setData('milestone', e.target.value)}
                                 placeholder="e.g. Company Incorporation / ISO 9001 Certification"
                                 required
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"

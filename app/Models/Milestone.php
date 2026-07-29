@@ -9,7 +9,6 @@ class Milestone extends Model
     protected $fillable = [
         'year',
         'milestone',
-        'milestones',
         'description',
         'image',
     ];

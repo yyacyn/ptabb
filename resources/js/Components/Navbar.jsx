@@ -77,7 +77,7 @@ export default function Navbar({ onScrollToSection }) {
                 {/* Contact Us Pill */}
                 <Link
                     href={route('contacts.index')}
-                    className="flex-[151_1_0%] max-w-[151px] h-[42px] bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-white hover:opacity-95 transition-opacity whitespace-nowrap shrink"
+                    className="flex-[151_1_0%] max-w-[151px] h-[42px] bg-gradient-to-r from-[#D93A2B] to-[#FF5542] rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-white hover:opacity-95 transition-opacity whitespace-nowrap shrink shadow-xs"
                 >
                     CONTACT US
                 </Link>
@@ -103,7 +103,7 @@ export default function Navbar({ onScrollToSection }) {
 
                     <Link
                         href={route('contacts.index')}
-                        className="h-[42px] px-3 bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] flex items-center justify-center font-['JetBrains_Mono'] font-medium text-[12px] text-white shrink-0"
+                        className="h-[42px] px-3 bg-gradient-to-r from-[#D93A2B] to-[#FF5542] rounded-[8px] flex items-center justify-center font-['JetBrains_Mono'] font-medium text-[12px] text-white shrink-0 shadow-xs"
                     >
                         Contact Us
                     </Link>

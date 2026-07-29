@@ -4,6 +4,8 @@ use App\Http\Controllers\AisIngestController;
 use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ContactsController;
+use App\Http\Controllers\ContactInfosController;
+use App\Http\Controllers\UsersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FleetCatController;
 use App\Http\Controllers\FleetsController;
@@ -34,6 +36,58 @@ Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.s
 
 // AISStream.io Telemetry Ingestion Endpoint
 Route::post('/api/ais/ingest', [AisIngestController::class, 'ingest'])->name('ais.ingest');
+
+Route::get('/setup-storage-link', function () {
+    $target = storage_path('app/public');
+    $shortcut = public_path('storage');
+    
+    if (file_exists($shortcut) || is_link($shortcut)) {
+        unlink($shortcut);
+    }
+    
+    if (symlink($target, $shortcut)) {
+        return 'SUCCESS: Symlink created! Target: ' . $target;
+    }
+    
+    return 'FAILED to create symlink.';
+});
+
+// TEMPORARY PRODUCTION SETUP ROUTES
+Route::get('/run-migrate', function () {
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        return '<h2>Migration Result:</h2><pre>' . Artisan::output() . '</pre>';
+    } catch (\Exception $e) {
+        return '<h2>Migration Error:</h2><pre>' . $e->getMessage() . '</pre>';
+    }
+});
+
+Route::get('/run-seed', function () {
+    try {
+        Artisan::call('db:seed', ['--force' => true]);
+        return '<h2>Seeding Result:</h2><pre>' . Artisan::output() . '</pre>';
+    } catch (\Exception $e) {
+        return '<h2>Seeding Error:</h2><pre>' . $e->getMessage() . '</pre>';
+    }
+});
+
+Route::get('/run-optimize', function () {
+    try {
+        Artisan::call('config:cache');
+        Artisan::call('route:cache');
+        Artisan::call('view:cache');
+        return '<h2>Optimization complete!</h2>';
+    } catch (\Exception $e) {
+        return '<h2>Error:</h2><pre>' . $e->getMessage() . '</pre>';
+    }
+});
+
+Route::get('/clear-cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    return 'Cache cleared!';
+});
+
 
 // Protected Admin Dashboard Management Routes
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
@@ -78,6 +132,9 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
 
     // Notifications Management
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications', [NotificationsController::class, 'store'])->name('notifications.store');
+    Route::put('/notifications/{id}', [NotificationsController::class, 'update'])->name('notifications.update');
+    Route::delete('/notifications/{id}', [NotificationsController::class, 'destroy'])->name('notifications.destroy');
 
     // Contacts Admin Management
     Route::get('/contacts', [ContactsController::class, 'index'])->name('contacts.index');
@@ -88,6 +145,18 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     Route::get('/news-category', [NewsCatController::class, 'index'])->name('news-category.index');
     Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('fleet-category.index');
     Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('voyage-waypoints.index');
+
+    // User Management (Super Admin Only)
+    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+    Route::post('/users', [UsersController::class, 'store'])->name('users.store');
+    Route::put('/users/{id}', [UsersController::class, 'update'])->name('users.update');
+    Route::delete('/users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
+
+    // HQ Contact Info Management (Super Admin Only)
+    Route::get('/contact-info', [ContactInfosController::class, 'index'])->name('contact-info.index');
+    Route::post('/contact-info', [ContactInfosController::class, 'store'])->name('contact-info.store');
+    Route::put('/contact-info/{id}', [ContactInfosController::class, 'update'])->name('contact-info.update');
+    Route::delete('/contact-info/{id}', [ContactInfosController::class, 'destroy'])->name('contact-info.destroy');
 
     // Profile Settings
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

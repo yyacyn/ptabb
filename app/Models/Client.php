@@ -16,4 +16,28 @@ class Client extends Model
         'category',
         'logo',
     ];
+
+    protected $appends = ['logo_url'];
+
+    public function getLogoUrlAttribute()
+    {
+        if (empty($this->logo)) {
+            return '/images/clients/placeholder.png';
+        }
+
+        if (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://')) {
+            return $this->logo;
+        }
+
+        if (str_starts_with($this->logo, '/storage/') || str_starts_with($this->logo, '/images/')) {
+            return $this->logo;
+        }
+
+        if (str_starts_with($this->logo, 'storage/') || str_starts_with($this->logo, 'images/')) {
+            return '/' . $this->logo;
+        }
+
+        return '/images/clients/' . basename($this->logo);
+    }
 }
+

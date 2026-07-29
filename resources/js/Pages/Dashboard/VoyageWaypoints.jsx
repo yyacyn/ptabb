@@ -22,15 +22,15 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // Custom live vessel navigation pointer icon (Standalone rotated triangle arrow)
 const createVesselIcon = (heading = 0) => {
     const arrowIconHtml = renderToString(
-        <Navigation 
+        <Navigation
             size={26}
-            style={{ 
+            style={{
                 color: '#00629D',
                 fill: '#00629D',
-                transform: `rotate(${heading}deg)`, 
+                transform: `rotate(${heading}deg)`,
                 transition: 'transform 0.4s ease-out',
                 filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.35))'
-            }} 
+            }}
         />
     );
 
@@ -79,8 +79,8 @@ function LeafletViewer({ waypoint }) {
                 }).addTo(mapInstance.current);
 
                 // Identify the single live current position (sequence 1 or first point)
-                const liveIndex = routePoints.findIndex(p => p.sequence === 1) >= 0 
-                    ? routePoints.findIndex(p => p.sequence === 1) 
+                const liveIndex = routePoints.findIndex(p => p.sequence === 1) >= 0
+                    ? routePoints.findIndex(p => p.sequence === 1)
                     : 0;
 
                 // Add markers for each waypoint/stop on the route
@@ -97,7 +97,7 @@ function LeafletViewer({ waypoint }) {
                             ` : ''}
                         </div>
                     `;
-                    
+
                     // Strictly only the single current position gets the vessel pointer icon
                     const markerOptions = isLive ? { icon: createVesselIcon(heading), zIndexOffset: 1000 } : {};
                     const m = L.marker([p.lat, p.lng], markerOptions).addTo(mapInstance.current).bindPopup(popupText);
@@ -282,11 +282,11 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
-                    
+
                     {/* Top Global Fleet Map Overview (Position of all vessels) */}
-                    <GlobalFleetMapViewer 
-                        waypoints={voyage_waypoints} 
-                        onSelectVessel={openMapModal} 
+                    <GlobalFleetMapViewer
+                        waypoints={voyage_waypoints}
+                        onSelectVessel={openMapModal}
                     />
 
                     {/* Table of Fleet Vessels */}
@@ -323,7 +323,7 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            <button 
+                                            <button
                                                 onClick={() => openMapModal(item)}
                                                 className="inline-flex items-center gap-1 text-emerald-600 hover:bg-emerald-50 px-2.5 py-1 rounded-[4px] font-semibold transition-colors cursor-pointer"
                                             >
@@ -354,11 +354,10 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                                         <button
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
-                                            className={`px-3 py-1.5 rounded-[4px] font-semibold cursor-pointer ${
-                                                currentPage === page
+                                            className={`px-3 py-1.5 rounded-[4px] font-semibold cursor-pointer ${currentPage === page
                                                     ? 'bg-[#00629D] text-white border border-[#00629D]'
                                                     : 'border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C]'
-                                            }`}
+                                                }`}
                                         >
                                             {page}
                                         </button>

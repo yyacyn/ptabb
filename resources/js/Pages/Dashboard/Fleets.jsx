@@ -272,7 +272,7 @@ export default function Fleets({ fleets = [] }) {
                                                         e.currentTarget.src = '/images/card_bulk_vessel.png';
                                                     }}
                                                 />
-                                                <div className="absolute top-2 left-2 bg-[#141B2C]/80 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider border border-white/10">
+                                                <div className="absolute bottom-2 left-2 bg-[#141B2C]/80 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider border border-white/10">
                                                     {categoryName}
                                                 </div>
                                                 <div className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${

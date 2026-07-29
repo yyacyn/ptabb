@@ -216,7 +216,7 @@ export default function Clients({ clients = [] }) {
                                 <select
                                     value={sortBy}
                                     onChange={handleSortChange}
-                                    className="border border-[#E5E7EB] rounded-[6px] text-xs py-1.5 px-2.5 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white font-semibold cursor-pointer"
+                                    className="border border-[#E5E7EB] rounded-[6px] text-xs py-1.5 px-2.5 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
                                 >
                                     <option value="newest">Newest Added</option>
                                     <option value="name_asc">Name (A &rarr; Z)</option>

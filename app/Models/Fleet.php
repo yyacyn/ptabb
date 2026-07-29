@@ -50,6 +50,27 @@ class Fleet extends Model
         'particulars_data' => 'array',
     ];
 
+    protected $appends = ['featured_image_url'];
+
+    public function getFeaturedImageUrlAttribute()
+    {
+        if (!$this->featured_image) {
+            return '/images/card_bulk_vessel.png';
+        }
+
+        if (str_starts_with($this->featured_image, 'http') || str_starts_with($this->featured_image, '/')) {
+            return $this->featured_image;
+        }
+
+        // First check static assets /images/fleet/
+        if (file_exists(public_path('images/fleet/' . $this->featured_image))) {
+            return '/images/fleet/' . $this->featured_image;
+        }
+
+        // Fallback to uploaded storage/fleets/
+        return '/storage/fleets/' . $this->featured_image;
+    }
+
     public function category()
     {
         return $this->belongsTo(FleetCategory::class, 'category_id');

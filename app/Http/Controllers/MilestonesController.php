@@ -29,15 +29,10 @@ class MilestonesController extends Controller
     {
         $validated = $request->validate([
             'year' => 'required|string|max:20',
-            'milestones' => 'nullable|string|max:255',
-            'milestone' => 'nullable|string|max:255',
+            'milestone' => 'required|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:10240',
         ]);
-
-        $title = $request->input('milestone') ?? $request->input('milestones') ?? '';
-        $validated['milestone'] = $title;
-        $validated['milestones'] = $title;
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('milestones', 'public');
@@ -62,15 +57,10 @@ class MilestonesController extends Controller
 
         $validated = $request->validate([
             'year' => 'required|string|max:20',
-            'milestones' => 'nullable|string|max:255',
-            'milestone' => 'nullable|string|max:255',
+            'milestone' => 'required|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable',
         ]);
-
-        $title = $request->input('milestone') ?? $request->input('milestones') ?? '';
-        $validated['milestone'] = $title;
-        $validated['milestones'] = $title;
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('milestones', 'public');
