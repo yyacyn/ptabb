@@ -2,6 +2,6 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/abbrnptabb/beta.ptabb.com
-    - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp -R . $DEPLOYPATH
     - /bin/cp -R .env $DEPLOYPATH/ 2>/dev/null || :
     - /bin/ln -sfn $DEPLOYPATH/storage/app/public $DEPLOYPATH/public/storage 2>/dev/null || :
