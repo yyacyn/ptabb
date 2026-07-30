@@ -19,14 +19,14 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Custom live vessel navigation pointer icon (Standalone rotated triangle arrow)
-const createVesselIcon = (heading = 0) => {
+// Custom live vessel navigation pointer icon (Direction arrow + Vessel name label)
+const createVesselIcon = (vesselName = 'Vessel', heading = 0, pinColor = '#00629D') => {
     const arrowIconHtml = renderToString(
         <Navigation
-            size={26}
+            size={22}
             style={{
-                color: '#00629D',
-                fill: '#00629D',
+                color: pinColor,
+                fill: pinColor,
                 transform: `rotate(${heading}deg)`,
                 transition: 'transform 0.4s ease-out',
                 filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.35))'
@@ -35,11 +35,20 @@ const createVesselIcon = (heading = 0) => {
     );
 
     return L.divIcon({
-        className: 'custom-vessel-marker',
-        html: `<div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;">${arrowIconHtml}</div>`,
-        iconSize: [26, 26],
-        iconAnchor: [13, 13],
-        popupAnchor: [0, -13]
+        className: 'custom-fleet-pin',
+        html: `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    ${arrowIconHtml}
+                </div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 10px; color: #141B2C; background: rgba(255,255,255,0.92); backdrop-filter: blur(4px); padding: 2px 6px; border-radius: 3px; white-space: nowrap; margin-top: 3px; border: 1px solid rgba(0,0,0,0.12); box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+                    ${vesselName}
+                </div>
+            </div>
+        `,
+        iconSize: [120, 50],
+        iconAnchor: [60, 15],
+        popupAnchor: [0, -15]
     });
 };
 
@@ -99,7 +108,7 @@ function LeafletViewer({ waypoint }) {
                     `;
 
                     // Strictly only the single current position gets the vessel pointer icon
-                    const markerOptions = isLive ? { icon: createVesselIcon(heading), zIndexOffset: 1000 } : {};
+                    const markerOptions = isLive ? { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading), zIndexOffset: 1000 } : {};
                     const m = L.marker([p.lat, p.lng], markerOptions).addTo(mapInstance.current).bindPopup(popupText);
                     if (isLive) {
                         m.openPopup();
@@ -120,13 +129,13 @@ function LeafletViewer({ waypoint }) {
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status}</span>
                     </div>
                 `;
-                liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();
+                liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();
             }
         } else {
             // Live position dynamic update on poll
             if (liveMarkerRef.current) {
                 liveMarkerRef.current.setLatLng([lat, lng]);
-                liveMarkerRef.current.setIcon(createVesselIcon(heading));
+                liveMarkerRef.current.setIcon(createVesselIcon(waypoint.vessel || 'Vessel', heading));
             }
         }
 
@@ -176,12 +185,14 @@ function GlobalFleetMapViewer({ waypoints = [], onSelectVessel }) {
         if (!mapInstance.current || !waypoints || waypoints.length === 0) return;
 
         const validPoints = waypoints.filter(w => !isNaN(parseFloat(w.lat)) && !isNaN(parseFloat(w.lng)));
+        const colors = ['#00629D', '#F59E0B', '#8B5CF6', '#EF4444', '#10B981'];
 
-        validPoints.forEach((vessel) => {
+        validPoints.forEach((vessel, idx) => {
             const lat = parseFloat(vessel.lat);
             const lng = parseFloat(vessel.lng);
             const heading = vessel.cog || 0;
-            const vesselIcon = createVesselIcon(heading);
+            const pinColor = vessel.color || colors[idx % colors.length];
+            const vesselIcon = createVesselIcon(vessel.vessel || 'Vessel', heading, pinColor);
 
             const shipIconHtml = renderToString(<Ship size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
@@ -220,7 +231,7 @@ function GlobalFleetMapViewer({ waypoints = [], onSelectVessel }) {
     }, [waypoints, onSelectVessel]);
 
     return (
-        <div className="bg-white p-4 rounded-[8px] border border-[#E5E7EB] shadow-sm">
+        <div className="bg-white p-4 rounded-[8px] border border-[#E5E7EB]">
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                     <Ship className="w-4.5 h-4.5 text-[#00629D]" />
@@ -290,7 +301,7 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                     />
 
                     {/* Table of Fleet Vessels */}
-                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] overflow-hidden ">
                         <table className="w-full text-left text-xs">
                             <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase">
                                 <tr>

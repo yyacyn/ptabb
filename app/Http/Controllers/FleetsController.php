@@ -10,12 +10,65 @@ use Inertia\Inertia;
 
 class FleetsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $fleets = Fleet::with('category')->latest()->get();
 
-        return Inertia::render('Dashboard/Fleets', [
+        $allWaypointsGrouped = \App\Models\VoyageWaypoint::orderBy('sequence', 'asc')->get()->groupBy('fleet_id');
+        $voyageWaypoints = \App\Models\Fleet::all()->map(function ($fleet) use ($allWaypointsGrouped) {
+            $waypoints = $allWaypointsGrouped->get($fleet->id, collect());
+            $liveWp = $waypoints->firstWhere('sequence', 1) ?? $waypoints->first();
+
+            $speed = '11.4 knots';
+            $cog = 45;
+            if ($liveWp) {
+                if (preg_match('/SOG:\s*([0-9.]+)\s*kts/', $liveWp->notes, $matches)) {
+                    $speed = $matches[1] . ' knots';
+                }
+                if (preg_match('/COG:\s*([0-9.]+)/', $liveWp->notes, $cogMatches)) {
+                    $cog = (float) $cogMatches[1];
+                }
+            }
+
+            $routePoints = $waypoints->map(function ($w) {
+                return [
+                    'id' => $w->id,
+                    'name' => $w->port_name ?: ('Waypoint ' . $w->sequence),
+                    'lat' => (float) $w->latitude,
+                    'lng' => (float) $w->longitude,
+                    'type' => $w->waypoint_type,
+                    'sequence' => $w->sequence,
+                ];
+            })->values();
+
+            return [
+                'id' => $fleet->id,
+                'vessel' => $fleet->ship_name,
+                'lat' => $liveWp ? (float) $liveWp->latitude : 15.2,
+                'lng' => $liveWp ? (float) $liveWp->longitude : 73.8,
+                'speed' => $speed,
+                'cog' => $cog,
+                'status' => $fleet->status ?? 'Active - In Service',
+                'route_points' => $routePoints,
+            ];
+        });
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'fleets' => $fleets,
+                'voyage_waypoints' => $voyageWaypoints,
+            ]);
+        }
+
+        if ($request->is('dashboard*')) {
+            return Inertia::render('Dashboard/Fleets', [
+                'fleets' => $fleets,
+            ]);
+        }
+
+        return Inertia::render('Fleets', [
             'fleets' => $fleets,
+            'voyage_waypoints' => $voyageWaypoints,
         ]);
     }
 

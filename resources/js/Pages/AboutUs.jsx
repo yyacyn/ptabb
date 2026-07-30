@@ -70,7 +70,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
 
     return (
         <GuestLayout>
-            <Head title="About Us — PT Pelayaran Andalas Bahtera Baruna" />
+            <Head title="About Us - PT PABB" />
 
             {/* 1. Hero Banner Section */}
             <motion.section

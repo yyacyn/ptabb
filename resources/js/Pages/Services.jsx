@@ -249,7 +249,7 @@ export default function Services({ fleets = [], clients = [] }) {
 
     return (
         <GuestLayout>
-            <Head title="Services" />
+            <Head title="Services - PT PABB" />
 
             {/* SECTION 01: HERO BANNER */}
             <motion.section
@@ -262,7 +262,7 @@ export default function Services({ fleets = [], clients = [] }) {
                     {/* Left Column (Content & CTAs) */}
                     <div className="lg:col-span-5 flex flex-col justify-center ml-4 pl-4">
                         {/* Eyebrow */}
-                        <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#404750] tracking-wider mb-3">
+                        <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-3">
                             WHAT WE OFFER
                         </div>
 
@@ -302,16 +302,16 @@ export default function Services({ fleets = [], clients = [] }) {
                     <div className="lg:col-span-7 flex flex-col gap-1 ">
                         {/* Vessel Image Panel with 7s Randomized Slideshow */}
                         <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-sm h-[300px] sm:h-[360px] lg:h-[400px] w-full relative group bg-[#141B2C]">
-                            <AnimatePresence mode="wait">
+                            <AnimatePresence initial={false}>
                                 <motion.img
                                     key={currentHeroImageIdx}
                                     src={vesselImages[currentHeroImageIdx % vesselImages.length]}
                                     alt="PT. ABB Maritime Vessel"
-                                    initial={{ opacity: 0, scale: 1.04 }}
-                                    animate={{ opacity: 1, scale: 1 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.8, ease: 'easeInOut' }}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    transition={{ duration: 1.2, ease: 'easeInOut' }}
+                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     onError={(e) => {
                                         e.currentTarget.src = '/images/card_bulk_vessel.png';
                                     }}
@@ -370,7 +370,7 @@ export default function Services({ fleets = [], clients = [] }) {
             >
                 {/* Header */}
                 <div className="max-w-[1091px] mx-auto text-center flex flex-col items-center gap-3 mb-10 sm:mb-12">
-                    <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#404750] tracking-wider">
+                    <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider">
                         CHARTERING SOLUTIONS
                     </div>
                     <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight">

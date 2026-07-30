@@ -151,7 +151,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
 
     return (
         <GuestLayout onScrollToSection={scrollToSection}>
-            <Head title="PT Pelayaran Andalas Bahtera Baruna — Indonesian Leaders in Bulk Cement Transportation" />
+            <Head title="Welcome - PT PABB" />
 
             {/* 1. Hero Section */}
             <div id="about" className="grid grid-cols-1 lg:grid-cols-12 gap-[7px] items-stretch min-h-[606px]">
@@ -826,7 +826,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     {/* Right See More Fleet Button */}
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                         <Link
-                            href={safeRoute('fleets.index', '/fleets')}
+                            href={'/fleets'}
                             className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                         >
                             See More Fleet
