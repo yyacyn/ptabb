@@ -30,6 +30,7 @@ Route::get('/services', [ServicesController::class, 'index'])->name('public.serv
 
 // Public GET & POST Endpoints (Support JSON responses for Postman & API testing)
 Route::get('/fleets', [FleetsController::class, 'index'])->name('public.fleets');
+Route::get('/fleets/{id}', [FleetsController::class, 'show'])->name('public.fleets.show');
 Route::get('/clients', [ClientsController::class, 'index'])->name('public.clients');
 Route::get('/careers', [CareersController::class, 'index'])->name('public.careers');
 Route::get('/news', [NewsController::class, 'index'])->name('public.news');

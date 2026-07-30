@@ -87,7 +87,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     const navItems = [
         { name: 'Dashboard', href: route('dashboard'), icon: LayoutDashboard, pattern: 'dashboard', module: 'dashboard' },
-        { name: 'Fleets', href: route('fleets.index'), icon: Ship, pattern: 'fleets.*', module: 'fleets' },
+        { name: 'Fleet', href: route('fleets.index'), icon: Ship, pattern: 'fleets.*', module: 'fleets' },
         { name: 'Voyage Telemetry', href: route('voyage-waypoints.index'), icon: Navigation, pattern: 'voyage-waypoints.*', module: 'fleets' },
         { name: 'Company Milestones', href: route('milestones.index'), icon: Flag, pattern: 'milestones.*', module: 'milestones' },
         { name: 'News & Articles', href: route('news.index'), icon: Newspaper, pattern: 'news.*', module: 'news' },

@@ -50,7 +50,7 @@ class Fleet extends Model
         'particulars_data' => 'array',
     ];
 
-    protected $appends = ['featured_image_url'];
+    protected $appends = ['featured_image_url', 'ship_particular_pdf_url'];
 
     public function getFeaturedImageUrlAttribute()
     {
@@ -69,6 +69,32 @@ class Fleet extends Model
 
         // Fallback to uploaded storage/fleets/
         return '/storage/fleets/' . $this->featured_image;
+    }
+
+    public function getShipParticularPdfUrlAttribute()
+    {
+        if ($this->ship_particular_pdf) {
+            if (str_starts_with($this->ship_particular_pdf, 'http') || str_starts_with($this->ship_particular_pdf, '/')) {
+                return $this->ship_particular_pdf;
+            }
+            if (file_exists(public_path('documents/fleets/' . $this->ship_particular_pdf))) {
+                return '/documents/fleets/' . $this->ship_particular_pdf;
+            }
+            if (file_exists(public_path('storage/fleets/pdfs/' . $this->ship_particular_pdf))) {
+                return '/storage/fleets/pdfs/' . $this->ship_particular_pdf;
+            }
+        }
+
+        $name = $this->ship_name ?: '';
+        if ($name && file_exists(public_path('documents/fleets/' . $name . '.pdf'))) {
+            return '/documents/fleets/' . $name . '.pdf';
+        }
+
+        if (file_exists(public_path('documents/fleets/MV. Iriana.pdf'))) {
+            return '/documents/fleets/MV. Iriana.pdf';
+        }
+
+        return null;
     }
 
     public function category()

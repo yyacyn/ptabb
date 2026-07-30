@@ -45,7 +45,7 @@ export default function Footer() {
                             </Link>
                         </li>
                         <li>
-                            <a href="#fleet" className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                            <a href="/fleets" className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
                                 <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Our Fleet
                             </a>

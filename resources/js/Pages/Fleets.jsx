@@ -365,7 +365,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="bg-[#141B2C] text-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-10 lg:p-14 text-center my-[7px]"
+                className="bg-[#141B2C] text-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-10 lg:p-14 text-center "
             >
                 <div className="max-w-4xl mx-auto flex flex-col items-center gap-3 mb-8 sm:mb-10">
                     <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#8AAFC8] tracking-wider">
@@ -499,12 +499,10 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                                         <h3 className="font-['Hanken_Grotesk'] font-bold text-[20px] text-[#141B2C] mb-1">
                                             {vessel.ship_name || vessel.name || 'Not Available'}
                                         </h3>
-                                        <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750]"> IMO: 
-                                            <span className="font-['JetBrains_Mono']"> {vessel.imo_number || 'Not Available'}</span>
+                                        <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750]"> IMO: <span className="font-['JetBrains_Mono']"> {vessel.imo_number || 'Not Available'}</span>
                                         </div>
                                     </div>
-                                    <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750] mb-4">
-                                        {vessel.vessel_type || vessel.category?.name || vessel.type || 'Not Available'}
+                                    <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750] mb-4">Type: <span> {vessel.vessel_type || vessel.category?.name || vessel.type || 'Not Available'}</span>
                                     </div>
 
                                     {/* Specs Box Grid */}
@@ -555,7 +553,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
 
                             <div className="p-6 pt-0">
                                 <Link
-                                    href={route('contacts.index')}
+                                    href={`/fleets/${vessel.id || 1}`}
                                     className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] text-white transition-colors duration-200 rounded-[4px] py-2.5 font-['Hanken_Grotesk'] font-semibold text-[17px] "
                                 >
                                     See Vessel Detail

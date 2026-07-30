@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import TallyNumber from '@/Components/TallyNumber';
+import NotificationPopup from '@/Components/NotificationPopup';
 import {
     MapPin,
     ArrowRight,
@@ -18,12 +19,13 @@ import {
     Zap
 } from 'lucide-react';
 
-export default function Welcome({ auth, clients: initialClients = [], fleets: initialFleets = [] }) {
+export default function Welcome({ auth, clients: initialClients = [], fleets: initialFleets = [], notifications: initialNotifications = [] }) {
     const [activeFleetTab, setActiveFleetTab] = useState(0);
     const [heroVesselIndex, setHeroVesselIndex] = useState(0);
     const [activeRegion, setActiveRegion] = useState('indonesia');
     const [clientsList, setClientsList] = useState(initialClients);
     const [fleetsList, setFleetsList] = useState(initialFleets);
+    const [notificationsList, setNotificationsList] = useState(initialNotifications);
 
     // Auto-rotate Hero active vessel every 3 seconds (3000ms)
     useEffect(() => {
@@ -37,7 +39,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
         return () => clearInterval(interval);
     }, [fleetsList]);
 
-    // Fetch all clients & fleets from API endpoints if not provided via Inertia props
+    // Fetch all clients, fleets, and notifications from API endpoints if not provided via Inertia props
     useEffect(() => {
         if (!initialClients || initialClients.length === 0) {
             fetch('/clients', {
@@ -64,7 +66,20 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                 })
                 .catch(err => console.error("Error loading fleets:", err));
         }
-    }, [initialClients, initialFleets]);
+
+        if (!initialNotifications || initialNotifications.length === 0) {
+            fetch('/notifications', {
+                headers: { 'Accept': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        setNotificationsList(data);
+                    }
+                })
+                .catch(err => console.error("Error loading notifications:", err));
+        }
+    }, [initialClients, initialFleets, initialNotifications]);
 
     // Ensure page always loads at top and clears any auto-scroll anchor hash
     useEffect(() => {
@@ -152,6 +167,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
     return (
         <GuestLayout onScrollToSection={scrollToSection}>
             <Head title="Welcome - PT PABB" />
+            <NotificationPopup notifications={notificationsList} targetType="home" />
 
             {/* 1. Hero Section */}
             <div id="about" className="grid grid-cols-1 lg:grid-cols-12 gap-[7px] items-stretch min-h-[606px]">

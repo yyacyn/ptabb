@@ -28,7 +28,7 @@ export default function Navbar({ onScrollToSection }) {
                         alt="PT ABB Logo"
                         className="h-[24px] w-auto object-contain shrink-0"
                     />
-                    <span className="font-['Hanken_Grotesk'] font-bold text-[16px] text-[#141B2C] tracking-tight truncate whitespace-nowrap">
+                    <span className="font-['Hanken_Grotesk'] font-bold text-[17px] text-[#141B2C] tracking-tight truncate whitespace-nowrap">
                         PT Pelayaran Andalas Bahtera Baruna
                     </span>
                 </Link>

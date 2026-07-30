@@ -305,7 +305,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                 </div>
             }
         >
-            <Head title={`${isEditing ? 'Edit Ship' : 'Add Vessel'} — PT. ABB`} />
+            <Head title={`${isEditing ? 'Edit Ship' : 'Add Vessel'} - PT. PABB`} />
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1000px] mx-auto px-4 sm:px-6 space-y-6">

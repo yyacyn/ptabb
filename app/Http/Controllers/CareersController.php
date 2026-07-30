@@ -65,8 +65,13 @@ class CareersController extends Controller
             'application_deadline' => 'nullable|date',
         ]);
 
-        if (!empty($validated['application_deadline']) && strtotime($validated['application_deadline']) < strtotime(date('Y-m-d')) && ($validated['status'] ?? 'open') === 'open') {
-            $validated['status'] = 'expired';
+        if (!empty($validated['application_deadline'])) {
+            $deadlineTime = strtotime($validated['application_deadline'] . ' 23:59:59');
+            if ($deadlineTime >= time()) {
+                $validated['status'] = 'open';
+            } else {
+                $validated['status'] = 'expired';
+            }
         }
 
         if (auth()->check()) {
@@ -115,8 +120,13 @@ class CareersController extends Controller
             'application_deadline' => 'nullable|date',
         ]);
 
-        if (!empty($validated['application_deadline']) && strtotime($validated['application_deadline']) < strtotime(date('Y-m-d')) && ($validated['status'] ?? 'open') === 'open') {
-            $validated['status'] = 'expired';
+        if (!empty($validated['application_deadline'])) {
+            $deadlineTime = strtotime($validated['application_deadline'] . ' 23:59:59');
+            if ($deadlineTime >= time()) {
+                $validated['status'] = 'open';
+            } else {
+                $validated['status'] = 'expired';
+            }
         }
 
         $career->update($validated);

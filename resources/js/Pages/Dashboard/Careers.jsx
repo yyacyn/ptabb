@@ -96,6 +96,24 @@ export default function Careers({ careers = [] }) {
         application_deadline: '',
     });
 
+    const handleDeadlineChange = (val) => {
+        let nextStatus = data.status;
+        if (val) {
+            const deadlineDate = new Date(val + 'T23:59:59');
+            const now = new Date();
+            if (deadlineDate >= now) {
+                nextStatus = 'open';
+            } else {
+                nextStatus = 'expired';
+            }
+        }
+        setData(prev => ({
+            ...prev,
+            application_deadline: val,
+            status: nextStatus,
+        }));
+    };
+
     const openModal = (career = null) => {
         setEditingCareer(career);
         if (career) {
@@ -493,7 +511,7 @@ export default function Careers({ careers = [] }) {
                                 <input
                                     type="date"
                                     value={data.application_deadline}
-                                    onChange={(e) => setData('application_deadline', e.target.value)}
+                                    onChange={(e) => handleDeadlineChange(e.target.value)}
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
                             </div>

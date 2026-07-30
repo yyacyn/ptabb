@@ -72,6 +72,63 @@ class FleetsController extends Controller
         ]);
     }
 
+    public function show(Request $request, $id)
+    {
+        $fleet = Fleet::with(['category', 'waypoints'])->find($id);
+
+        if (!$fleet) {
+            $fleet = Fleet::with(['category', 'waypoints'])->first();
+        }
+
+        $waypoints = $fleet ? $fleet->waypoints : collect();
+        $liveWp = $waypoints->firstWhere('sequence', 1) ?? $waypoints->first();
+
+        $speed = '11.4 knots';
+        $cog = 45;
+        if ($liveWp && $liveWp->notes) {
+            if (preg_match('/SOG:\s*([0-9.]+)\s*kts/', $liveWp->notes, $matches)) {
+                $speed = $matches[1] . ' knots';
+            }
+            if (preg_match('/COG:\s*([0-9.]+)/', $liveWp->notes, $cogMatches)) {
+                $cog = (float) $cogMatches[1];
+            }
+        }
+
+        $routePoints = $waypoints->map(function ($w) {
+            return [
+                'id' => $w->id,
+                'name' => $w->port_name ?: ('Waypoint ' . $w->sequence),
+                'lat' => (float) $w->latitude,
+                'lng' => (float) $w->longitude,
+                'type' => $w->waypoint_type,
+                'sequence' => $w->sequence,
+            ];
+        })->values();
+
+        $voyageWaypoint = [
+            'id' => $fleet ? $fleet->id : 1,
+            'vessel' => $fleet ? $fleet->ship_name : 'MV. IRIANA',
+            'lat' => $liveWp ? (float) $liveWp->latitude : -6.1,
+            'lng' => $liveWp ? (float) $liveWp->longitude : 106.8,
+            'speed' => $speed,
+            'cog' => $cog,
+            'status' => $fleet ? ($fleet->status ?? 'Active - In Service') : 'Active - In Service',
+            'route_points' => $routePoints,
+        ];
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'fleet' => $fleet,
+                'voyage_waypoint' => $voyageWaypoint,
+            ]);
+        }
+
+        return Inertia::render('Fleets/Show', [
+            'fleet' => $fleet,
+            'voyage_waypoint' => $voyageWaypoint,
+        ]);
+    }
+
     public function create()
     {
         return Inertia::render('Dashboard/Fleets/Edit', [
