@@ -39,7 +39,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                 <Navbar onScrollToSection={onScrollToSection} />
 
                 {/* Page Main Content */}
-                <main className="flex flex-col gap-[7px] mt-[7px]">{children}</main>
+                <main className="flex flex-col gap-[7px] mt-[47px]">{children}</main>
 
                 {/* Shared Footer */}
                 <Footer />

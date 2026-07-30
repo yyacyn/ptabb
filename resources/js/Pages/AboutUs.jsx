@@ -141,7 +141,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                         WHO WE ARE
                     </div>
 
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[30px] sm:text-[36px] lg:text-[42px] text-[#141B2C] tracking-tight leading-[1.15] mb-4">
+                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[30px] sm:text-[36px] lg:text-[40px] text-[#141B2C] tracking-tight leading-[1.15] mb-4">
                         A Specialized Maritime Operator with Singular Focus
                     </h2>
 
@@ -280,7 +280,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                     <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-2">
                         MILESTONES
                     </div>
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[44px] lg:text-[50px] text-[#141B2C] tracking-tight leading-[1.12]">
+                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[36px] lg:text-[40px] text-[#141B2C] tracking-tight leading-[1.12]">
                         Building a Legacy of Fleet Excellence &amp; Ocean Trust
                     </h2>
                 </div>
@@ -500,13 +500,15 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                         Whether you need bulk cement transportation, specialized vessel charters, or long-term marine logistics, our ISO-certified fleet is ready to deliver.
                     </p>
 
-                    <Link
-                        href={route('contacts.index')}
-                        className="group inline-flex items-center gap-2 bg-[#D93A2B] hover:bg-[#c02e20] text-white font-['Hanken_Grotesk'] font-semibold text-[14px] px-7 py-3.5 rounded-[8px] transition-all duration-200 shadow-md active:scale-[0.97]"
-                    >
-                        <span>Request Charter Proposal</span>
-                        <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
-                    </Link>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
+                        <Link
+                            href={route('contacts.index')}
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
+                        >
+                            Request Charter Proposal
+                            <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
+                        </Link>
+                    </motion.div>
                 </div>
             </motion.section>
         </GuestLayout>

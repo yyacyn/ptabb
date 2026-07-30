@@ -180,7 +180,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="font-['Hanken_Grotesk'] font-medium text-[32px] sm:text-[44px] lg:text-[50px] leading-[1.12] text-[#141B2C] tracking-tight"
+                            className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[44px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight"
                         >
                             Indonesian Leaders in Bulk Cement Transportation
                         </motion.h1>
@@ -377,7 +377,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider">
                         OUR CORE EXCELLENCE
                     </div>
-                    <h2 className="font-['Hanken_Grotesk'] font-medium text-[32px] sm:text-[44px] lg:text-[50px] leading-[1.12] text-[#141B2C] max-w-[920px]">
+                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[36px] lg:text-[44px] leading-[1.12] text-[#141B2C] max-w-[920px]">
                         Connecting Industrial Supply Chains Across Regional and International Waters
                     </h2>
                     <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[850px] leading-relaxed mt-1">
@@ -665,7 +665,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider">
                         FEATURED FLEET
                     </div>
-                    <h2 className="font-['Hanken_Grotesk'] font-medium text-[32px] sm:text-[44px] lg:text-[50px] leading-[1.12] text-[#141B2C] max-w-[920px]">
+                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[36px] lg:text-[44px] leading-[1.12] text-[#141B2C] max-w-[920px]">
                         Engineered for High-Tonnage Cargo Precision
                     </h2>
                     <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[850px] leading-relaxed">
@@ -814,8 +814,8 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                 type="button"
                                 onClick={() => setActiveFleetTab(idx)}
                                 className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center transition-all cursor-pointer ${activeFleetTab === idx
-                                        ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white shadow-xs border border-transparent'
-                                        : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
+                                    ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white shadow-xs border border-transparent'
+                                    : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
                                     }`}
                             >
                                 {idx + 1}
@@ -846,7 +846,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                 className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white rounded-[8px] p-8 sm:p-12 text-center relative overflow-hidden"
             >
                 <div className="max-w-[708px] mx-auto flex flex-col items-center gap-6 relative z-10">
-                    <h2 className="font-['Hanken_Grotesk'] font-medium text-[32px] sm:text-[44px] lg:text-[50px] leading-[1.05] text-white">
+                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[36px] lg:text-[44px] leading-[1.05] text-white">
                         Ready to Streamline Your Bulk Cargo Logistics?
                     </h2>
 

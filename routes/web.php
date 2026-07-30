@@ -16,6 +16,7 @@ use App\Http\Controllers\NewsCatController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\VoyageWaypointsController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,7 @@ Route::get('/about-us', [AboutUsController::class, 'index'])->name('public.about
 Route::get('/about', function () {
     return redirect()->route('public.about');
 });
+Route::get('/services', [ServicesController::class, 'index'])->name('public.services');
 
 // Public GET & POST Endpoints (Support JSON responses for Postman & API testing)
 Route::get('/fleets', [FleetsController::class, 'index'])->name('public.fleets');

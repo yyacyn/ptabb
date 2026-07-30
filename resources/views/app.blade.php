@@ -6,6 +6,9 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Favicon / Tab Logo -->
+        <link rel="icon" type="image/jpeg" href="{{ asset('images/pt_pelayaran_andalas_bahtera_baruna_logo.jpg') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
