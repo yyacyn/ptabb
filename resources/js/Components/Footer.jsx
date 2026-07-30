@@ -4,7 +4,7 @@ import { MapPin, Phone, Mail, ChevronRight } from 'lucide-react';
 export default function Footer() {
     return (
         <footer id="footer" className="mt-[7px] bg-white rounded-[8px] border border-[#E5E7EB] p-8 lg:p-10 font-['Hanken_Grotesk'] text-[#141B2C]">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8 pb-8 border-b border-[#E5E7EB]">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8 ">
                 {/* Brand Column */}
                 <div className="md:col-span-5 flex flex-col gap-4">
                     <div className="flex items-center gap-3">

@@ -18,6 +18,7 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\VoyageWaypointsController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 // Public Visitor & API Routes (Postman & Guest Accessible)
@@ -46,49 +47,27 @@ Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.s
 Route::post('/api/ais/ingest', [AisIngestController::class, 'ingest'])->name('ais.ingest');
 Route::get('/api/ais/simulate', [AisIngestController::class, 'simulate'])->name('ais.simulate');
 
+// Utility Helper Routes
 Route::get('/setup-storage-link', function () {
-    $target = storage_path('app/public');
-    $shortcut = public_path('storage');
-    
-    if (file_exists($shortcut) || is_link($shortcut)) {
-        unlink($shortcut);
-    }
-    
-    if (symlink($target, $shortcut)) {
-        return 'SUCCESS: Symlink created! Target: ' . $target;
-    }
-    
-    return 'FAILED to create symlink.';
+    Artisan::call('storage:link', ['--force' => true]);
+    return 'Storage link complete!';
 });
 
-// TEMPORARY PRODUCTION SETUP ROUTES
 Route::get('/run-migrate', function () {
-    try {
-        Artisan::call('migrate', ['--force' => true]);
-        return '<h2>Migration Result:</h2><pre>' . Artisan::output() . '</pre>';
-    } catch (\Exception $e) {
-        return '<h2>Migration Error:</h2><pre>' . $e->getMessage() . '</pre>';
-    }
+    Artisan::call('migrate', ['--force' => true]);
+    return 'Migration complete!';
 });
 
 Route::get('/run-seed', function () {
-    try {
-        Artisan::call('db:seed', ['--force' => true]);
-        return '<h2>Seeding Result:</h2><pre>' . Artisan::output() . '</pre>';
-    } catch (\Exception $e) {
-        return '<h2>Seeding Error:</h2><pre>' . $e->getMessage() . '</pre>';
-    }
+    Artisan::call('db:seed', ['--force' => true]);
+    return 'Seeding complete!';
 });
 
 Route::get('/run-optimize', function () {
-    try {
-        Artisan::call('config:cache');
-        Artisan::call('route:cache');
-        Artisan::call('view:cache');
-        return '<h2>Optimization complete!</h2>';
-    } catch (\Exception $e) {
-        return '<h2>Error:</h2><pre>' . $e->getMessage() . '</pre>';
-    }
+    Artisan::call('config:cache');
+    Artisan::call('route:cache');
+    Artisan::call('view:cache');
+    return 'Optimization complete!';
 });
 
 Route::get('/clear-cache', function () {
@@ -96,7 +75,6 @@ Route::get('/clear-cache', function () {
     Artisan::call('cache:clear');
     return 'Cache cleared!';
 });
-
 
 // Protected Admin Dashboard Management Routes
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {

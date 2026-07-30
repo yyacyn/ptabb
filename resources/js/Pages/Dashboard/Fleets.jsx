@@ -314,7 +314,7 @@ export default function Fleets({ fleets = [] }) {
                                         <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between gap-2">
                                             <Link 
                                                 href={route('fleets.edit', vessel.id)}
-                                                className="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 bg-[#F5F5F5] hover:bg-[#141B2C] hover:text-white rounded-[6px] text-xs font-semibold transition-colors cursor-pointer"
+                                                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 bg-[#F5F5F5] hover:bg-[#141B2C] hover:text-white rounded-[6px] text-xs font-semibold transition-colors cursor-pointer"
                                             >
                                                 <Edit2 className="w-3.5 h-3.5" /> Edit Specs
                                             </Link>

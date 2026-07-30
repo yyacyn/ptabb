@@ -74,24 +74,52 @@ class Fleet extends Model
     public function getShipParticularPdfUrlAttribute()
     {
         if ($this->ship_particular_pdf) {
-            if (str_starts_with($this->ship_particular_pdf, 'http') || str_starts_with($this->ship_particular_pdf, '/')) {
-                return $this->ship_particular_pdf;
+            $pdf = trim($this->ship_particular_pdf);
+
+            if (str_starts_with($pdf, 'http') || str_starts_with($pdf, '/')) {
+                return $pdf;
             }
-            if (file_exists(public_path('documents/fleets/' . $this->ship_particular_pdf))) {
-                return '/documents/fleets/' . $this->ship_particular_pdf;
+
+            $cleanPath = ltrim($pdf, '/');
+
+            if (str_starts_with($cleanPath, 'storage/')) {
+                return '/' . $cleanPath;
             }
-            if (file_exists(public_path('storage/fleets/pdfs/' . $this->ship_particular_pdf))) {
-                return '/storage/fleets/pdfs/' . $this->ship_particular_pdf;
+
+            if (file_exists(public_path($cleanPath))) {
+                return '/' . $cleanPath;
             }
+
+            if (file_exists(public_path('documents/fleets/' . $cleanPath))) {
+                return '/documents/fleets/' . $cleanPath;
+            }
+
+            if (file_exists(storage_path('app/public/' . $cleanPath))) {
+                return '/storage/' . $cleanPath;
+            }
+
+            if (file_exists(storage_path('app/public/documents/fleets/' . $cleanPath))) {
+                return '/storage/documents/fleets/' . $cleanPath;
+            }
+
+            if (file_exists(storage_path('app/public/fleets/pdfs/' . $cleanPath))) {
+                return '/storage/fleets/pdfs/' . $cleanPath;
+            }
+
+            if (file_exists(storage_path('app/public/fleets/' . $cleanPath))) {
+                return '/storage/fleets/' . $cleanPath;
+            }
+
+            if (str_contains($cleanPath, '/')) {
+                return '/storage/' . $cleanPath;
+            }
+
+            return '/storage/documents/fleets/' . $cleanPath;
         }
 
-        $name = $this->ship_name ?: '';
+        $name = trim($this->ship_name ?: '');
         if ($name && file_exists(public_path('documents/fleets/' . $name . '.pdf'))) {
             return '/documents/fleets/' . $name . '.pdf';
-        }
-
-        if (file_exists(public_path('documents/fleets/MV. Iriana.pdf'))) {
-            return '/documents/fleets/MV. Iriana.pdf';
         }
 
         return null;
