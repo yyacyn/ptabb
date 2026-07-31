@@ -9,7 +9,7 @@ export default function Clients({ clients = [] }) {
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 8;
+    const itemsPerPage = 12;
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
@@ -38,7 +38,6 @@ export default function Clients({ clients = [] }) {
         const matchesSearch = 
             (c.name || '').toLowerCase().includes(search) ||
             (c.category || '').toLowerCase().includes(search) ||
-            (c.type || '').toLowerCase().includes(search) ||
             (c.country || '').toLowerCase().includes(search);
         
         return matchesCategory && matchesSearch;
@@ -70,8 +69,6 @@ export default function Clients({ clients = [] }) {
         _method: 'POST',
         name: '',
         category: 'Domestic',
-        type: 'Cement Manufacturer',
-        country: 'Indonesia',
         logo: null,
     });
 
@@ -98,7 +95,6 @@ export default function Clients({ clients = [] }) {
                 _method: 'PUT',
                 name: client.name || '',
                 category: client.category || 'Domestic',
-                type: client.type || '',
                 country: client.country || 'Indonesia',
                 logo: null,
             });
@@ -255,9 +251,6 @@ export default function Clients({ clients = [] }) {
                                                 <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00629D] uppercase tracking-wider bg-[#F5F5F5] px-2 py-0.5 rounded border border-[#E5E7EB]">
                                                     {item.category || 'Partner'}
                                                 </span>
-                                                <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8] truncate max-w-[110px]">
-                                                    {item.country || 'Indonesia'}
-                                                </span>
                                             </div>
 
                                             {/* Client Logo Image Frame */}
@@ -284,13 +277,10 @@ export default function Clients({ clients = [] }) {
                                             <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-1 line-clamp-1">
                                                 {item.name}
                                             </h3>
-                                            <p className="text-xs text-[#404750] truncate">
-                                                {item.type || 'Industrial Partner'}
-                                            </p>
                                         </div>
 
                                         {/* Action Bar */}
-                                        <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between text-xs font-semibold">
+                                        <div className="pt-3 flex items-center justify-between text-xs font-semibold border-t border-[#E5E7EB] mt-4">
                                             <button 
                                                 onClick={() => openModal(item)}
                                                 className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
@@ -408,17 +398,6 @@ export default function Clients({ clients = [] }) {
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
                             </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Industry Type</label>
-                            <input
-                                type="text"
-                                value={data.type}
-                                onChange={(e) => setData('type', e.target.value)}
-                                placeholder="e.g. Cement Manufacturer / Shipping Line"
-                                className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
-                            />
                         </div>
 
                         {/* Partner Logo File Upload */}

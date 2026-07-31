@@ -169,7 +169,7 @@ export default function Login({ status, canResetPassword }) {
                     </form>
 
                     {/* Back to Home Link */}
-                    <div className="mt-8 text-center pt-6 border-t border-[#E5E7EB]">
+                    <div className="mt-8 text-center pt-6 ">
                         <Link
                             href="/"
                             className="inline-flex items-center gap-1.5 text-xs font-['Hanken_Grotesk'] text-[#404750] hover:text-[#00629D] transition-colors"

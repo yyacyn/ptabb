@@ -21,6 +21,12 @@ class ClientsController extends Controller
             return response()->json($clients);
         }
 
+        if ($request->routeIs('public.clients')) {
+            return Inertia::render('Clients', [
+                'clients' => $clients,
+            ]);
+        }
+
         if (!auth()->check()) {
             return redirect()->route('login');
         }
@@ -45,8 +51,6 @@ class ClientsController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:50',
-            'type' => 'nullable|string|max:100',
-            'country' => 'nullable|string|max:100',
             'logo' => 'nullable',
         ]);
 
@@ -79,8 +83,6 @@ class ClientsController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:50',
-            'type' => 'nullable|string|max:100',
-            'country' => 'nullable|string|max:100',
             'logo' => 'nullable',
         ]);
 

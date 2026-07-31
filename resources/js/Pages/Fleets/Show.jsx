@@ -57,9 +57,10 @@ function VesselRouteMap({ waypoint }) {
         const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
         if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current).setView([lat, lng], 6);
+            mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([lat, lng], 6);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                minZoom: 2,
                 maxZoom: 18,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(mapInstance.current);
@@ -289,22 +290,22 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                         className="grid grid-cols-1 lg:grid-cols-12 gap-[7px] items-stretch"
                     >
                         {/* BLOCK 2: LEFT DESCRIPTION & SPECS BLOCK */}
-                        <div className="lg:col-span-5 bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-8 flex flex-col justify-between">
+                        <div className="lg:col-span-4 bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between">
                             <div>
                                 {/* Section Header */}
-                                <div className="font-['JetBrains_Mono'] font-bold text-[14px] uppercase text-[#404750] tracking-wider mb-3">
+                                <div className="font-['JetBrains_Mono'] font-bold text-[13px] uppercase text-[#404750] tracking-wider mb-3">
                                     ABOUT {vesselName}
                                 </div>
 
                                 {/* Description Paragraph */}
-                                <p className="text-[17px] text-[#404750] leading-relaxed mb-6">
+                                <p className="text-[15px] text-[#404750] leading-relaxed mb-5">
                                     {vessel.description || 'Not Available'}
                                 </p>
 
                                 {/* Specs List */}
                                 <div className="border-[#E5E7EB]">
                                     {specs.map((item, idx) => (
-                                        <div key={idx} className="flex items-center justify-between py-2.5 text-[17px]">
+                                        <div key={idx} className="flex items-center justify-between py-2 text-[15px]">
                                             <span className="text-[#404750] font-medium">{item.label}</span>
                                             <span className="font-bold text-[#141B2C] text-right font-['JetBrains_Mono']">
                                                 {item.value}
@@ -313,10 +314,21 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Book This Vessel Button */}
+                            <div className="pt-4 mt-4">
+                                <Link
+                                    href={route('contacts.index')}
+                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white text-[14px] font-['Hanken_Grotesk'] font-semibold px-5 py-2.5 rounded-[4px] inline-flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer w-full"
+                                >
+                                    Book This Vessel
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 group-active:translate-x-0 transition-transform duration-150" />
+                                </Link>
+                            </div>
                         </div>
 
                         {/* BLOCK 3: RIGHT HERO VESSEL IMAGE BLOCK */}
-                        <div className="lg:col-span-7 bg-[#141B2C] rounded-[8px] border border-[#E5E7EB] overflow-hidden relative min-h-[360px] sm:min-h-[440px] lg:min-h-[560px] w-full group">
+                        <div className="lg:col-span-8 bg-[#141B2C] rounded-[8px] border border-[#E5E7EB] overflow-hidden relative min-h-[360px] sm:min-h-[440px] lg:min-h-[560px] w-full group">
                             <img
                                 src={vessel.featured_image_url || vessel.image || '/images/card_bulk_vessel.png'}
                                 alt={vesselName}
@@ -325,93 +337,6 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                                     e.currentTarget.src = '/images/card_bulk_vessel.png';
                                 }}
                             />
-                        </div>
-                    </motion.div>
-
-                    {/* BLOCK 4: FULL SPECIFICATIONS SECTION */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.2 }}
-                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-8 lg:p-10 space-y-4"
-                    >
-                        {/* Section Header with Action Buttons */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
-                            <div>
-                                <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-1">
-                                    TECHNICAL DATASHEET
-                                </div>
-                                <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[38px] lg:text-[44px] text-[#141B2C] tracking-tight leading-none">
-                                    Full Specifications
-                                </h2>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-3">
-                                {/* See PDF Button */}
-                                {pdfUrl ? (
-                                    <a
-                                        href={pdfUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] text-white text-[14px] font-['Hanken_Grotesk'] font-semibold px-5 py-2.5 rounded-[4px] inline-flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
-                                    >
-                                        <File className="w-4 h-4" />
-                                        See PDF
-                                    </a>
-                                ) : (
-                                    <button
-                                        disabled
-                                        className="bg-slate-200 text-slate-500 text-[14px] font-['Hanken_Grotesk'] font-semibold px-5 py-2.5 rounded-[4px] inline-flex items-center justify-center gap-2 cursor-not-allowed opacity-75"
-                                    >
-                                        <File className="w-4 h-4" />
-                                        PDF Not Available
-                                    </button>
-                                )}
-
-                                {/* Book This Vessel Button */}
-                                <Link
-                                    href={route('contacts.index')}
-                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white text-[14px] font-['Hanken_Grotesk'] font-semibold px-6 py-2.5 rounded-[4px] inline-flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
-                                >
-                                    Book This Vessel
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 group-active:translate-x-0 transition-transform duration-150" />
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* FULL SPECS GRID */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {specCategories.map((cat, idx) => {
-                                const IconComp = cat.icon;
-                                return (
-                                    <div
-                                        key={idx}
-                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 flex flex-col justify-between transition-all duration-300 hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.25)]"
-                                    >
-                                        <div>
-                                            <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#E5E7EB]">
-                                                <span className="font-['JetBrains_Mono'] font-bold text-[17px] uppercase tracking-wider text-[#00629D]">
-                                                    {cat.title}
-                                                </span>
-                                                <IconComp className="w-4 h-4 text-[#00629D]" />
-                                            </div>
-
-                                            <div className="space-y-2.5 text-[17px]">
-                                                {cat.items.map((item, itemIdx) => (
-                                                    <div key={itemIdx} className="flex flex-col pb-2 last:border-0 last:pb-0">
-                                                        <span className="text-[#404750] text-[14px] font-medium">
-                                                            {item.label}
-                                                        </span>
-                                                        <span className="font-bold text-[#141B2C] text-[17px] font-['JetBrains_Mono'] leading-tight mt-0.5">
-                                                            {item.value}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
                         </div>
                     </motion.div>
 

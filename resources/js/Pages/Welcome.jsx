@@ -104,65 +104,25 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
         }
     };
 
-    const fallbackClientLogos = [
-        { name: "Weltrans Marine Services Inc.", src: "/images/clients/1777648070_Weltrans_Marine.png" },
-        { name: "United Ocean Shipping (UOS) Co., Ltd", src: "/images/clients/1777648264_United_Ocean_Sh.png" },
-        { name: "PT. Semen Indonesia (Persero), Tbk", src: "/images/clients/1777649240_PT__Semen_Indon.png" },
-        { name: "PT. Semen Bosowa Indonesia", src: "/images/clients/1777649674_PT__Semen_Bosow.png" },
-        { name: "PT. Semen Padang", src: "/images/clients/1777649829_PT__Semen_Padan.png" },
-        { name: "PT. Indocement Tunggal Perkasa, Tbk", src: "/images/clients/1777649352_PT__Indocement_.png" },
-        { name: "Jumewah Shipping Sdn Bhd (YTL Group)", src: "/images/clients/1777647999_Jumewah_Shippin.png" },
-        { name: "PT. Cemindo Gemilang", src: "/images/clients/1777649646_PT__Cemindo_Gem.png" },
-        { name: "PT. Semen Tonasa", src: "/images/clients/1777649742_PT__Semen_Tonas.png" },
-        { name: "PT. Semen Gresik", src: "/images/clients/1777649295_PT__Semen_Gresi.png" },
-        { name: "Raysut Cement Company", src: "/images/clients/1777642947_Raysut_Cement_C.png" },
-        { name: "KGJS Cement", src: "/images/clients/1777648348_KGJS_Cement.png" },
-        { name: "PT. Solusi Bangun Indonesia, Tbk", src: "/images/clients/1777649875_PT__Solusi_Bang.png" },
-        { name: "Cementis Group", src: "/images/clients/1778835519_Cementis_Group.png" }
-    ];
+    const getLogoPath = (item) => {
+        if (!item) return '/images/clients/placeholder.png';
+        const logoFile = item.logo_url || item.logo || item.logo_path || item.pathfile || item.image || item.featured_image;
+        if (!logoFile) return '/images/clients/placeholder.png';
 
-    const displayClients = clientsList && clientsList.length > 0
-        ? clientsList.map(c => ({
-            name: c.name,
-            src: c.logo ? `/images/clients/${c.logo}` : '/images/clients/placeholder.png'
-        }))
-        : fallbackClientLogos;
+        if (logoFile.startsWith('http://') || logoFile.startsWith('https://')) return logoFile;
+        if (logoFile.startsWith('/images/') || logoFile.startsWith('/storage/')) return logoFile;
+        if (logoFile.startsWith('assets/images/clients/')) return `/${logoFile.replace('assets/images/clients/', 'images/clients/')}`;
+        if (logoFile.startsWith('../assets/images/clients/')) return `/${logoFile.replace('../assets/images/clients/', 'images/clients/')}`;
+        if (logoFile.startsWith('images/') || logoFile.startsWith('storage/')) return `/${logoFile}`;
 
-    const fleetVessels = [
-        {
-            name: "ASUWA 1",
-            type: "Pneumatic Bulk Cement",
-            dwt: "11,040 DWT",
-            capacity: "8,860 MT",
-            year: "2015",
-            flagClass: "Indonesia (RINA Class)",
-            status: "Active - In Service",
-            image: "/images/asuwa1.jpg",
-            route: "Tokyo &rarr; Jakarta"
-        },
-        {
-            name: "TB. Samudra Power 01",
-            type: "Twin-Screw Ocean Tugboat",
-            dwt: "3,200 HP",
-            capacity: "330ft Deck Cargo",
-            year: "2018",
-            flagClass: "Indonesia (BKI Class)",
-            status: "Active - In Service",
-            image: "/images/card_bulk_vessel.png",
-            route: "Samarinda &rarr; Java Sea"
-        },
-        {
-            name: "FC. Buana Titan",
-            type: "Floating Crane Barge",
-            dwt: "25 MT Grab",
-            capacity: "15,000 MT/Day",
-            year: "2020",
-            flagClass: "Indonesia (BKI Class)",
-            status: "Active - In Service",
-            image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80",
-            route: "Samarinda Anchorage"
-        }
-    ];
+        const filename = logoFile.split('/').pop();
+        return `/images/clients/${filename}`;
+    };
+
+    const displayClients = (clientsList || []).map(c => ({
+        name: c.name,
+        src: getLogoPath(c)
+    }));
 
     return (
         <GuestLayout onScrollToSection={scrollToSection}>
@@ -206,7 +166,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.3 }}
-                            className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] leading-relaxed"
+                            className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] leading-relaxed"
                         >
                             Commanding a specialized fleet with industrial precision. We bridge the gap between production and delivery with state-of-the-art maritime operations tailored for heavy industrial logistics.
                         </motion.p>
@@ -396,7 +356,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[36px] lg:text-[44px] leading-[1.12] text-[#141B2C] max-w-[920px]">
                         Connecting Industrial Supply Chains Across Regional and International Waters
                     </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[850px] leading-relaxed mt-1">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] max-w-[850px] leading-relaxed mt-1">
                         High-capacity vessel solutions custom-engineered for uninterrupted transport of bulk cement, industrial raw materials, and heavy logistics across both domestic waterways and international maritime corridors.
                     </p>
                 </div>
@@ -487,7 +447,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                         <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[44px] leading-[1.1] text-white tracking-tight">
                             Built on Ocean-Scale Operations
                         </h2>
-                        <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#8AAFC8] leading-relaxed max-w-[580px]">
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#8AAFC8] leading-relaxed max-w-[580px]">
                             Decades of maritime experience reflected in continuous fleet expansion, high-tonnage cargo delivery, and industry-leading voyage reliability.
                         </p>
                     </div>
@@ -563,7 +523,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                         <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight">
                             Strategic Maritime Reach Across Key Global Trade Corridors
                         </h2>
-                        <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] leading-relaxed mt-3">
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] leading-relaxed mt-3">
                             Operating a versatile vessel fleet connecting major manufacturing ports, regional distribution hubs, and international maritime channels.
                         </p>
                     </div>
@@ -604,7 +564,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                             id: 'asia-far-east',
                             title: 'Asia & Far East',
                             shortDesc: 'Deep-sea trade corridors servicing Japan, China, and South Korea industrial ports.',
-                            image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80'
+                            image: 'https://images.unsplash.com/photo-1516837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80'
                         },
                         {
                             id: 'global',
@@ -655,7 +615,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                         <div className="absolute inset-0 bg-gradient-to-b from-[#00629D]/75 via-[#00629D]/40 to-[#141B2C]/85 hover:from-[#00629D]/85 transition-colors duration-300" />
 
                                         <div className="relative z-10 flex items-center justify-center p-2 h-full w-full">
-                                            <span className="font-['Hanken_Grotesk'] font-bold text-[20px] sm:text-[24px] text-white tracking-wide whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180 drop-shadow-md">
+                                            <span className="font-['Hanken_Grotesk'] font-bold text-[20px] sm:text-[24px] text-white tracking-wide whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-160 drop-shadow-md">
                                                 {region.title}
                                             </span>
                                         </div>
@@ -684,7 +644,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[36px] lg:text-[44px] leading-[1.12] text-[#141B2C] max-w-[920px]">
                         Engineered for High-Tonnage Cargo Precision
                     </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[850px] leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] max-w-[850px] leading-relaxed">
                         Explore operational specifications, DWT capacities, and pneumatic cargo handling systems across our active fleet.
                     </p>
                 </div>
@@ -695,7 +655,9 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                         {(() => {
                             const currentVessel = (fleetsList && fleetsList.length > 0)
                                 ? fleetsList[Math.min(activeFleetTab, fleetsList.length - 1)]
-                                : fleetVessels[Math.min(activeFleetTab, fleetVessels.length - 1)];
+                                : null;
+
+                            if (!currentVessel) return null;
 
                             const vesselName = currentVessel.ship_name || currentVessel.name || 'MV. IRIANA';
                             const vesselType = currentVessel.vessel_type || currentVessel.type || 'Pneumatic Bulk Cement';
@@ -866,7 +828,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                         Ready to Streamline Your Bulk Cargo Logistics?
                     </h2>
 
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[18px] text-white/90 leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 leading-relaxed">
                         Partner with PT. ABB for reliable vessel chartering, pneumatic bulk cement shipping, and dedicated maritime operations across regional &amp; global routes.
                     </p>
 

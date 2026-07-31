@@ -158,15 +158,11 @@ class FleetsController extends Controller
 
         $category = FleetCategory::create($validated);
 
-        if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'category' => $category,
-                'categories' => FleetCategory::all(),
-            ]);
-        }
-
-        return redirect()->back()->with('success', 'Category added successfully.');
+        return response()->json([
+            'success' => true,
+            'category' => $category,
+            'categories' => FleetCategory::all(),
+        ]);
     }
 
     public function parsePdf(Request $request, PdfAiParserService $parserService)

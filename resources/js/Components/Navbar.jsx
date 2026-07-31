@@ -35,13 +35,13 @@ export default function Navbar({ onScrollToSection }) {
 
                 {/* 6 Middle Nav Pills */}
                 <Link
-                    href="/about-us"
+                    href={route('public.about')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
                     ABOUT US
                 </Link>
                 <Link
-                    href="/services"
+                    href={route('public.services')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
                     SERVICES
@@ -53,19 +53,19 @@ export default function Navbar({ onScrollToSection }) {
                     FLEET
                 </Link>
                 <Link
-                    href={route('clients.index')}
+                    href={route('public.clients')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
                     CLIENTS
                 </Link>
                 <Link
-                    href={route('news.index')}
+                    href={route('public.news')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
                     NEWS
                 </Link>
                 <Link
-                    href={route('careers.index')}
+                    href={route('public.careers')}
                     className="flex-[120_1_0%] max-w-[120px] h-[42px] bg-white hover:bg-[#141B2C] hover:text-white transition-colors duration-300 rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-[#141B2C] border border-[#E5E7EB] whitespace-nowrap shrink"
                 >
                     CAREERS
@@ -118,12 +118,12 @@ export default function Navbar({ onScrollToSection }) {
                 {/* Mobile Menu Dropdown */}
                 {mobileMenuOpen && (
                     <div className="mt-[7px] bg-white rounded-[8px] border border-[#E5E7EB] p-3 shadow-md grid grid-cols-2 gap-2">
-                        <Link href="/about-us" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">About Us</Link>
-                        <Link href="/services" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Services</Link>
+                        <Link href={route('public.about')} onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">About Us</Link>
+                        <Link href={route('public.services')} onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Services</Link>
                         <Link href={route('public.fleets')} onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Fleet</Link>
-                        <Link href={route('clients.index')} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Clients</Link>
-                        <Link href={route('news.index')} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">News</Link>
-                        <Link href={route('careers.index')} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Careers</Link>
+                        <Link href={route('public.clients')} onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Clients</Link>
+                        <Link href={route('public.news')} onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">News</Link>
+                        <Link href={route('public.careers')} onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-[6px] bg-[#F5F5F5] font-['JetBrains_Mono'] text-[12px] text-[#141B2C] hover:bg-[#00629D] hover:text-white transition-colors">Careers</Link>
                     </div>
                 )}
             </div>

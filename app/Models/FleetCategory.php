@@ -13,7 +13,6 @@ class FleetCategory extends Model
 
     protected $fillable = [
         'name',
-        'slug',
         'description',
     ];
 

@@ -68,9 +68,10 @@ function RealTimeFleetMap({ waypoints = [], onSelectVessel }) {
     useEffect(() => {
         if (!mapRef.current || mapInstance.current) return;
 
-        mapInstance.current = L.map(mapRef.current).setView([15, 100], 3);
+        mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([15, 100], 3);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            minZoom: 2,
             maxZoom: 18,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(mapInstance.current);
@@ -150,9 +151,10 @@ function LeafletViewer({ waypoint }) {
         const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
         if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current).setView([lat, lng], 6);
+            mapInstance.current = L.map(mapRef.current, { minZoom: 4 }).setView([lat, lng], 6);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                minZoom: 4,
                 maxZoom: 18,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(mapInstance.current);
@@ -232,7 +234,26 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
     // Search and Filter state
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedArea, setSelectedArea] = useState('All');
+    const [selectedStatus, setSelectedStatus] = useState('All');
     const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+    const filterMenuRef = useRef(null);
+
+    // Close filter dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
+                setIsFilterMenuOpen(false);
+            }
+        };
+
+        if (isFilterMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isFilterMenuOpen]);
 
     const openMapModal = (waypoint) => {
         setMapWaypoint(waypoint);
@@ -281,21 +302,60 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
     // Reset pagination when search query or filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedCategory]);
+    }, [searchQuery, selectedCategory, selectedArea, selectedStatus]);
 
-    // Unique Categories for Filter Dropdown
-    const categories = ['All', ...new Set(displayFleets.map(f => f.vessel_type || f.type || 'Pneumatic Bulk Carrier'))];
+    // Unique options for filter dropdowns
+    const categories = ['All', ...Array.from(new Set(displayFleets.map(f => f.vessel_type || f.type).filter(Boolean))).sort()];
 
-    // Filtered Fleets based on Search Query and Selected Category
+    // Clean, split, and format Operating Areas into individual distinct options
+    const rawAreaStrings = displayFleets.map(f => f.operational_area || f.area || f.operating_area).filter(Boolean);
+    const individualAreas = rawAreaStrings.flatMap(str => str.split(',').map(a => a.trim())).filter(Boolean);
+    const areas = ['All', ...Array.from(new Set(individualAreas)).sort()];
+
+    const rawStatuses = displayFleets.map(f => f.status).filter(Boolean);
+    const statuses = ['All', ...Array.from(new Set(rawStatuses)).sort()];
+
+    const formatStatusName = (st) => {
+        if (!st || st === 'All') return 'All Statuses';
+        return st.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    // Filtered Fleets based on Search Query (includes IMO number) and Filters (Category, Area, Status)
     const filteredFleets = displayFleets.filter((vessel) => {
         const name = (vessel.ship_name || vessel.name || '').toLowerCase();
         const type = (vessel.vessel_type || vessel.type || '').toLowerCase();
-        const query = searchQuery.toLowerCase();
+        const imo = (vessel.imo_number || vessel.imo || vessel.imo_no || '').toString().toLowerCase();
+        const areaStr = (vessel.operational_area || vessel.area || vessel.operating_area || vessel.route_name || '');
+        const vesselAreas = areaStr.split(',').map(a => a.trim().toLowerCase());
+        const status = (vessel.status || '').toLowerCase();
+        const flag = (vessel.flag || '').toLowerCase();
 
-        const matchesQuery = name.includes(query) || type.includes(query);
-        const matchesCategory = selectedCategory === 'All' || (vessel.vessel_type || vessel.type || 'Pneumatic Bulk Carrier') === selectedCategory;
+        const query = searchQuery.toLowerCase().trim();
 
-        return matchesQuery && matchesCategory;
+        // Search matches Name, Type, IMO Number, Area, or Flag
+        const matchesQuery = !query || 
+            name.includes(query) || 
+            type.includes(query) || 
+            imo.includes(query) || 
+            areaStr.toLowerCase().includes(query) || 
+            flag.includes(query);
+
+        // Filter: Category / Vessel Type
+        const matchesCategory = selectedCategory === 'All' || 
+            (vessel.vessel_type || vessel.type || 'Pneumatic Bulk Carrier') === selectedCategory;
+
+        // Filter: Operational Area (matches exact individual area or contained string)
+        const matchesArea = selectedArea === 'All' || 
+            vesselAreas.includes(selectedArea.toLowerCase()) ||
+            areaStr === selectedArea;
+
+        // Filter: Status
+        const matchesStatus = selectedStatus === 'All' || 
+            vessel.status === selectedStatus || 
+            status === selectedStatus.toLowerCase() ||
+            formatStatusName(vessel.status).toLowerCase() === selectedStatus.toLowerCase();
+
+        return matchesQuery && matchesCategory && matchesArea && matchesStatus;
     });
 
     const totalPages = Math.ceil(filteredFleets.length / itemsPerPage);
@@ -352,7 +412,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="font-['Hanken_Grotesk'] font-medium text-[12px] sm:text-[12px] lg:text-[17px] text-white/90 text-center max-w-3xl leading-relaxed"
+                        className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 text-center max-w-3xl leading-relaxed"
                     >
                         Inspect technical specifications, DWT capacities, and operational status across our active vessel lineup, engineered to deliver cargo safely and punctually to every port.
                     </motion.p>
@@ -374,7 +434,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                     <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[48px] leading-[1.12] lg:w-[80%] text-white tracking-tight">
                         Real-Time Ocean Visibility Across Every Voyage
                     </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[17px] text-[#8AAFC8] max-w-4xl leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#8AAFC8] max-w-4xl leading-relaxed">
                         Track active vessel coordinates, voyage progress, and real-time routes. Powered by satellite AIS telemetry, PT. ABB provides complete operational transparency for charterers and cargo owners 24/7.
                     </p>
                 </div>
@@ -418,9 +478,17 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search here..."
-                                className="w-56 sm:w-64 lg:w-72 px-4 py-2 text-[14px] font-['JetBrains_Mono'] text-[#141B2C] placeholder-[#9CA3AF] bg-white border border-[#E5E7EB] rounded-[4px] focus:outline-none focus:border-[#00629D] focus:ring-1 focus:ring-[#00629D] transition-colors"
+                                placeholder="Search vessel name, IMO (e.g. 9821158), type..."
+                                className="w-60 sm:w-72 lg:w-80 px-4 py-2 text-[13px] font-['JetBrains_Mono'] text-[#141B2C] placeholder-[#9CA3AF] bg-white border border-[#E5E7EB] rounded-[4px] focus:outline-none focus:border-[#00629D] focus:ring-1 focus:ring-[#00629D] transition-colors"
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            )}
                         </div>
 
                         {/* Red Search Button */}
@@ -432,36 +500,91 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                             <Search className="w-4 h-4 stroke-[2.5]" />
                         </button>
 
-                        {/* Blue Filter Button */}
-                        <div className="relative">
+                        {/* Blue Filter Button & Dropdown */}
+                        <div className="relative" ref={filterMenuRef}>
                             <button
                                 type="button"
                                 onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                                className={`bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer ${selectedCategory !== 'All' ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
-                                title="Filter by Category"
+                                className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer ${(selectedCategory !== 'All' || selectedArea !== 'All' || selectedStatus !== 'All') ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
+                                title="Filter Vessels"
                             >
                                 <Filter className="w-4 h-4 fill-white stroke-none" />
+                                {(selectedCategory !== 'All' || selectedArea !== 'All' || selectedStatus !== 'All') && (
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D93A2B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white">
+                                        {(selectedCategory !== 'All' ? 1 : 0) + (selectedArea !== 'All' ? 1 : 0) + (selectedStatus !== 'All' ? 1 : 0)}
+                                    </span>
+                                )}
                             </button>
 
-                            {/* Dropdown Menu for Category Filtering */}
+                            {/* Dropdown Menu for Category, Area & Status Filtering */}
                             {isFilterMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E5E7EB] rounded-[6px] shadow-lg z-30 py-1.5 font-['Hanken_Grotesk']">
-                                    <div className="px-3 py-1.5 text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase border-b border-[#E5E7EB]">
-                                        Filter Category
+                                <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-[#E5E7EB] rounded-[8px] shadow-xl z-30 p-4 font-['Hanken_Grotesk'] space-y-4">
+                                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                                        <span className="text-[12px] font-['JetBrains_Mono'] font-bold text-[#141B2C] uppercase tracking-wider">
+                                            Filter Vessels
+                                        </span>
+                                        {(selectedCategory !== 'All' || selectedArea !== 'All' || selectedStatus !== 'All') && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedCategory('All');
+                                                    setSelectedArea('All');
+                                                    setSelectedStatus('All');
+                                                }}
+                                                className="text-[11px] font-['JetBrains_Mono'] text-[#D93A2B] hover:underline font-semibold cursor-pointer"
+                                            >
+                                                Reset All
+                                            </button>
+                                        )}
                                     </div>
-                                    {categories.map((cat) => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => {
-                                                setSelectedCategory(cat);
-                                                setIsFilterMenuOpen(false);
-                                            }}
-                                            className={`w-full text-left px-3 py-2 text-[13px] hover:bg-[#F5F5F5] transition-colors flex items-center justify-between ${selectedCategory === cat ? 'font-bold text-[#00629D] bg-[#F5F5F5]' : 'text-[#404750]'}`}
+
+                                    {/* Category Filter */}
+                                    <div>
+                                        <label className="block text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase mb-1.5">
+                                            Vessel Type
+                                        </label>
+                                        <select
+                                            value={selectedCategory}
+                                            onChange={(e) => setSelectedCategory(e.target.value)}
+                                            className="w-full  border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] text-[#141B2C] focus:outline-none focus:border-[#00629D]"
                                         >
-                                            {cat}
-                                            {selectedCategory === cat && <span className="w-1.5 h-1.5 rounded-full bg-[#00629D]" />}
-                                        </button>
-                                    ))}
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Operational Area Filter */}
+                                    <div>
+                                        <label className="block text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase mb-1.5">
+                                            Operating Area
+                                        </label>
+                                        <select
+                                            value={selectedArea}
+                                            onChange={(e) => setSelectedArea(e.target.value)}
+                                            className="w-full border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] text-[#141B2C] focus:outline-none focus:border-[#00629D]"
+                                        >
+                                            {areas.map(area => (
+                                                <option key={area} value={area}>{area === 'All' ? 'All Operating Areas' : area}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Status Filter */}
+                                    <div>
+                                        <label className="block text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase mb-1.5">
+                                            Vessel Status
+                                        </label>
+                                        <select
+                                            value={selectedStatus}
+                                            onChange={(e) => setSelectedStatus(e.target.value)}
+                                            className="w-full border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] text-[#141B2C] focus:outline-none focus:border-[#00629D]"
+                                        >
+                                            {statuses.map(st => (
+                                                <option key={st} value={st}>{formatStatusName(st)}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -469,8 +592,31 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                 </div>
 
                 {/* Fleet Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {paginatedFleets.map((vessel, idx) => (
+                {filteredFleets.length === 0 ? (
+                    <div className="py-14 text-center bg-[#F9FAFB] rounded-[8px] border border-dashed border-[#E5E7EB]">
+                        <Ship className="w-10 h-10 text-slate-400 mx-auto mb-3 stroke-[1.5]" />
+                        <h3 className="font-['Hanken_Grotesk'] font-bold text-lg text-[#141B2C] mb-1">
+                            No Vessels Match Your Search or Filters
+                        </h3>
+                        <p className="text-[14px] text-[#404750] max-w-md mx-auto mb-5 font-['Hanken_Grotesk'] leading-relaxed">
+                            Try searching for another vessel name, IMO number (e.g. 9821158), or reset your active filters.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearchQuery('');
+                                setSelectedCategory('All');
+                                setSelectedArea('All');
+                                setSelectedStatus('All');
+                            }}
+                            className="px-4 py-2 bg-[#00629D] text-white text-xs font-semibold rounded-[4px] hover:bg-[#004e7e] transition-colors cursor-pointer"
+                        >
+                            Reset All Filters
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {paginatedFleets.map((vessel, idx) => (
                         <motion.div
                             key={vessel.id || idx}
                             whileHover={{ y: -4 }}
@@ -563,6 +709,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                         </motion.div>
                     ))}
                 </div>
+                )}
 
                 {/* Pagination Controls Matching Welcome.jsx Featured Fleet */}
                 {totalPages > 1 && (
@@ -609,28 +756,6 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                     </div>
                 )}
 
-                {/* Empty State when no vessels match search or filter */}
-                {filteredFleets.length === 0 && (
-                    <div className="text-center py-16 px-4 bg-[#F5F5F5] rounded-[8px] border border-dashed border-[#E5E7EB] my-4">
-                        <Ship className="w-10 h-10 text-[#8AAFC8] mx-auto mb-3 opacity-60" />
-                        <h4 className="font-['Hanken_Grotesk'] font-bold text-[18px] text-[#141B2C] mb-1">
-                            No Vessels Match Your Search
-                        </h4>
-                        <p className="font-['Hanken_Grotesk'] text-[14px] text-[#404750] max-w-md mx-auto mb-4">
-                            Try adjusting your search keywords or reset category filters to view our full active fleet inventory.
-                        </p>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setSearchQuery('');
-                                setSelectedCategory('All');
-                            }}
-                            className="bg-[#00629D] hover:bg-[#004e7e] text-white px-4 py-2 rounded-[4px] font-['Hanken_Grotesk'] text-[13px] font-medium transition-colors"
-                        >
-                            Reset Search & Filters
-                        </button>
-                    </div>
-                )}
             </motion.section>
 
             {/* 3. CTA BANNER SECTION */}
@@ -646,7 +771,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                         Need Custom Tonnage or Dedicated Time Charter?
                     </h2>
 
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
                         Our commercial desk is ready to evaluate your cargo schedule, destination ports, and volume requirements.
                     </p>
 

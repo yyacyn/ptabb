@@ -141,112 +141,6 @@ export default function Services({ fleets = [], clients = [] }) {
         }
     }, [activeHoverGroup]);
 
-    // Charter options data
-    const charterOptions = [
-        {
-            id: 'time',
-            badge: 'LONG-TERM DEPLOYMENT',
-            title: 'Time Charter (TC)',
-            subtitle: 'Dedicated Vessel & Crew Management for Strategic Production Cycles',
-            icon: Ship,
-            description: 'Provide your industrial supply chain with guaranteed long-term shipping capacity. Under a Time Charter agreement, PT. ABB provides a fully equipped vessel, certified master crew, and comprehensive technical maintenance for a fixed monthly rate.',
-            features: [
-                'Fixed predictable monthly charter rate',
-                'Full crew, insurance, and vessel maintenance included',
-                'Operational flexibility across designated trade zones',
-                'Priority berth scheduling and continuous fleet support',
-                'Customized vessel modifications upon request'
-            ],
-            idealFor: 'Cement manufacturers, mining conglomerates, and power plants requiring continuous raw material supply.'
-        },
-        {
-            id: 'freight',
-            badge: 'SPOT & POINT-TO-POINT',
-            title: 'Freight / Voyage Charter (VC)',
-            subtitle: 'Flexible Pay-Per-Ton Bulk Transportation Solutions',
-            icon: Anchor,
-            description: 'Ideal for single bulk shipments, seasonal demand spikes, or spot cargo movements. We transport agreed cargo tonnages between specified origin and destination ports under competitive freight rate agreements.',
-            features: [
-                'Competitive rate per metric ton transported',
-                'Turnkey port agency and clearance coordination',
-                'End-to-end cargo safety and loss prevention',
-                'Rapid vessel berth and laytime optimization',
-                'Flexible scheduling matching seasonal supply'
-            ],
-            idealFor: 'Commodity traders, construction contractors, and spot cement distribution.'
-        },
-        {
-            id: 'coa',
-            badge: 'ENTERPRISE LOGISTICS',
-            title: 'Contract of Affreightment (COA)',
-            subtitle: 'High-Volume Multi-Vessel Fleet Deployment Commitments',
-            icon: Layers,
-            description: 'For industrial clients with massive annual tonnage obligations. We guarantee specified cargo volume transportation over defined timeframes using our integrated fleet of bulk carriers.',
-            features: [
-                'Guaranteed annual volume delivery capacity',
-                'Multi-vessel rotation ensuring zero delivery lag',
-                'Tiered volume pricing with cost efficiency',
-                'Dedicated logistics coordinator & 24/7 telemetry tracking',
-                'Custom KPI benchmarks for berth turnarounds'
-            ],
-            idealFor: 'National infrastructure projects and multi-factory cement distribution networks.'
-        }
-    ];
-
-    // Pneumatic technology features
-    const pneumaticTechPoints = [
-        {
-            title: 'Compressor & Aeration Station',
-            short: 'High-Pressure Air Injection',
-            desc: 'Multi-stage diesel/electric blowers inject high-pressure dry air through hold aeration pads, fluidizing bulk cement powder for rapid, frictionless discharge.',
-            spec: '3.5 - 5.0 bar operational pressure',
-            icon: Wind
-        },
-        {
-            title: 'Fluidized Cargo Hold Bottom',
-            short: 'Porous Canvas Aeration Pads',
-            desc: 'Sloped hopper hold floors lined with specialized permeable aeration canvas allow 99.8% complete cargo recovery without manual hold cleaning.',
-            spec: '99.8% Hold Discharge Efficiency',
-            icon: Gauge
-        },
-        {
-            title: 'Closed-Loop Vacuum Conveying',
-            short: 'High-Wear Alloy Pipes',
-            desc: 'Sealed pneumatic piping conveys fluidized cement powder directly into shore silos up to 250 meters away, preventing any atmospheric dust release.',
-            spec: 'Up to 350 Metric Tons / Hour',
-            icon: Cpu
-        },
-        {
-            title: 'Dust Collector & Silo Interface',
-            short: 'Zero-Spill Filter Filtration',
-            desc: 'High-efficiency baghouse filter units capture micro-particles, returning 100% of airborne cement back to the silo while ensuring 0.00 mg/m³ emissions.',
-            spec: '0.00 mg/m³ Zero Dust Emission',
-            icon: ShieldCheck
-        }
-    ];
-
-    // Operational regions
-    const regionData = {
-        indonesia: {
-            title: 'Indonesian Domestic Waters',
-            ports: ['Jakarta (Tanjung Priok)', 'Ciwandan / Banten', 'Tuban / East Java', 'Gresik', 'Balikpapan', 'Makassar', 'Batam'],
-            description: 'Comprehensive coverage connecting major cement manufacturing facilities in Java and Sumatra with strategic distribution terminals across Kalimantan, Sulawesi, and Eastern Indonesia.',
-            vesselsAssigned: '12 Active Bulk Carriers'
-        },
-        southeast_asia: {
-            title: 'Southeast Asia Regional Routes',
-            ports: ['Singapore', 'Port Klang (Malaysia)', 'Ho Chi Minh (Vietnam)', 'Bangkok (Thailand)', 'Manila (Philippines)'],
-            description: 'Direct maritime trade corridors transporting industrial bulk minerals and cement clinker across ASEAN ports with full customs compliance and rapid clearance.',
-            vesselsAssigned: '6 Regional Traders'
-        },
-        far_east: {
-            title: 'Asia & Far East Shipping Corridors',
-            ports: ['Shanghai (China)', 'Guangzhou (China)', 'Yokohama (Japan)', 'Busan (South Korea)'],
-            description: 'Long-haul deep sea cargo operations for high-tonnage raw material trade between East Asian industrial ports and Indonesian maritime hubs.',
-            vesselsAssigned: '4 Ocean Tonnage Carriers'
-        }
-    };
-
     return (
         <GuestLayout>
             <Head title="Services - PT PABB" />
@@ -267,12 +161,12 @@ export default function Services({ fleets = [], clients = [] }) {
                         </div>
 
                         {/* H1 Headline */}
-                        <h1 className="font-['Hanken_Grotesk'] font-bold text-[36px] sm:text-[44px] lg:text-[48px] text-[#141B2C] leading-[1.12] tracking-tight mb-5">
+                        <h1 className="font-['Hanken_Grotesk'] font-bold text-[36px] sm:text-[48px] lg:text-[50px] text-[#141B2C] leading-[1.12] tracking-tight mb-5">
                             End-to-End Marine Freight &amp; Specialized Bulk Cement Logistics
                         </h1>
 
                         {/* Subtitle Paragraph */}
-                        <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] leading-relaxed mb-8">
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] leading-relaxed mb-8">
                             From specialized bulk cement transportation to flexible time charters and heavy-tonnage voyage charters, PT. ABB operates a modern, ISO-certified fleet engineered to move your industrial cargo seamlessly across domestic and international trade routes.
                         </p>
 
@@ -376,7 +270,7 @@ export default function Services({ fleets = [], clients = [] }) {
                     <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight">
                         Structured Deployment, Strategic Flexibility
                     </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[920px] leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] max-w-[920px] leading-relaxed">
                         From specialized bulk cement transportation to flexible time charters and heavy-tonnage voyage charters, PT. ABB operates a modern, ISO-certified fleet engineered to move your industrial cargo seamlessly across domestic and international trade routes.
                     </p>
                 </div>
@@ -517,7 +411,7 @@ export default function Services({ fleets = [], clients = [] }) {
                     <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight">
                         Closed-Loop Pneumatic Excellence
                     </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-[#404750] max-w-[920px] leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] max-w-[920px] leading-relaxed">
                         Our vessels are equipped with specialized closed-loop pneumatic loading and discharge systems engineered specifically for bulk cement transportation. Through this precision-engineered framework, cargo integrity remains uncompromised from origin terminal to final discharge point.
                     </p>
                 </div>
@@ -572,10 +466,10 @@ export default function Services({ fleets = [], clients = [] }) {
                         <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#8AAFC8] tracking-wider mb-2">
                             OPERATIONAL COVERAGE
                         </div>
-                        <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[48px] leading-[1.12] text-white tracking-tight mb-4 max-w-full">
+                        <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[50px] leading-[1.12] text-white tracking-tight mb-4 max-w-full">
                             Strategic Maritime Reach Across Key Global Trade Corridors
                         </h2>
-                        <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] text-[#8AAFC8] max-w-full leading-relaxed">
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#8AAFC8] max-w-full leading-relaxed">
                             Connecting industrial hubs nationwide and internationally. From high-frequency inter-island routes across Indonesia to trans-oceanic bulk freight corridors, PT. ABB ensures your cargo moves without boundaries.
                         </p>
                     </div>
@@ -712,7 +606,7 @@ export default function Services({ fleets = [], clients = [] }) {
                         Need Custom Marine Logistics or Vessel Chartering?
                     </h2>
 
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
+                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
                         Whether you require a dedicated time charter, or an urgent voyage freight proposal, our operations team is ready to tailor a solution for your cargo needs.
                     </p>
 

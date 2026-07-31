@@ -69,9 +69,10 @@ function LeafletViewer({ waypoint }) {
         const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
         if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current).setView([lat, lng], 6);
+            mapInstance.current = L.map(mapRef.current, { minZoom: 4 }).setView([lat, lng], 6);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                minZoom: 4,
                 maxZoom: 18,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(mapInstance.current);
@@ -165,9 +166,10 @@ function GlobalFleetMapViewer({ waypoints = [], onSelectVessel }) {
     useEffect(() => {
         if (!mapRef.current || mapInstance.current) return;
 
-        mapInstance.current = L.map(mapRef.current).setView([-2.5, 118.0], 5);
+        mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([-2.5, 118.0], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            minZoom: 2,
             maxZoom: 18,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(mapInstance.current);
@@ -366,8 +368,8 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
                                             className={`px-3 py-1.5 rounded-[4px] font-semibold cursor-pointer ${currentPage === page
-                                                    ? 'bg-[#00629D] text-white border border-[#00629D]'
-                                                    : 'border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C]'
+                                                ? 'bg-[#00629D] text-white border border-[#00629D]'
+                                                : 'border border-[#E5E7EB] bg-white hover:bg-slate-50 text-[#141B2C]'
                                                 }`}
                                         >
                                             {page}

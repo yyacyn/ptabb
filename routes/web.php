@@ -37,6 +37,7 @@ Route::get('/careers', [CareersController::class, 'index'])->name('public.career
 Route::get('/news', [NewsController::class, 'index'])->name('public.news');
 Route::get('/notifications', [NotificationsController::class, 'index'])->name('public.notifications');
 Route::get('/news-category', [NewsCatController::class, 'index'])->name('public.news-category');
+Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('public.fleet-category');
 Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('public.voyage-waypoints');
 Route::get('/milestones', [MilestonesController::class, 'index'])->name('public.milestones');
 
@@ -131,6 +132,9 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     // Auxiliaries & Telemetry
     Route::get('/news-category', [NewsCatController::class, 'index'])->name('news-category.index');
     Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('fleet-category.index');
+    Route::post('/fleet-category', [FleetCatController::class, 'store'])->name('fleet-category.store');
+    Route::put('/fleet-category/{id}', [FleetCatController::class, 'update'])->name('fleet-category.update');
+    Route::delete('/fleet-category/{id}', [FleetCatController::class, 'destroy'])->name('fleet-category.destroy');
     Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('voyage-waypoints.index');
 
     // User Management (Super Admin Only)

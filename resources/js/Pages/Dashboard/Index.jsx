@@ -290,10 +290,10 @@ export default function Index({
 
                                 <Link
                                     href={safeRoute('contacts.index', '/dashboard/contacts')}
-                                    className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                    className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                        <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
                                             <Mail className="w-4 h-4" />
                                         </div>
                                         <span>Review messages</span>
@@ -304,10 +304,10 @@ export default function Index({
                                 {canManageCareers && (
                                     <Link
                                         href={safeRoute('careers.index', '/dashboard/careers')}
-                                        className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                            <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
                                                 <Briefcase className="w-4 h-4" />
                                             </div>
                                             <span>Manage job vacancies</span>
@@ -319,10 +319,10 @@ export default function Index({
                                 {canManageNews && (
                                     <Link
                                         href={safeRoute('news.index', '/dashboard/news')}
-                                        className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                            <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
                                                 <Newspaper className="w-4 h-4" />
                                             </div>
                                             <span>Add news article</span>
@@ -334,10 +334,10 @@ export default function Index({
                                 {canManageFleet && (
                                     <Link
                                         href={safeRoute('fleets.index', '/dashboard/fleets')}
-                                        className="group w-full bg-[#F5F5F5] hover:bg-white border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-white group-hover:bg-[#F5F5F5] border border-[#E5E7EB] group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                            <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
                                                 <Ship className="w-4 h-4" />
                                             </div>
                                             <span>Manage vessel fleet</span>

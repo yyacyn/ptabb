@@ -27,7 +27,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                 description: m.description || '',
                 image: m.image || (idx % 2 === 0 ? '/images/card_bulk_vessel.png' : '/images/asuwa1.jpg')
             }))
-        : defaultMilestones;
+        : [];
 
     // Track scroll position to highlight active year
     const milestoneRefs = useRef({});
@@ -104,7 +104,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-white/90 text-center max-w-3xl mt-4 leading-relaxed"
+                        className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 text-center max-w-3xl mt-4 leading-relaxed"
                     >
                         Empowering global commerce with high-tonnage cargo transport, modern fleet reliability, and over 25 years of maritime operational excellence.
                     </motion.p>
@@ -114,40 +114,49 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
             {/* 2. Who We Are / Overview Section (Split Layout matching Welcome.jsx hero: 5-col image card + 7-col text card) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-[3px] items-stretch">
 
-                {/* Left Card: Vessel Photo */}
+                {/* Left Column: Corporate Image Card (5-Cols) */}
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="lg:col-span-5 bg-white rounded-[8px] border border-[#E5E7EB] overflow-hidden relative group min-h-[380px] lg:min-h-[460px] flex items-center justify-center"
+                    transition={{ duration: 0.5 }}
+                    className="lg:col-span-5 rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-xs relative min-h-[380px] lg:min-h-[460px] group bg-[#141B2C]"
                 >
                     <img
                         src="/images/asuwa1.jpg"
-                        alt="ASUWA 1 Cement Carrier Vessel"
-                        className="w-full h-full object-cover rounded-[8px] group-hover:scale-105 transition-transform duration-500"
+                        alt="PT. ABB Fleet Management"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#141B2C]/90 via-[#141B2C]/30 to-transparent" />
+                    <div className="absolute bottom-6 left-6 right-6 text-white">
+                        <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#8AAFC8] tracking-wider mb-1">
+                            OVER 25 YEARS OF MARITIME OPERATIONAL EXCELLENCE
+                        </div>
+                        <h3 className="font-['Hanken_Grotesk'] font-bold text-[22px] sm:text-[26px] leading-tight">
+                            Commanding High-Tonnage Bulk Cement &amp; Cargo Transport
+                        </h3>
+                    </div>
                 </motion.div>
 
-                {/* Right Card: Eyebrow, Headline, Paragraph, and 3 Feature Cards */}
+                {/* Right Column: Narrative Card (7-Cols) */}
                 <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="lg:col-span-7 bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-8 lg:p-10 flex flex-col justify-center"
+                    transition={{ duration: 0.5 }}
+                    className="lg:col-span-7 bg-white rounded-[8px] border border-[#E5E7EB] p-8 sm:p-12 flex flex-col justify-between shadow-xs"
                 >
-                    <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-2">
-                        WHO WE ARE
+                    <div>
+                        <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-3">
+                            COMPANY PROFILE
+                        </div>
+                        <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-[#141B2C] leading-[1.12] tracking-tight mb-5">
+                            Navigating the Future of Industrial Logistics
+                        </h2>
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-[#404750] leading-relaxed mb-6">
+                            PT. ABB is an Indonesian shipping company specializing in bulk cement and heavy freight transportation. With over 25 years of maritime experience, we provide dependable voyage and time charter services connecting major ports across Indonesia and regional trade corridors.
+                        </p>
                     </div>
-
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[30px] sm:text-[36px] lg:text-[40px] text-[#141B2C] tracking-tight leading-[1.15] mb-4">
-                        A Specialized Maritime Operator with Singular Focus
-                    </h2>
-
-                    <p className="font-['Hanken_Grotesk']  text-[17px] sm:text-[18px] text-[#404750] leading-relaxed mb-6">
-                        PT. ABB is an Indonesian shipping company specializing in bulk cement and heavy freight transportation. With over 25 years of maritime experience, we provide dependable voyage and time charter services connecting major ports across Indonesia and regional trade corridors.
-                    </p>
 
                     {/* 3 Feature Cards Inside Gray Container (Core Excellence Pattern) */}
                     <div className="bg-[#F5F5F5] rounded-[8px] border border-[#E5E7EB] p-1">

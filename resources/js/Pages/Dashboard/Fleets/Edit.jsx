@@ -109,11 +109,18 @@ export default function Edit({ fleet = null, categories = [] }) {
             const res = await axios.post(route('fleets.categories.store'), {
                 name: newCatName.trim(),
                 description: newCatDesc.trim(),
+            }, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }
             });
 
-            if (res.data && res.data.category) {
-                const newCat = res.data.category;
-                const updatedList = res.data.categories || [...categoriesList, newCat];
+            const responseData = res.data;
+            const newCat = responseData?.category || responseData;
+
+            if (newCat && newCat.id) {
+                const updatedList = responseData?.categories || [...categoriesList, newCat];
                 
                 setCategoriesList(updatedList);
                 
@@ -128,6 +135,8 @@ export default function Edit({ fleet = null, categories = [] }) {
                 setNewCatName('');
                 setNewCatDesc('');
                 setShowCategoryModal(false);
+            } else {
+                setCatError('Failed to parse category response.');
             }
         } catch (err) {
             console.error('Error adding category:', err);
