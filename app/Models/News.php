@@ -26,6 +26,17 @@ class News extends Model
         'author',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($news) {
+            if (!empty($news->title)) {
+                $news->meta_title = $news->title;
+            }
+        });
+    }
+
     public function category()
     {
         return $this->belongsTo(NewsCategory::class, 'category_id');

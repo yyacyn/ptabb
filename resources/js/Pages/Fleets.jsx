@@ -20,7 +20,8 @@ import {
     Search,
     Filter,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    ChevronDown
 } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
 import L from 'leaflet';
@@ -233,10 +234,11 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
 
     // Search and Filter state
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedArea, setSelectedArea] = useState('All');
-    const [selectedStatus, setSelectedStatus] = useState('All');
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [selectedAreas, setSelectedAreas] = useState([]);
+    const [selectedStatuses, setSelectedStatuses] = useState([]);
     const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+    const [openSubDropdown, setOpenSubDropdown] = useState(null);
     const filterMenuRef = useRef(null);
 
     // Close filter dropdown on click outside
@@ -244,6 +246,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
         const handleClickOutside = (event) => {
             if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
                 setIsFilterMenuOpen(false);
+                setOpenSubDropdown(null);
             }
         };
 
@@ -302,9 +305,9 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
     // Reset pagination when search query or filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedCategory, selectedArea, selectedStatus]);
+    }, [searchQuery, selectedCategories, selectedAreas, selectedStatuses]);
 
-    // Unique options for filter dropdowns
+    // Unique options for filter controls
     const categories = ['All', ...Array.from(new Set(displayFleets.map(f => f.vessel_type || f.type).filter(Boolean))).sort()];
 
     // Clean, split, and format Operating Areas into individual distinct options
@@ -320,7 +323,9 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
         return st.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     };
 
-    // Filtered Fleets based on Search Query (includes IMO number) and Filters (Category, Area, Status)
+    const activeFiltersCount = selectedCategories.length + selectedAreas.length + selectedStatuses.length;
+
+    // Filtered Fleets based on Search Query, Category Checkboxes, Area Checkboxes, and Status Checkboxes
     const filteredFleets = displayFleets.filter((vessel) => {
         const name = (vessel.ship_name || vessel.name || '').toLowerCase();
         const type = (vessel.vessel_type || vessel.type || '').toLowerCase();
@@ -340,20 +345,23 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
             areaStr.toLowerCase().includes(query) || 
             flag.includes(query);
 
-        // Filter: Category / Vessel Type
-        const matchesCategory = selectedCategory === 'All' || 
-            (vessel.vessel_type || vessel.type || 'Pneumatic Bulk Carrier') === selectedCategory;
+        // 1. Vessel Type Checkboxes
+        const matchesCategory = selectedCategories.length === 0 || 
+            selectedCategories.includes(vessel.vessel_type || vessel.type || 'Pneumatic Bulk Carrier');
 
-        // Filter: Operational Area (matches exact individual area or contained string)
-        const matchesArea = selectedArea === 'All' || 
-            vesselAreas.includes(selectedArea.toLowerCase()) ||
-            areaStr === selectedArea;
+        // 2. Operational Area Checkboxes
+        const matchesArea = selectedAreas.length === 0 || 
+            selectedAreas.some(selectedArea => 
+                vesselAreas.includes(selectedArea.toLowerCase()) || areaStr === selectedArea
+            );
 
-        // Filter: Status
-        const matchesStatus = selectedStatus === 'All' || 
-            vessel.status === selectedStatus || 
-            status === selectedStatus.toLowerCase() ||
-            formatStatusName(vessel.status).toLowerCase() === selectedStatus.toLowerCase();
+        // 3. Vessel Status Checkboxes
+        const matchesStatus = selectedStatuses.length === 0 || 
+            selectedStatuses.some(selectedStatus => 
+                vessel.status === selectedStatus || 
+                status === selectedStatus.toLowerCase() ||
+                formatStatusName(vessel.status).toLowerCase() === selectedStatus.toLowerCase()
+            );
 
         return matchesQuery && matchesCategory && matchesArea && matchesStatus;
     });
@@ -505,85 +513,213 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                             <button
                                 type="button"
                                 onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                                className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer ${(selectedCategory !== 'All' || selectedArea !== 'All' || selectedStatus !== 'All') ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
+                                className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer ${activeFiltersCount > 0 ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
                                 title="Filter Vessels"
                             >
                                 <Filter className="w-4 h-4 fill-white stroke-none" />
-                                {(selectedCategory !== 'All' || selectedArea !== 'All' || selectedStatus !== 'All') && (
+                                {activeFiltersCount > 0 && (
                                     <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D93A2B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white">
-                                        {(selectedCategory !== 'All' ? 1 : 0) + (selectedArea !== 'All' ? 1 : 0) + (selectedStatus !== 'All' ? 1 : 0)}
+                                        {activeFiltersCount}
                                     </span>
                                 )}
                             </button>
 
-                            {/* Dropdown Menu for Category, Area & Status Filtering */}
+                            {/* Dropdown Menu for Category, Area & Status Filtering with Checkboxes inside each dropdown */}
                             {isFilterMenuOpen && (
                                 <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-[#E5E7EB] rounded-[8px] shadow-xl z-30 p-4 font-['Hanken_Grotesk'] space-y-4">
                                     <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
                                         <span className="text-[12px] font-['JetBrains_Mono'] font-bold text-[#141B2C] uppercase tracking-wider">
                                             Filter Vessels
                                         </span>
-                                        {(selectedCategory !== 'All' || selectedArea !== 'All' || selectedStatus !== 'All') && (
+                                        {activeFiltersCount > 0 && (
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    setSelectedCategory('All');
-                                                    setSelectedArea('All');
-                                                    setSelectedStatus('All');
+                                                    setSelectedCategories([]);
+                                                    setSelectedAreas([]);
+                                                    setSelectedStatuses([]);
+                                                    setOpenSubDropdown(null);
                                                 }}
                                                 className="text-[11px] font-['JetBrains_Mono'] text-[#D93A2B] hover:underline font-semibold cursor-pointer"
                                             >
-                                                Reset All
+                                                Reset All ({activeFiltersCount})
                                             </button>
                                         )}
                                     </div>
 
-                                    {/* Category Filter */}
+                                    {/* 1. Category Multi-Select Dropdown with Checkboxes */}
                                     <div>
                                         <label className="block text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase mb-1.5">
-                                            Vessel Type
+                                            Vessel Type {selectedCategories.length > 0 && `(${selectedCategories.length})`}
                                         </label>
-                                        <select
-                                            value={selectedCategory}
-                                            onChange={(e) => setSelectedCategory(e.target.value)}
-                                            className="w-full  border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] text-[#141B2C] focus:outline-none focus:border-[#00629D]"
-                                        >
-                                            {categories.map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setOpenSubDropdown(openSubDropdown === 'category' ? null : 'category')}
+                                                className="w-full flex items-center justify-between border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] bg-white text-[#141B2C] hover:border-[#00629D] transition-colors cursor-pointer"
+                                            >
+                                                <span className="truncate font-medium text-left">
+                                                    {selectedCategories.length === 0 
+                                                        ? "All Vessel Types" 
+                                                        : `${selectedCategories.length} Selected`}
+                                                </span>
+                                                <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openSubDropdown === 'category' ? 'rotate-180' : ''}`} />
+                                            </button>
+
+                                            {openSubDropdown === 'category' && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-[6px] shadow-lg z-40 p-2 max-h-48 overflow-y-auto space-y-1">
+                                                    <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer text-xs font-bold border-b border-slate-100 pb-1.5 mb-1 text-[#00629D]">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedCategories.length === 0}
+                                                            onChange={() => setSelectedCategories([])}
+                                                            className="w-3.5 h-3.5 rounded text-[#00629D] focus:ring-[#00629D] border-slate-300 cursor-pointer"
+                                                        />
+                                                        <span>All Vessel Types</span>
+                                                    </label>
+                                                    {categories.filter(c => c !== 'All').map((cat) => {
+                                                        const isChecked = selectedCategories.includes(cat);
+                                                        return (
+                                                            <label
+                                                                key={cat}
+                                                                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer text-xs text-[#141B2C] transition-colors"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isChecked}
+                                                                    onChange={() => {
+                                                                        if (isChecked) {
+                                                                            setSelectedCategories(prev => prev.filter(c => c !== cat));
+                                                                        } else {
+                                                                            setSelectedCategories(prev => [...prev, cat]);
+                                                                        }
+                                                                    }}
+                                                                    className="w-3.5 h-3.5 rounded text-[#00629D] focus:ring-[#00629D] border-slate-300 cursor-pointer"
+                                                                />
+                                                                <span className={isChecked ? "font-bold text-[#00629D]" : ""}>{cat}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    {/* Operational Area Filter */}
+                                    {/* 2. Operating Area Multi-Select Dropdown with Checkboxes */}
                                     <div>
                                         <label className="block text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase mb-1.5">
-                                            Operating Area
+                                            Operating Area {selectedAreas.length > 0 && `(${selectedAreas.length})`}
                                         </label>
-                                        <select
-                                            value={selectedArea}
-                                            onChange={(e) => setSelectedArea(e.target.value)}
-                                            className="w-full border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] text-[#141B2C] focus:outline-none focus:border-[#00629D]"
-                                        >
-                                            {areas.map(area => (
-                                                <option key={area} value={area}>{area === 'All' ? 'All Operating Areas' : area}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setOpenSubDropdown(openSubDropdown === 'area' ? null : 'area')}
+                                                className="w-full flex items-center justify-between border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] bg-white text-[#141B2C] hover:border-[#00629D] transition-colors cursor-pointer"
+                                            >
+                                                <span className="truncate font-medium text-left">
+                                                    {selectedAreas.length === 0 
+                                                        ? "All Operating Areas" 
+                                                        : `${selectedAreas.length} Selected`}
+                                                </span>
+                                                <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openSubDropdown === 'area' ? 'rotate-180' : ''}`} />
+                                            </button>
+
+                                            {openSubDropdown === 'area' && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-[6px] shadow-lg z-40 p-2 max-h-48 overflow-y-auto space-y-1">
+                                                    <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer text-xs font-bold border-b border-slate-100 pb-1.5 mb-1 text-[#00629D]">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedAreas.length === 0}
+                                                            onChange={() => setSelectedAreas([])}
+                                                            className="w-3.5 h-3.5 rounded text-[#00629D] focus:ring-[#00629D] border-slate-300 cursor-pointer"
+                                                        />
+                                                        <span>All Operating Areas</span>
+                                                    </label>
+                                                    {areas.filter(a => a !== 'All').map((area) => {
+                                                        const isChecked = selectedAreas.includes(area);
+                                                        return (
+                                                            <label
+                                                                key={area}
+                                                                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer text-xs text-[#141B2C] transition-colors"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isChecked}
+                                                                    onChange={() => {
+                                                                        if (isChecked) {
+                                                                            setSelectedAreas(prev => prev.filter(a => a !== area));
+                                                                        } else {
+                                                                            setSelectedAreas(prev => [...prev, area]);
+                                                                        }
+                                                                    }}
+                                                                    className="w-3.5 h-3.5 rounded text-[#00629D] focus:ring-[#00629D] border-slate-300 cursor-pointer"
+                                                                />
+                                                                <span className={isChecked ? "font-bold text-[#00629D]" : ""}>{area}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    {/* Status Filter */}
+                                    {/* 3. Vessel Status Multi-Select Dropdown with Checkboxes */}
                                     <div>
                                         <label className="block text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase mb-1.5">
-                                            Vessel Status
+                                            Vessel Status {selectedStatuses.length > 0 && `(${selectedStatuses.length})`}
                                         </label>
-                                        <select
-                                            value={selectedStatus}
-                                            onChange={(e) => setSelectedStatus(e.target.value)}
-                                            className="w-full border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] text-[#141B2C] focus:outline-none focus:border-[#00629D]"
-                                        >
-                                            {statuses.map(st => (
-                                                <option key={st} value={st}>{formatStatusName(st)}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setOpenSubDropdown(openSubDropdown === 'status' ? null : 'status')}
+                                                className="w-full flex items-center justify-between border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] bg-white text-[#141B2C] hover:border-[#00629D] transition-colors cursor-pointer"
+                                            >
+                                                <span className="truncate font-medium text-left">
+                                                    {selectedStatuses.length === 0 
+                                                        ? "All Vessel Statuses" 
+                                                        : `${selectedStatuses.length} Selected`}
+                                                </span>
+                                                <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openSubDropdown === 'status' ? 'rotate-180' : ''}`} />
+                                            </button>
+
+                                            {openSubDropdown === 'status' && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-[6px] shadow-lg z-40 p-2 max-h-48 overflow-y-auto space-y-1">
+                                                    <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer text-xs font-bold border-b border-slate-100 pb-1.5 mb-1 text-[#00629D]">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedStatuses.length === 0}
+                                                            onChange={() => setSelectedStatuses([])}
+                                                            className="w-3.5 h-3.5 rounded text-[#00629D] focus:ring-[#00629D] border-slate-300 cursor-pointer"
+                                                        />
+                                                        <span>All Vessel Statuses</span>
+                                                    </label>
+                                                    {statuses.filter(s => s !== 'All').map((st) => {
+                                                        const isChecked = selectedStatuses.includes(st);
+                                                        const label = formatStatusName(st);
+                                                        return (
+                                                            <label
+                                                                key={st}
+                                                                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer text-xs text-[#141B2C] transition-colors"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isChecked}
+                                                                    onChange={() => {
+                                                                        if (isChecked) {
+                                                                            setSelectedStatuses(prev => prev.filter(s => s !== st));
+                                                                        } else {
+                                                                            setSelectedStatuses(prev => [...prev, st]);
+                                                                        }
+                                                                    }}
+                                                                    className="w-3.5 h-3.5 rounded text-[#00629D] focus:ring-[#00629D] border-slate-300 cursor-pointer"
+                                                                />
+                                                                <span className={isChecked ? "font-bold text-[#00629D]" : ""}>{label}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -605,9 +741,10 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                             type="button"
                             onClick={() => {
                                 setSearchQuery('');
-                                setSelectedCategory('All');
-                                setSelectedArea('All');
-                                setSelectedStatus('All');
+                                setSelectedCategories([]);
+                                setSelectedAreas([]);
+                                setSelectedStatuses([]);
+                                setOpenSubDropdown(null);
                             }}
                             className="px-4 py-2 bg-[#00629D] text-white text-xs font-semibold rounded-[4px] hover:bg-[#004e7e] transition-colors cursor-pointer"
                         >

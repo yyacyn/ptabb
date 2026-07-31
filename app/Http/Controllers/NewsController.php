@@ -12,23 +12,71 @@ class NewsController extends Controller
 {
     public function index(Request $request)
     {
-        $news = News::all();
+        $news = News::with('category')->latest()->get();
+        $categories = NewsCategory::all();
 
         if ($request->wantsJson()) {
             return response()->json($news);
         }
 
-        if (!auth()->check()) {
-            return redirect()->route('login');
+        if ($request->is('dashboard*')) {
+            $user = $request->user();
+            if (!$user || !in_array($user->role, ['super_admin', 'pr_admin'])) {
+                abort(403, 'Only Super Admin and PR Admin can access News management.');
+            }
+
+            return Inertia::render('Dashboard/News', [
+                'news' => $news,
+                'categories' => $categories,
+            ]);
         }
 
-        $user = $request->user();
-        if (!in_array($user->role, ['super_admin', 'pr_admin'])) {
-            abort(403, 'Only Super Admin and PR Admin can access News management.');
-        }
-
-        return Inertia::render('Dashboard/News', [
+        return Inertia::render('News', [
             'news' => $news,
+            'categories' => $categories,
+        ]);
+    }
+
+    public function show(Request $request, $slugOrId)
+    {
+        $article = News::with('category')
+            ->where('slug', $slugOrId)
+            ->orWhere('id', $slugOrId)
+            ->firstOrFail();
+
+        // Increment view count
+        $article->increment('view_count');
+
+        if ($request->wantsJson()) {
+            return response()->json($article);
+        }
+
+        $relatedNews = News::with('category')
+            ->where('id', '!=', $article->id)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        return Inertia::render('News/Show', [
+            'article' => $article,
+            'relatedNews' => $relatedNews,
+        ]);
+    }
+
+    public function incrementView(Request $request, $id)
+    {
+        $article = News::where('id', $id)->orWhere('slug', $id)->first();
+
+        if (!$article) {
+            return response()->json(['message' => 'Article not found'], 404);
+        }
+
+        $article->increment('view_count');
+
+        return response()->json([
+            'success' => true,
+            'id' => $article->id,
+            'view_count' => $article->view_count,
         ]);
     }
 
@@ -81,6 +129,7 @@ class NewsController extends Controller
 
         $dataToSave = [
             'title' => $validated['title'],
+            'meta_title' => $validated['title'],
             'content' => $validated['content'],
             'category_id' => $validated['category_id'] ?? 3,
             'excerpt' => $validated['excerpt'] ?? null,
@@ -130,6 +179,7 @@ class NewsController extends Controller
 
         $dataToSave = [
             'title' => $validated['title'],
+            'meta_title' => $validated['title'],
             'content' => $validated['content'],
             'category_id' => $validated['category_id'] ?? $news->category_id ?? 3,
             'excerpt' => $validated['excerpt'] ?? null,

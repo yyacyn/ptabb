@@ -25,6 +25,7 @@ export default function Edit({ article = null, categories = [] }) {
     const { data, setData, post, processing, errors } = useForm({
         _method: isEditing ? 'PUT' : 'POST',
         title: article?.title || '',
+        meta_title: article?.meta_title || article?.title || '',
         category_id: article?.category_id || (categories[0]?.id || ''),
         category_name: article?.category?.name || article?.category || 'Company News',
         published_at: article?.published_at || article?.publish_date || new Date().toISOString().split('T')[0],
@@ -106,7 +107,14 @@ export default function Edit({ article = null, categories = [] }) {
                                         <input
                                             type="text"
                                             value={data.title}
-                                            onChange={(e) => setData('title', e.target.value)}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setData(prev => ({
+                                                    ...prev,
+                                                    title: val,
+                                                    meta_title: val
+                                                }));
+                                            }}
                                             placeholder="e.g. Annual Medical Check-Up 2026 at TZU CHI Hospital"
                                             required
                                             className="w-full border border-[#E5E7EB] rounded-[8px] text-base p-3.5 focus:border-[#00629D] focus:ring-[#00629D] font-bold text-[#141B2C]"

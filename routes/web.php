@@ -35,6 +35,8 @@ Route::get('/fleets/{id}', [FleetsController::class, 'show'])->name('public.flee
 Route::get('/clients', [ClientsController::class, 'index'])->name('public.clients');
 Route::get('/careers', [CareersController::class, 'index'])->name('public.careers');
 Route::get('/news', [NewsController::class, 'index'])->name('public.news');
+Route::get('/news/{slugOrId}', [NewsController::class, 'show'])->name('public.news.show');
+Route::post('/news/{id}/view', [NewsController::class, 'incrementView'])->name('public.news.view');
 Route::get('/notifications', [NotificationsController::class, 'index'])->name('public.notifications');
 Route::get('/news-category', [NewsCatController::class, 'index'])->name('public.news-category');
 Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('public.fleet-category');
