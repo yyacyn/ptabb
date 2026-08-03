@@ -53,6 +53,9 @@ class NewsController extends Controller
 
         $relatedNews = News::with('category')
             ->where('id', '!=', $article->id)
+            ->when($article->category_id, function ($query, $categoryId) {
+                return $query->where('category_id', $categoryId);
+            })
             ->latest()
             ->take(3)
             ->get();
@@ -90,6 +93,7 @@ class NewsController extends Controller
         return Inertia::render('Dashboard/News/Edit', [
             'article' => null,
             'categories' => NewsCategory::all(),
+            'authors' => News::select('author')->whereNotNull('author')->distinct()->orderBy('author')->pluck('author'),
         ]);
     }
 
@@ -105,6 +109,7 @@ class NewsController extends Controller
         return Inertia::render('Dashboard/News/Edit', [
             'article' => $article,
             'categories' => NewsCategory::all(),
+            'authors' => News::select('author')->whereNotNull('author')->distinct()->orderBy('author')->pluck('author'),
         ]);
     }
 

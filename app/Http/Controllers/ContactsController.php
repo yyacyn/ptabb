@@ -38,6 +38,24 @@ class ContactsController extends Controller
     }
 
     /**
+     * Display the public contact page.
+     */
+    public function publicIndex(Request $request)
+    {
+        $contactInfos = \App\Models\ContactInfo::orderBy('display_order', 'asc')->get();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'contactInfos' => $contactInfos,
+            ]);
+        }
+
+        return Inertia::render('Contacts', [
+            'contactInfos' => $contactInfos,
+        ]);
+    }
+
+    /**
      * Store a newly created contact message from public form.
      */
     public function store(Request $request)

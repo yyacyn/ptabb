@@ -1,10 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
 import { Head, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
-import { Users, Plus, Shield, Edit2, Trash2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Users, Plus, Shield, Edit2, Trash2, AlertTriangle, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function UsersManagement({ users = [] }) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
@@ -87,6 +89,12 @@ export default function UsersManagement({ users = [] }) {
         }
     };
 
+    const totalPages = Math.ceil((users || []).length / itemsPerPage) || 1;
+    const paginatedUsers = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return (users || []).slice(start, start + itemsPerPage);
+    }, [users, currentPage, itemsPerPage]);
+
     return (
         <AuthenticatedLayout
             header={
@@ -104,46 +112,52 @@ export default function UsersManagement({ users = [] }) {
                         onClick={() => openModal()}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
                     >
-                        <Plus className="w-4 h-4" /> Add System Admin
+                        <Plus className="w-4 h-4" /> Create System Admin
                     </button>
                 </div>
             }
         >
-            <Head title="System User Management — PT. ABB" />
+            <Head title="User Management — PT. ABB" />
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
 
-                    {/* Info Alert */}
+                    {/* BR-01 RBAC Rule Compliance Banner */}
                     <div className="bg-sky-50 border border-sky-200 rounded-[8px] p-4 text-xs text-sky-900 flex items-start gap-3">
                         <Shield className="w-4 h-4 text-[#00629D] shrink-0 mt-0.5" />
                         <div>
-                            <strong className="font-bold">Role-Based Access Control (BR-01):</strong> Super Admin can create accounts and assign administrative scopes (HR Admin, Crew Admin, PR Admin). Password hashing enforces strict Bcrypt standard.
+                            <strong className="font-bold">Business Rule Compliance (BR-01):</strong> Role Scope gating is strictly enforced across the dashboard.
+                            <span className="block text-[11px] text-sky-700 mt-0.5">
+                                • <strong>Super Admin:</strong> Fleet, HQ Contact Info, Users &nbsp;|&nbsp;
+                                • <strong>HR Admin:</strong> Careers (corporate) & Notifications &nbsp;|&nbsp;
+                                • <strong>Crew Admin:</strong> Careers (vessel crew) &nbsp;|&nbsp;
+                                • <strong>PR Admin:</strong> News, Clients
+                            </span>
                         </div>
                     </div>
 
                     {/* Users Table */}
-                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] overflow-hidden shadow-xs">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-[#141B2C]">
-                                <tr className="bg-[#141B2C] border-b border-[#E5E7EB] text-[11px] font-['JetBrains_Mono'] font-bold text-[#ffffff] uppercase tracking-wider">
-                                    <th className="py-3.5 px-5">User</th>
+                    <div className="bg-white rounded-[10px] border border-[#E5E7EB]  overflow-hidden">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase tracking-wider">
+                                <tr>
+                                    <th className="py-3.5 px-5">User Profile</th>
                                     <th className="py-3.5 px-5">Username</th>
-                                    <th className="py-3.5 px-5">Email</th>
-                                    <th className="py-3.5 px-5">Role</th>
+                                    <th className="py-3.5 px-5">Email Address</th>
+                                    <th className="py-3.5 px-5">Role (BR-01)</th>
                                     <th className="py-3.5 px-5 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#E5E7EB] text-xs">
-                                {(users || []).map((u) => (
-                                    <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
-                                        <td className="py-4 px-5 font-bold text-[#141B2C]">
-                                            {u.name}
+                            <tbody className="divide-y divide-[#E5E7EB]">
+                                {paginatedUsers.map((u) => (
+                                    <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="py-4 px-5">
+                                            <div className="font-bold text-[#141B2C] text-sm">{u.name}</div>
                                         </td>
                                         <td className="py-4 px-5 font-['JetBrains_Mono'] text-slate-600">
                                             @{u.username}
                                         </td>
-                                        <td className="py-4 px-5 text-[#404750]">
+                                        <td className="py-4 px-5 font-['JetBrains_Mono'] text-slate-600">
                                             {u.email}
                                         </td>
                                         <td className="py-4 px-5">
@@ -170,6 +184,54 @@ export default function UsersManagement({ users = [] }) {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                        <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4 font-['Hanken_Grotesk']">
+                            <div className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
+                                Showing <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                                <span className="font-bold text-[#141B2C]">
+                                    {Math.min(currentPage * itemsPerPage, users.length)}
+                                </span>{' '}
+                                of <span className="font-bold text-[#141B2C]">{users.length}</span> users
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                                            currentPage === page
+                                                ? 'bg-[#00629D] text-white'
+                                                : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D]'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>

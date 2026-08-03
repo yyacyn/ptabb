@@ -34,6 +34,7 @@ Route::get('/fleets', [FleetsController::class, 'index'])->name('public.fleets')
 Route::get('/fleets/{id}', [FleetsController::class, 'show'])->name('public.fleets.show');
 Route::get('/clients', [ClientsController::class, 'index'])->name('public.clients');
 Route::get('/careers', [CareersController::class, 'index'])->name('public.careers');
+Route::get('/careers/{id}', [CareersController::class, 'show'])->name('public.careers.show');
 Route::get('/news', [NewsController::class, 'index'])->name('public.news');
 Route::get('/news/{slugOrId}', [NewsController::class, 'show'])->name('public.news.show');
 Route::post('/news/{id}/view', [NewsController::class, 'incrementView'])->name('public.news.view');
@@ -43,7 +44,8 @@ Route::get('/fleet-category', [FleetCatController::class, 'index'])->name('publi
 Route::get('/voyage-waypoints', [VoyageWaypointsController::class, 'index'])->name('public.voyage-waypoints');
 Route::get('/milestones', [MilestonesController::class, 'index'])->name('public.milestones');
 
-// Public Contact Form Submission (Guests & Postman API testing)
+// Public Contact Form Page & Submission
+Route::get('/contacts', [ContactsController::class, 'publicIndex'])->name('public.contacts');
 Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.store');
 
 // AISStream.io Telemetry Ingestion Endpoint & Simulator Trigger

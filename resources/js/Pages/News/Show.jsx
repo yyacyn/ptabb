@@ -24,13 +24,17 @@ export default function NewsShow({ article, relatedNews = [] }) {
     const resolveArticleImage = (item) => {
         if (!item) return '/images/news/top.jpg';
         let img = item.featured_image_url || item.featured_image || item.image;
-        if (!img) return '/images/news/top.jpg';
+        if (!img || img === 'null' || img === 'undefined' || typeof img !== 'string' || img.trim() === '') {
+            return '/images/news/top.jpg';
+        }
+        img = img.trim();
         if (img.startsWith('http://') || img.startsWith('https://')) return img;
         if (img.startsWith('/images/') || img.startsWith('/storage/')) return img;
         if (img.startsWith('assets/images/news/')) return `/${img.replace('assets/images/news/', 'images/news/')}`;
         if (img.startsWith('../assets/images/news/')) return `/${img.replace('../assets/images/news/', 'images/news/')}`;
         if (img.startsWith('images/') || img.startsWith('storage/')) return `/${img}`;
         const filename = img.split('/').pop();
+        if (filename.startsWith('ship_')) return `/images/fleet/${filename}`;
         return `/images/news/${filename}`;
     };
 
@@ -112,7 +116,7 @@ export default function NewsShow({ article, relatedNews = [] }) {
                         )}
 
                         {/* Featured Image Cover */}
-                        <div className="relative rounded-[10px] overflow-hidden bg-[#141B2C] max-h-[520px]">
+                        <div className="relative rounded-[10px] overflow-hidden bg-slate-100 max-h-[520px]">
                             <img
                                 src={resolveArticleImage(article)}
                                 alt={article.title}
@@ -205,7 +209,7 @@ export default function NewsShow({ article, relatedNews = [] }) {
                                             href={`/news/${item.slug || item.id}`}
                                             className="group flex items-center gap-3.5 p-2 rounded-[8px] hover:bg-slate-50 transition-all cursor-pointer"
                                         >
-                                            <div className="relative w-20 h-16 rounded-[6px] overflow-hidden bg-[#141B2C] shrink-0">
+                                            <div className="relative w-20 h-16 rounded-[6px] overflow-hidden bg-slate-100 shrink-0">
                                                 <img
                                                     src={resolveArticleImage(item)}
                                                     alt={item.title}

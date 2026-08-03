@@ -1,10 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
 import { Head, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
-import { MapPin, Plus, Phone, Mail, Globe, Edit2, Trash2, AlertTriangle, Building } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { MapPin, Plus, Phone, Mail, Globe, Edit2, Trash2, AlertTriangle, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ContactInfosManagement({ contactInfos = [] }) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [editingInfo, setEditingInfo] = useState(null);
@@ -86,6 +88,12 @@ export default function ContactInfosManagement({ contactInfos = [] }) {
         }
     };
 
+    const totalPages = Math.ceil((contactInfos || []).length / itemsPerPage) || 1;
+    const paginatedContactInfos = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return (contactInfos || []).slice(start, start + itemsPerPage);
+    }, [contactInfos, currentPage, itemsPerPage]);
+
     return (
         <AuthenticatedLayout
             header={
@@ -103,49 +111,53 @@ export default function ContactInfosManagement({ contactInfos = [] }) {
                         onClick={() => openModal()}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
                     >
-                        <Plus className="w-4 h-4" /> Add Contact Detail
+                        <Plus className="w-4 h-4" /> Add Contact Info
                     </button>
                 </div>
             }
         >
-            <Head title="HQ Contact Info Management — PT. ABB" />
+            <Head title="HQ Contact Info — PT. ABB" />
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
 
-                    {/* <div className="bg-sky-50 border border-sky-200 rounded-[8px] p-4 text-xs text-sky-900 flex items-start gap-3">
-                        <Building className="w-4 h-4 text-[#00629D] shrink-0 mt-0.5" />
-                        <div>
-                            <strong className="font-bold">Super Admin Access Only:</strong> Information configured here powers the public website's header, footer, and contact page details (head office address, phone numbers, commercial emails).
-                        </div>
-                    </div> */}
-
-                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] overflow-hidden shadow-xs">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-[#141B2C] border-b border-[#E5E7EB] text-[11px] font-['JetBrains_Mono'] font-bold text-[#ffffff] uppercase tracking-wider">
+                    {/* Table View */}
+                    <div className="bg-white rounded-[10px] border border-[#E5E7EB]  overflow-hidden">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase tracking-wider">
+                                <tr>
+                                    <th className="py-3.5 px-5">Order</th>
                                     <th className="py-3.5 px-5">Label</th>
                                     <th className="py-3.5 px-5">Type</th>
-                                    <th className="py-3.5 px-5">Contact Details / Address</th>
-                                    <th className="py-3.5 px-5">Order</th>
+                                    <th className="py-3.5 px-5">Value / Content</th>
+                                    <th className="py-3.5 px-5">Primary</th>
                                     <th className="py-3.5 px-5 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#E5E7EB] text-xs">
-                                {(contactInfos || []).map((info) => (
-                                    <tr key={info.id} className="hover:bg-slate-50/80 transition-colors">
-                                        <td className="py-4 px-5 font-bold text-[#141B2C] flex items-center gap-2">
-                                            {getTypeIcon(info.type)}
+                            <tbody className="divide-y divide-[#E5E7EB]">
+                                {paginatedContactInfos.map((info) => (
+                                    <tr key={info.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="py-4 px-5 font-['JetBrains_Mono'] font-bold text-slate-500">
+                                            #{info.display_order || 1}
+                                        </td>
+                                        <td className="py-4 px-5 font-bold text-[#141B2C] text-sm">
                                             {info.label}
                                         </td>
-                                        <td className="py-4 px-5 font-['JetBrains_Mono'] uppercase text-[10px] text-slate-600 font-semibold">
-                                            {info.type}
+                                        <td className="py-4 px-5">
+                                            <div className="flex items-center gap-1.5 font-['JetBrains_Mono'] text-xs uppercase font-bold text-[#00629D]">
+                                                {getTypeIcon(info.type)}
+                                                {info.type}
+                                            </div>
                                         </td>
-                                        <td className="py-4 px-5 text-[#404750]">
+                                        <td className="py-4 px-5 font-['JetBrains_Mono'] text-slate-700 max-w-xs truncate" title={info.value}>
                                             {info.value}
                                         </td>
-                                        <td className="py-4 px-5 font-['JetBrains_Mono']">
-                                            #{info.display_order || 1}
+                                        <td className="py-4 px-5">
+                                            {info.is_primary ? (
+                                                <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase">Primary</span>
+                                            ) : (
+                                                <span className="bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase">Secondary</span>
+                                            )}
                                         </td>
                                         <td className="py-4 px-5 text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -168,6 +180,54 @@ export default function ContactInfosManagement({ contactInfos = [] }) {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                        <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4 font-['Hanken_Grotesk']">
+                            <div className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
+                                Showing <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                                <span className="font-bold text-[#141B2C]">
+                                    {Math.min(currentPage * itemsPerPage, contactInfos.length)}
+                                </span>{' '}
+                                of <span className="font-bold text-[#141B2C]">{contactInfos.length}</span> items
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                                            currentPage === page
+                                                ? 'bg-[#00629D] text-white'
+                                                : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D]'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>

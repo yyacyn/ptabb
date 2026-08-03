@@ -5,7 +5,7 @@ import { Newspaper, ArrowLeft, CheckCircle2, Image as ImageIcon, Calendar, User,
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
-export default function Edit({ article = null, categories = [] }) {
+export default function Edit({ article = null, categories = [], authors = [] }) {
     const isEditing = !!article;
 
     const getNewsImage = (item) => {
@@ -21,6 +21,7 @@ export default function Edit({ article = null, categories = [] }) {
     };
 
     const [previewImage, setPreviewImage] = useState(getNewsImage(article));
+    const [addingAuthor, setAddingAuthor] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         _method: isEditing ? 'PUT' : 'POST',
@@ -139,7 +140,7 @@ export default function Edit({ article = null, categories = [] }) {
                                     {/* Article Content Editor (ReactQuill 70% main canvas) */}
                                     <div className="max-h-[80%]">
                                         <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
-                                            Article Content Body (Rich Text Editor) <span className="text-rose-500">*</span>
+                                            Article Content Body <span className="text-rose-500">*</span>
                                         </label>
                                         <div className="bg-white  overflow-hidden">
                                             <ReactQuill
@@ -231,13 +232,61 @@ export default function Edit({ article = null, categories = [] }) {
 
                                     <div>
                                         <label className="block text-xs font-bold text-[#141B2C] mb-1">Author / Byline</label>
-                                        <input
-                                            type="text"
-                                            value={data.author}
-                                            onChange={(e) => setData('author', e.target.value)}
-                                            placeholder="e.g. ABB Media Team"
-                                            className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
-                                        />
+                                        {addingAuthor ? (
+                                            <div className="space-y-2">
+                                                <input
+                                                    type="text"
+                                                    value={data.author}
+                                                    onChange={(e) => setData('author', e.target.value)}
+                                                    placeholder="Type new author name"
+                                                    className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
+                                                />
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setAddingAuthor(false);
+                                                            setData('author', article?.author || 'ABB Media Team');
+                                                        }}
+                                                        className="text-[11px] font-semibold text-[#00629D] hover:underline"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    {data.author && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setAddingAuthor(false);
+                                                            }}
+                                                            className="text-[11px] font-semibold text-emerald-600 hover:underline"
+                                                        >
+                                                            Use "{data.author}"
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={data.author}
+                                                onChange={(e) => {
+                                                    if (e.target.value === '__add_new__') {
+                                                        setAddingAuthor(true);
+                                                        setData('author', '');
+                                                    } else {
+                                                        setData('author', e.target.value);
+                                                    }
+                                                }}
+                                                className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D] font-medium"
+                                            >
+                                                {!authors.includes(data.author) && (
+                                                    <option value={data.author}>{data.author}</option>
+                                                )}
+                                                {authors.map((name) => (
+                                                    <option key={name} value={name}>{name}</option>
+                                                ))}
+                                                <option value="__add_new__">+ Add new author...</option>
+                                            </select>
+                                        )}
                                     </div>
                                 </div>
 

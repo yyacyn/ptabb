@@ -1,12 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
-import { Newspaper, Plus, Search, Calendar, Edit2, Filter, ArrowUpDown, Eye } from 'lucide-react';
+import { Newspaper, Plus, Search, Calendar, Edit2, Filter, ArrowUpDown, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function News({ news = [] }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
 
     const getNewsImage = (item) => {
         if (!item || !item.featured_image) return '/images/news/top.jpg';
@@ -67,6 +69,12 @@ export default function News({ news = [] }) {
             return 0;
         });
 
+    const totalPages = Math.ceil(filteredNews.length / itemsPerPage) || 1;
+    const paginatedNews = filteredNews.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     return (
         <AuthenticatedLayout
             header={
@@ -99,16 +107,13 @@ export default function News({ news = [] }) {
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 
                             {/* Category Filter Pills */}
-                            <div className="flex flex-wrap gap-2 items-center">
-                                <span className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8] font-bold uppercase mr-1 flex items-center gap-1">
-                                    <Filter className="w-3 h-3" /> Category:
-                                </span>
-                                {categoriesList.map((cat) => (
+                            <div className="flex flex-wrap items-center gap-2">
+                                {categoriesList.map(cat => (
                                     <button
                                         key={cat.value}
-                                        onClick={() => setSelectedCategory(cat.value)}
+                                        onClick={() => { setSelectedCategory(cat.value); setCurrentPage(1); }}
                                         className={`px-3.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all cursor-pointer ${selectedCategory === cat.value
-                                                ? 'bg-[#141B2C] text-white '
+                                                ? 'bg-[#00629D] text-white'
                                                 : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                             }`}
                                     >
@@ -117,110 +122,161 @@ export default function News({ news = [] }) {
                                 ))}
                             </div>
 
-                            {/* Search & Sort Controls */}
-                            <div className="flex items-center gap-3 w-full lg:w-auto">
-                                <div className="relative flex-1 lg:w-72">
-                                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            {/* Right Controls: Search & Sort */}
+                            <div className="flex flex-col sm:flex-row items-center gap-3">
+                                <div className="relative w-full sm:w-64">
+                                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
                                         type="text"
                                         value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Search by title, author, or excerpt..."
-                                        className="w-full pl-9 pr-4 py-1.5 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
+                                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                                        placeholder="Search title, content..."
+                                        className="w-full pl-9 pr-4 py-1.5 border border-[#E5E7EB] rounded-[6px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
                                     />
                                 </div>
 
-                                <div className="flex items-center gap-1 text-xs text-[#404750] shrink-0">
+                                <div className="flex items-center gap-1.5 w-full sm:w-auto">
                                     <ArrowUpDown className="w-3.5 h-3.5 text-[#00629D]" />
                                     <select
                                         value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
-                                        className="border border-[#E5E7EB] rounded-[8px] text-xs py-1.5 px-4.5 focus:border-[#00629D] focus:ring-[#00629D] font-medium"
+                                        onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+                                        className="border border-[#E5E7EB] rounded-[6px] text-xs py-1.5 px-3 pr-8 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
                                     >
-                                        <option value="newest">Sort: Newest First</option>
-                                        <option value="oldest">Sort: Oldest First</option>
-                                        <option value="title_asc">Sort: Title (A - Z)</option>
-                                        <option value="title_desc">Sort: Title (Z - A)</option>
-                                        <option value="views">Sort: Most Viewed</option>
+                                        <option value="newest">Newest First</option>
+                                        <option value="oldest">Oldest First</option>
+                                        <option value="title_asc">Title (A-Z)</option>
+                                        <option value="title_desc">Title (Z-A)</option>
+                                        <option value="views">Most Viewed</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8AAFC8] font-['JetBrains_Mono']">
-                            <span>Active Filter: <strong className="text-[#00629D]">{selectedCategory === 'all' ? 'All Categories' : selectedCategory}</strong></span>
-                            <span>Showing {filteredNews.length} of {(news || []).length} Articles</span>
-                        </div>
                     </div>
 
                     {/* News Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredNews.map((item) => {
-                            const imageSrc = getNewsImage(item);
-                            const categoryName = item.category?.name || item.category || 'Company News';
+                    {paginatedNews.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                            {paginatedNews.map((item) => {
+                                const categoryName = item.category?.name || item.category || 'Company News';
+                                const imgSrc = getNewsImage(item);
 
-                            return (
-                                <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-4  flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all group">
-                                    <div>
-                                        {/* Featured Image Thumbnail */}
-                                        <div className="h-44 w-full bg-[#141B2C] rounded-[6px] overflow-hidden relative mb-3.5 border border-[#E5E7EB]">
-                                            <img
-                                                src={imageSrc}
-                                                alt={item.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                onError={(e) => {
-                                                    e.currentTarget.src = '/images/news/top.jpg';
-                                                }}
-                                            />
-                                            <div className="absolute top-2 left-2 bg-[#141B2C]/80 backdrop-blur-sm text-white px-2.5 py-1 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider border border-white/10">
-                                                {categoryName}
-                                            </div>
-                                            {item.view_count !== undefined && (
-                                                <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold flex items-center gap-1">
-                                                    <Eye className="w-3 h-3" /> {item.view_count}
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group"
+                                    >
+                                        <div>
+                                            <div className="h-40 w-full bg-[#F5F5F5] rounded-[6px] border border-[#E5E7EB] mb-3 overflow-hidden relative">
+                                                <img
+                                                    src={imgSrc}
+                                                    alt={item.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = '/images/news/top.jpg';
+                                                    }}
+                                                />
+                                                <div className="absolute top-2 left-2 bg-[#141B2C]/80 backdrop-blur-sm text-white px-2.5 py-1 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider border border-white/10">
+                                                    {categoryName}
                                                 </div>
+                                                {item.view_count !== undefined && (
+                                                    <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold flex items-center gap-1">
+                                                        <Eye className="w-3 h-3" /> {item.view_count}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8] flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" /> {item.published_at || item.publish_date || '2026-04-01'}
+                                                </span>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${item.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                                    }`}>
+                                                    {item.status || 'published'}
+                                                </span>
+                                            </div>
+
+                                            <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-2 line-clamp-2">
+                                                {item.title}
+                                            </h3>
+
+                                            {item.excerpt && (
+                                                <p className="text-xs text-[#404750] line-clamp-2 leading-relaxed mb-4">
+                                                    {item.excerpt}
+                                                </p>
                                             )}
                                         </div>
 
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8] flex items-center gap-1">
-                                                <Calendar className="w-3 h-3" /> {item.published_at || item.publish_date || '2026-04-01'}
-                                            </span>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${item.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                                                }`}>
-                                                {item.status || 'published'}
-                                            </span>
+                                        <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs font-semibold">
+                                            <Link
+                                                href={route('news.edit', item.id)}
+                                                className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" /> Edit Article
+                                            </Link>
+
+                                            {item.author && (
+                                                <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8]">
+                                                    By {item.author}
+                                                </span>
+                                            )}
                                         </div>
-
-                                        <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-2 line-clamp-2">
-                                            {item.title}
-                                        </h3>
-
-                                        {item.excerpt && (
-                                            <p className="text-xs text-[#404750] line-clamp-2 leading-relaxed mb-4">
-                                                {item.excerpt}
-                                            </p>
-                                        )}
                                     </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-12 text-center text-xs text-[#404750]">
+                            No news articles found matching your filter criteria.
+                        </div>
+                    )}
 
-                                    <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs font-semibold">
-                                        <Link
-                                            href={route('news.edit', item.id)}
-                                            className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
-                                        >
-                                            <Edit2 className="w-3.5 h-3.5" /> Edit Article
-                                        </Link>
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4 font-['Hanken_Grotesk']">
+                            <div className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
+                                Showing <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                                <span className="font-bold text-[#141B2C]">
+                                    {Math.min(currentPage * itemsPerPage, filteredNews.length)}
+                                </span>{' '}
+                                of <span className="font-bold text-[#141B2C]">{filteredNews.length}</span> articles
+                            </div>
 
-                                        {item.author && (
-                                            <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8]">
-                                                By {item.author}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                                            currentPage === page
+                                                ? 'bg-[#00629D] text-white'
+                                                : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D]'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>

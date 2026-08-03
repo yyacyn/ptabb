@@ -140,13 +140,17 @@ export default function NewsPage({ news = [], categories = [] }) {
     const resolveArticleImage = (item) => {
         if (!item) return '/images/news/top.jpg';
         let img = item.featured_image_url || item.featured_image || item.image;
-        if (!img) return '/images/news/top.jpg';
+        if (!img || img === 'null' || img === 'undefined' || typeof img !== 'string' || img.trim() === '') {
+            return '/images/news/top.jpg';
+        }
+        img = img.trim();
         if (img.startsWith('http://') || img.startsWith('https://')) return img;
         if (img.startsWith('/images/') || img.startsWith('/storage/')) return img;
         if (img.startsWith('assets/images/news/')) return `/${img.replace('assets/images/news/', 'images/news/')}`;
         if (img.startsWith('../assets/images/news/')) return `/${img.replace('../assets/images/news/', 'images/news/')}`;
         if (img.startsWith('images/') || img.startsWith('storage/')) return `/${img}`;
         const filename = img.split('/').pop();
+        if (filename.startsWith('ship_')) return `/images/fleet/${filename}`;
         return `/images/news/${filename}`;
     };
 
@@ -479,7 +483,7 @@ export default function NewsPage({ news = [], categories = [] }) {
                                     >
                                         <div>
                                             {/* Rounded Cover Image (Classy Rounded Top & Bottom) */}
-                                            <div className="relative h-56 sm:h-60 rounded-[12px] overflow-hidden bg-[#141B2C] mb-3.5 shadow-xs">
+                                            <div className="relative h-56 sm:h-60 rounded-[12px] overflow-hidden bg-slate-100 mb-3.5 shadow-xs">
                                                 <img
                                                     src={resolveArticleImage(article)}
                                                     alt={article.title}

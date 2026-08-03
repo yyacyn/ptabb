@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
-import { Mail, Search, Filter, ArrowUpDown, Trash2, Eye, CheckCircle2, MessageSquare, Clock, User, Building2, Phone, Shield, X } from 'lucide-react';
+import { Head, usePage, router } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
+import { Mail, Search, Filter, ArrowUpDown, Trash2, Eye, CheckCircle2, MessageSquare, Clock, User, Building2, Phone, Shield, X, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
 export default function Contacts({ contacts = [] }) {
@@ -9,6 +9,11 @@ export default function Contacts({ contacts = [] }) {
     const userRole = pageProps.auth?.user?.role || 'super_admin';
 
     const [contactList, setContactList] = useState(contacts || []);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    useEffect(() => {
+        setContactList(contacts || []);
+    }, [contacts]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDepartment, setSelectedDepartment] = useState('ALL');
     const [selectedStatus, setSelectedStatus] = useState('ALL');
@@ -23,6 +28,9 @@ export default function Contacts({ contacts = [] }) {
     // Delete Confirmation Modal State
     const [messageToDelete, setMessageToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Mark as Replied Confirmation Modal State
+    const [showConfirmReplied, setShowConfirmReplied] = useState(false);
 
     // Department Badge Color Map
     const getDepartmentBadge = (dept) => {
@@ -164,8 +172,7 @@ export default function Contacts({ contacts = [] }) {
                         </h2>
                     </div>
 
-                    <div className="font-['JetBrains_Mono'] text-xs text-[#404750] bg-white border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <div className="font-['JetBrains_Mono'] text-sm text-[#404750] bg-white border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 flex items-center gap-2">
                         Total Messages: <span className="font-bold text-[#141B2C]">{contactList.length}</span>
                     </div>
                 </div>
@@ -187,37 +194,22 @@ export default function Contacts({ contacts = [] }) {
                                 value={searchTerm}
                                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                                 placeholder="Search by name, email, company, or subject..."
-                                className="w-full pl-9 pr-4 py-2 border border-[#E5E7EB] rounded-[8px] text-xs focus:border-[#00629D] focus:ring-[#00629D]"
+                                className="w-full pl-9 pr-4 py-2 border border-[#E5E7EB] rounded-[8px] text-sm focus:border-[#00629D] focus:ring-[#00629D]"
                             />
                         </div>
 
                         {/* Dropdown Filters */}
                         <div className="flex flex-wrap items-center gap-3">
-                            <div className="flex items-center gap-1.5 text-xs text-[#404750]">
+                            <div className="flex items-center gap-1.5 text-sm text-[#404750]">
                                 <Filter className="w-3.5 h-3.5 text-[#00629D]" />
                                 <span className="font-bold">Filter:</span>
                             </div>
-
-                            {/* Department Filter */}
-                            <select
-                                value={selectedDepartment}
-                                onChange={(e) => { setSelectedDepartment(e.target.value); setCurrentPage(1); }}
-                                className="border border-[#E5E7EB] rounded-[8px] text-xs py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
-                            >
-                                <option value="ALL">All Departments</option>
-                                <option value="commercial">Commercial / Charter</option>
-                                <option value="operation">Operations</option>
-                                {['super_admin', 'hr_admin'].includes(userRole) && (
-                                    <option value="hrd">HRD / Careers</option>
-                                )}
-                                <option value="general">General Inquiry</option>
-                            </select>
 
                             {/* Status Filter */}
                             <select
                                 value={selectedStatus}
                                 onChange={(e) => { setSelectedStatus(e.target.value); setCurrentPage(1); }}
-                                className="border border-[#E5E7EB] rounded-[8px] text-xs py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
+                                className="border border-[#E5E7EB] rounded-[8px] text-sm py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
                             >
                                 <option value="ALL">All Statuses</option>
                                 <option value="new">New (Unread)</option>
@@ -231,13 +223,31 @@ export default function Contacts({ contacts = [] }) {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="border border-[#E5E7EB] rounded-[8px] text-xs py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
+                                    className="border border-[#E5E7EB] rounded-[8px] text-sm py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
                                 >
                                     <option value="newest">Newest First</option>
                                     <option value="oldest">Oldest First</option>
                                     <option value="name_asc">Sender Name (A–Z)</option>
                                 </select>
                             </div>
+
+                            {/* Refresh Button */}
+                            <button
+                                type="button"
+                                disabled={isRefreshing}
+                                onClick={() => {
+                                    setIsRefreshing(true);
+                                    router.reload({
+                                        only: ['contacts'],
+                                        preserveScroll: true,
+                                        onFinish: () => setIsRefreshing(false),
+                                    });
+                                }}
+                                className="border border-[#E5E7EB] hover:border-[#00629D] bg-white hover:bg-slate-50 text-[#141B2C] rounded-[8px] p-2 transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
+                                title="Refresh Contacts List"
+                            >
+                                <RefreshCw className={`w-4 h-4 text-[#00629D] ${isRefreshing ? 'animate-spin' : ''}`} />
+                            </button>
                         </div>
 
                     </div>
@@ -246,20 +256,18 @@ export default function Contacts({ contacts = [] }) {
                     <div className="bg-white rounded-[10px] border border-[#E5E7EB]  overflow-hidden">
                         {paginatedMessages.length > 0 ? (
                             <div className="overflow-x-auto">
-                                <table className="w-full table-fixed text-left text-xs border-collapse">
+                                <table className="w-full table-fixed text-left text-sm border-collapse">
                                     <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase tracking-wider">
                                         <tr>
-                                            <th className="p-4 w-[18%]">Sender & Company</th>
-                                            <th className="p-4 w-[32%]">Subject</th>
-                                            <th className="p-4 w-[16%]">Department</th>
-                                            <th className="p-4 w-[12%]">Date Sent</th>
-                                            <th className="p-4 w-[8%]">Status</th>
+                                            <th className="p-4 w-[28%]">Sender & Company</th>
+                                            <th className="p-4 w-[38%]">Subject</th>
+                                            <th className="p-4 w-[16%]">Date Sent</th>
+                                            <th className="p-4 w-[16%]">Status</th>
                                             <th className="p-4 w-[4%] text-right"></th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#E5E7EB] text-[#141B2C]">
                                         {paginatedMessages.map((msg) => {
-                                            const deptBadge = getDepartmentBadge(msg.department);
                                             const statusBadge = getStatusBadge(msg.status);
                                             const isUnread = msg.status === 'new' || msg.status === 'pending';
 
@@ -286,19 +294,13 @@ export default function Contacts({ contacts = [] }) {
                                                         </div>
                                                     </td>
 
-                                                    <td style={{ maxWidth: '240px', overflow: 'hidden' }} className="p-4">
+                                                    <td style={{ maxWidth: '200px', overflow: 'hidden' }} className="p-4">
                                                         <div className="w-full truncate whitespace-nowrap text-[#141B2C] font-medium" title={msg.subject || 'No Subject'}>
                                                             {msg.subject || 'No Subject'}
                                                         </div>
                                                         <div className="w-full truncate whitespace-nowrap text-[11px] text-[#404750] font-normal" title={msg.message}>
                                                             {msg.message}
                                                         </div>
-                                                    </td>
-
-                                                    <td className="p-4">
-                                                        <span className={`inline-block px-2.5 py-1 rounded-[4px] text-[10px] font-['JetBrains_Mono'] font-bold border ${deptBadge.bg}`}>
-                                                            {deptBadge.label}
-                                                        </span>
                                                     </td>
 
                                                     <td className="p-4 font-['JetBrains_Mono'] text-[11px] text-[#404750] whitespace-nowrap">
@@ -345,7 +347,7 @@ export default function Contacts({ contacts = [] }) {
                             <div className="p-12 text-center space-y-3">
                                 <Mail className="w-12 h-12 text-slate-300 mx-auto" />
                                 <h3 className="text-base font-bold text-[#141B2C]">No Contact Messages</h3>
-                                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                                <p className="text-sm text-slate-400 max-w-sm mx-auto">
                                     No contact submissions match your active filter criteria.
                                 </p>
                             </div>
@@ -355,7 +357,7 @@ export default function Contacts({ contacts = [] }) {
                     {/* Pagination Bar */}
                     {totalPages > 1 && (
                         <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4 font-['Hanken_Grotesk']">
-                            <div className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
+                            <div className="font-['JetBrains_Mono'] text-sm text-[#8AAFC8]">
                                 Showing <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
                                 <span className="font-bold text-[#141B2C]">{Math.min(currentPage * itemsPerPage, filteredMessages.length)}</span> of{' '}
                                 <span className="font-bold text-[#141B2C]">{filteredMessages.length}</span> messages
@@ -367,9 +369,9 @@ export default function Contacts({ contacts = [] }) {
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${currentPage === page
-                                                ? 'bg-[#00629D] text-white'
-                                                : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D]'
+                                        className={`w-8 h-8 rounded-[6px] text-sm font-bold transition-all cursor-pointer ${currentPage === page
+                                            ? 'bg-[#00629D] text-white'
+                                            : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D]'
                                             }`}
                                     >
                                         {page}
@@ -385,71 +387,66 @@ export default function Contacts({ contacts = [] }) {
             {/* MESSAGE DETAIL READER MODAL */}
             {selectedMessage && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-[1000px] p-5 space-y-4 max-h-[85vh] overflow-y-auto">
-
-                        {/* Modal Header */}
-                        <div className="flex items-start justify-between border-b border-[#E5E7EB] pb-3 gap-4">
+                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl w-full max-w-[1000px] p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+                        <div className="flex items-start justify-between  gap-4">
                             <div className="min-w-0 flex-1">
-                                <div className="font-['JetBrains_Mono'] text-[10px] text-[#00629D] font-bold uppercase tracking-wider mb-0.5">
-                                    CONTACT MESSAGE READER
+                                <div className="font-['JetBrains_Mono'] text-sm text-[#00629D] font-bold uppercase tracking-wider mb-1.5">
+                                    STATUS
                                 </div>
-                                <h3 className="text-base font-bold text-[#141B2C] truncate" title={selectedMessage.subject || 'No Subject Line'}>
-                                    {selectedMessage.subject || 'No Subject Line'}
-                                </h3>
+                                <div>
+                                    <span className={`inline-block px-3 py-1 rounded text-sm font-['JetBrains_Mono'] font-bold uppercase ${getStatusBadge(selectedMessage.status).bg}`}>
+                                        {getStatusBadge(selectedMessage.status).label}
+                                    </span>
+                                </div>
                             </div>
 
                             <button
                                 type="button"
                                 onClick={() => setSelectedMessage(null)}
-                                className="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer shrink-0"
+                                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-md cursor-pointer shrink-0"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-6 h-6" />
                             </button>
                         </div>
 
                         {/* 30 / 70 Side-by-Side Flex Layout */}
-                        <div className="flex gap-4 items-start w-full">
+                        <div className="flex gap-5 items-start w-full">
 
                             {/* LEFT SIDEBAR (30% Width) — Sender Info & Actions */}
-                            <div style={{ width: '30%', flexShrink: 0 }} className="space-y-3 bg-[#F5F5F5] rounded-[10px] p-3 border border-[#E5E7EB]">
+                            <div style={{ width: '32%', flesmhrink: 0 }} className="space-y-4 bg-[#F5F5F5] rounded-[10px] p-4 border border-[#E5E7EB]">
 
-                                {/* Badges */}
+                                {/* Subject */}
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase block">
-                                        Status & Category
+                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold text-[#8AAFC8] uppercase block">
+                                        SUBJECT
                                     </span>
-                                    <div className="flex flex-wrap items-center gap-1.5">
-                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${getStatusBadge(selectedMessage.status).bg}`}>
-                                            {getStatusBadge(selectedMessage.status).label}
-                                        </span>
-                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold border ${getDepartmentBadge(selectedMessage.department).bg}`}>
-                                            {getDepartmentBadge(selectedMessage.department).label}
-                                        </span>
-                                    </div>
+                                    <h3 className="text-base font-bold text-[#141B2C] break-words leading-snug" title={selectedMessage.subject || 'No Subject Line'}>
+                                        {selectedMessage.subject || 'No Subject Line'}
+                                    </h3>
                                 </div>
 
                                 {/* Sender Details */}
-                                <div className="space-y-2 pt-2 border-t border-[#E5E7EB] text-xs">
+                                <div className="space-y-3 text-sm">
                                     <div>
-                                        <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Sender Name</span>
-                                        <span className="font-bold text-[#141B2C] flex items-center gap-1.5 mt-0.5">
-                                            <User className="w-3.5 h-3.5 text-[#00629D] shrink-0" />
+                                        <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Sender Name</span>
+                                        <span className="font-bold text-[#141B2C] flex items-center gap-1.5 mt-1 text-[14px]">
+                                            <User className="w-4 h-4 text-[#00629D] shrink-0" />
                                             {selectedMessage.name}
                                         </span>
                                     </div>
 
                                     <div>
-                                        <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Email</span>
-                                        <a href={`mailto:${selectedMessage.email}`} className="text-[#00629D] hover:underline font-['JetBrains_Mono'] break-all block mt-0.5">
+                                        <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Email</span>
+                                        <a href={`mailto:${selectedMessage.email}`} className="text-[#00629D] hover:underline font-['JetBrains_Mono'] break-all block mt-1 text-[13px]">
                                             {selectedMessage.email}
                                         </a>
                                     </div>
 
                                     {selectedMessage.company && (
                                         <div>
-                                            <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Company</span>
-                                            <span className="font-semibold text-[#141B2C] flex items-center gap-1.5 mt-0.5">
-                                                <Building2 className="w-3.5 h-3.5 text-[#00629D] shrink-0" />
+                                            <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Company</span>
+                                            <span className="font-semibold text-[#141B2C] flex items-center gap-1.5 mt-1 text-[13px]">
+                                                <Building2 className="w-4 h-4 text-[#00629D] shrink-0" />
                                                 {selectedMessage.company}
                                             </span>
                                         </div>
@@ -457,24 +454,24 @@ export default function Contacts({ contacts = [] }) {
 
                                     {selectedMessage.phone && (
                                         <div>
-                                            <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Phone</span>
-                                            <a href={`tel:${selectedMessage.phone}`} className="text-[#00629D] hover:underline font-['JetBrains_Mono'] block mt-0.5">
+                                            <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Phone</span>
+                                            <a href={`tel:${selectedMessage.phone}`} className="text-[#00629D] hover:underline font-['JetBrains_Mono'] block mt-1 text-[13px]">
                                                 {selectedMessage.phone}
                                             </a>
                                         </div>
                                     )}
 
                                     <div>
-                                        <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Date Received</span>
-                                        <span className="font-['JetBrains_Mono'] text-[10px] text-[#404750] block mt-0.5">
+                                        <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Date Received</span>
+                                        <span className="font-['JetBrains_Mono'] text-sm text-[#404750] block mt-1">
                                             {new Date(selectedMessage.created_at).toLocaleString()}
                                         </span>
                                     </div>
 
                                     {selectedMessage.ip_address && (
                                         <div>
-                                            <span className="text-[10px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">IP Address</span>
-                                            <span className="font-['JetBrains_Mono'] text-[10px] text-[#404750] block mt-0.5">
+                                            <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">IP Address</span>
+                                            <span className="font-['JetBrains_Mono'] text-sm text-[#404750] block mt-1">
                                                 {selectedMessage.ip_address}
                                             </span>
                                         </div>
@@ -482,44 +479,44 @@ export default function Contacts({ contacts = [] }) {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="pt-2 border-t border-[#E5E7EB] space-y-1.5">
+                                <div className="space-y-2">
                                     <a
                                         href={`mailto:${selectedMessage.email}?subject=RE: ${encodeURIComponent(selectedMessage.subject || 'Inquiry')}`}
-                                        className="w-full bg-[#00629D] hover:bg-[#3F96DD] text-white text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
+                                        className="w-full bg-[#00629D] hover:bg-[#3F96DD] text-white text-sm font-semibold px-3 py-2 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
                                     >
-                                        <MessageSquare className="w-3.5 h-3.5" /> Reply via Email
+                                        <MessageSquare className="w-4 h-4" /> Reply via Email
                                     </a>
 
                                     {selectedMessage.status !== 'replied' && (
                                         <button
                                             type="button"
-                                            onClick={() => handleStatusUpdate('replied')}
+                                            onClick={() => setShowConfirmReplied(true)}
                                             disabled={isUpdatingStatus}
-                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
+                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-2 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
                                         >
-                                            <CheckCircle2 className="w-3.5 h-3.5" /> Mark Replied
+                                            <CheckCircle2 className="w-4 h-4" /> Mark Replied
                                         </button>
                                     )}
 
                                     <button
                                         type="button"
                                         onClick={() => setMessageToDelete(selectedMessage)}
-                                        className="w-full border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                        className="w-full border border-red-200 text-red-600 hover:bg-red-50 text-sm font-semibold px-3 py-2 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                                     >
-                                        <Trash2 className="w-3.5 h-3.5" /> Delete Message
+                                        <Trash2 className="w-4 h-4" /> Delete Message
                                     </button>
                                 </div>
 
                             </div>
 
                             {/* RIGHT MAIN PANEL (70% Width) — Message Body Only */}
-                            <div style={{ width: '70%', flexGrow: 1, minWidth: 0 }} className="space-y-2">
-                                <label className="text-xs font-bold text-[#141B2C] uppercase tracking-wider font-['JetBrains_Mono'] flex items-center gap-1.5">
-                                    <MessageSquare className="w-3.5 h-3.5 text-[#00629D]" />
+                            <div style={{ width: '68%', flexGrow: 1, minWidth: 0 }} className="space-y-2.5">
+                                <label className="text-sm font-bold text-[#141B2C] uppercase tracking-wider font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                    <MessageSquare className="w-4 h-4 text-[#00629D]" />
                                     Message Body
                                 </label>
 
-                                <div className="bg-white border border-[#E5E7EB] rounded-[10px] p-4 text-xs leading-relaxed text-[#141B2C] whitespace-pre-wrap font-normal min-h-[240px] max-h-[380px] overflow-y-auto ">
+                                <div className="bg-white border border-[#E5E7EB] rounded-[10px] p-5 text-[14px] leading-relaxed text-[#141B2C] whitespace-pre-wrap font-normal min-h-[260px] max-h-[420px] overflow-y-auto">
                                     {selectedMessage.message}
                                 </div>
                             </div>
@@ -539,7 +536,7 @@ export default function Contacts({ contacts = [] }) {
                         </div>
 
                         <h3 className="text-lg font-bold text-[#141B2C]">Delete Message?</h3>
-                        <p className="text-xs text-[#404750] leading-relaxed">
+                        <p className="text-sm text-[#404750] leading-relaxed">
                             Are you sure you want to delete this message from <span className="font-bold">{messageToDelete.name}</span>? This action cannot be undone.
                         </p>
 
@@ -547,7 +544,7 @@ export default function Contacts({ contacts = [] }) {
                             <button
                                 type="button"
                                 onClick={() => setMessageToDelete(null)}
-                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold px-4 py-2 rounded-[6px] transition-all cursor-pointer"
+                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-sm font-semibold px-4 py-2 rounded-[6px] transition-all cursor-pointer"
                             >
                                 Cancel
                             </button>
@@ -555,9 +552,46 @@ export default function Contacts({ contacts = [] }) {
                                 type="button"
                                 onClick={handleDeleteConfirm}
                                 disabled={isDeleting}
-                                className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-5 py-2 rounded-[6px] transition-all cursor-pointer "
+                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 rounded-[6px] transition-all cursor-pointer "
                             >
                                 {isDeleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MARK AS REPLIED CONFIRMATION MODAL */}
+            {showConfirmReplied && selectedMessage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center">
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                            <CheckCircle2 className="w-6 h-6" />
+                        </div>
+
+                        <h3 className="text-lg font-bold text-[#141B2C]">Mark as Replied?</h3>
+                        <p className="text-sm text-[#404750] leading-relaxed">
+                            Are you sure you want to mark this message from <span className="font-bold">{selectedMessage.name}</span> as replied?
+                        </p>
+
+                        <div className="pt-2 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmReplied(false)}
+                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-sm font-semibold px-4 py-2 rounded-[6px] transition-all cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    setShowConfirmReplied(false);
+                                    await handleStatusUpdate('replied');
+                                }}
+                                disabled={isUpdatingStatus}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 rounded-[6px] transition-all cursor-pointer"
+                            >
+                                {isUpdatingStatus ? 'Updating...' : 'Confirm'}
                             </button>
                         </div>
                     </div>

@@ -69,10 +69,10 @@ function LeafletViewer({ waypoint }) {
         const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
         if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current, { minZoom: 4 }).setView([lat, lng], 6);
+            mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([lat, lng], 5);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                minZoom: 4,
+                minZoom: 2,
                 maxZoom: 18,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(mapInstance.current);

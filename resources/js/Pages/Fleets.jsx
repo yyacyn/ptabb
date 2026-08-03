@@ -268,11 +268,23 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
         setMapWaypoint(null);
     };
 
+    const resolveFleetImage = (f, fallback = '/images/card_bulk_vessel.png') => {
+        if (!f) return fallback;
+        let img = f.image || f.featured_image_url || f.featured_image;
+        if (!img || img === 'null' || img === 'undefined' || typeof img !== 'string' || img.trim() === '') {
+            return fallback;
+        }
+        img = img.trim();
+        if (img.startsWith('http://') || img.startsWith('https://')) return img;
+        if (img.startsWith('/images/') || img.startsWith('/storage/')) return img;
+        if (img.startsWith('images/') || img.startsWith('storage/')) return `/${img}`;
+        const filename = img.split('/').pop();
+        return `/images/fleet/${filename}`;
+    };
+
     // Extract vessel images array from backend `fleets` prop
     const backendImages = (fleets && fleets.length > 0)
-        ? fleets
-            .map((f, idx) => f.image || f.featured_image_url || (f.featured_image ? (f.featured_image.startsWith('/') || f.featured_image.startsWith('http') ? f.featured_image : `/images/fleet/${f.featured_image}`) : null) || (idx % 2 === 0 ? '/images/card_bulk_vessel.png' : '/images/asuwa1.jpg'))
-            .filter(Boolean)
+        ? fleets.map((f, idx) => resolveFleetImage(f, idx % 2 === 0 ? '/images/card_bulk_vessel.png' : '/images/asuwa1.jpg')).filter(Boolean)
         : ['/images/asuwa1.jpg', '/images/card_bulk_vessel.png'];
 
     const vesselImages = backendImages;
@@ -761,10 +773,10 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                             className="group bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-all duration-300 overflow-hidden flex flex-col justify-between"
                         >
                             <div>
-                                {/* Vessel Image Container with Navy Background behind */}
-                                <div className="relative h-52 bg-[#141B2C] overflow-hidden">
+                                {/* Vessel Image Container with Neutral Background behind */}
+                                <div className="relative h-52 bg-slate-100 overflow-hidden">
                                     <img
-                                        src={vessel.featured_image_url || vessel.image || '/images/card_bulk_vessel.png'}
+                                        src={resolveFleetImage(vessel)}
                                         alt={vessel.ship_name || vessel.name || 'Vessel'}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         onError={(e) => {

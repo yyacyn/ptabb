@@ -39,31 +39,43 @@ export default function Footer() {
                     <h4 className="text-[16px] font-bold text-[#141B2C] mb-1">Company</h4>
                     <ul className="space-y-2 text-[15px] font-medium text-[#141B2C]">
                         <li>
-                            <Link href="/about-us" className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                            <Link href={route('public.about')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
                                 <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 About Us
                             </Link>
                         </li>
                         <li>
-                            <a href="/fleets" className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                            <Link href={route('public.services')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                                <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
+                                Services
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={route('public.fleets')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
                                 <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Our Fleet
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <a href="#clients" className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                            <Link href={route('public.clients')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
                                 <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Clients &amp; Partners
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <Link href={route('careers.index')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                            <Link href={route('public.news')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                                <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
+                                News
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={route('public.careers')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
                                 <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Careers
                             </Link>
                         </li>
                         <li>
-                            <Link href={route('contacts.index')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
+                            <Link href={route('public.contacts')} className="hover:text-[#D93A2B] transition-colors flex items-center gap-1.5 font-semibold">
                                 <ChevronRight className="w-4 h-4 text-[#D93A2B]" />
                                 Contact Us
                             </Link>

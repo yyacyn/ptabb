@@ -1,10 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
 import { Head, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
-import { Bell, Plus, AlertTriangle, Edit2, Trash2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Bell, Plus, AlertTriangle, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Notifications({ notifications = [] }) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [editingNotification, setEditingNotification] = useState(null);
@@ -77,6 +79,12 @@ export default function Notifications({ notifications = [] }) {
         }
     };
 
+    const totalPages = Math.ceil((notifications || []).length / itemsPerPage) || 1;
+    const paginatedNotifications = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return (notifications || []).slice(start, start + itemsPerPage);
+    }, [notifications, currentPage, itemsPerPage]);
+
     return (
         <AuthenticatedLayout
             header={
@@ -114,7 +122,7 @@ export default function Notifications({ notifications = [] }) {
 
                     {/* Notifications List */}
                     <div className="space-y-4">
-                        {(notifications || []).map((item) => (
+                        {paginatedNotifications.map((item) => (
                             <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 flex items-center justify-between gap-4 hover:border-[#00629D] transition-all">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
@@ -153,6 +161,54 @@ export default function Notifications({ notifications = [] }) {
                             </div>
                         )}
                     </div>
+
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                        <div className="bg-white rounded-[8px] p-4 border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4 font-['Hanken_Grotesk']">
+                            <div className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8]">
+                                Showing <span className="font-bold text-[#141B2C]">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                                <span className="font-bold text-[#141B2C]">
+                                    {Math.min(currentPage * itemsPerPage, notifications.length)}
+                                </span>{' '}
+                                of <span className="font-bold text-[#141B2C]">{notifications.length}</span> banners
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                                            currentPage === page
+                                                ? 'bg-[#00629D] text-white'
+                                                : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D]'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border border-[#E5E7EB] rounded-[6px] text-xs font-semibold hover:border-[#00629D] hover:text-[#00629D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>

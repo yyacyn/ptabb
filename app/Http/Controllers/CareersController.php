@@ -10,37 +10,54 @@ class CareersController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->wantsJson()) {
-            return response()->json(Career::all());
-        }
-
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
-
-        $user = $request->user();
-
-        // RBAC Enforcement (rule.md & BR-01)
-        if ($user->role === 'pr_admin') {
-            abort(403, 'PR Admin is not authorized to access Careers module.');
-        }
-
         // Auto-expire vacancies past application deadline
         Career::where('status', 'open')
             ->whereNotNull('application_deadline')
             ->whereDate('application_deadline', '<', now()->toDateString())
             ->update(['status' => 'expired']);
 
-        if ($user->role === 'hr_admin') {
-            $careers = Career::where('category', 'corporate')->latest()->get();
-        } elseif ($user->role === 'crew_admin') {
-            $careers = Career::where('category', 'crew')->latest()->get();
-        } else {
-            $careers = Career::latest()->get();
+        if ($request->wantsJson()) {
+            return response()->json(Career::all());
         }
 
-        return Inertia::render('Dashboard/Careers', [
+        if ($request->is('dashboard*')) {
+            if (!auth()->check()) {
+                return redirect()->route('login');
+            }
+
+            $user = $request->user();
+
+            // RBAC Enforcement (rule.md & BR-01)
+            if ($user->role === 'pr_admin') {
+                abort(403, 'PR Admin is not authorized to access Careers module.');
+            }
+
+            if ($user->role === 'hr_admin') {
+                $careers = Career::where('category', 'corporate')->latest()->get();
+            } elseif ($user->role === 'crew_admin') {
+                $careers = Career::where('category', 'crew')->latest()->get();
+            } else {
+                $careers = Career::latest()->get();
+            }
+
+            return Inertia::render('Dashboard/Careers', [
+                'careers' => $careers,
+            ]);
+        }
+
+        $careers = Career::where('status', 'open')->latest()->get();
+
+        return Inertia::render('Careers', [
             'careers' => $careers,
+        ]);
+    }
+
+    public function show($id)
+    {
+        $career = Career::where('status', 'open')->findOrFail($id);
+
+        return Inertia::render('Careers/Show', [
+            'career' => $career,
         ]);
     }
 

@@ -16,7 +16,7 @@ export default function Navbar({ onScrollToSection }) {
     return (
         <header>
             {/* DESKTOP NAVBAR (lg: 1024px and above) */}
-            <nav className="hidden lg:flex items-center justify-start gap-[7px] mb-[7px] w-full bg-[#F0F5FA] py-2 fixed top-0 z-50">
+            <nav className="hidden lg:flex items-center justify-start gap-[7px] lg:mb-[7px] w-full bg-[#F0F5FA] py-2 fixed top-0 z-50">
                 
                 {/* Logo Box */}
                 <Link
@@ -73,7 +73,7 @@ export default function Navbar({ onScrollToSection }) {
 
                 {/* Contact Us Pill */}
                 <Link
-                    href={route('contacts.index')}
+                    href={route('public.contacts')}
                     className="flex-[151_1_0%] max-w-[155px] h-[42px] bg-gradient-to-r from-[#D93A2B] to-[#FF5542] rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-white hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] transition-all duration-200 whitespace-nowrap shrink shadow-xs"
                 >
                     CONTACT US
@@ -99,7 +99,7 @@ export default function Navbar({ onScrollToSection }) {
                     </Link>
 
                     <Link
-                        href={route('contacts.index')}
+                        href={route('public.contacts')}
                         className="h-[42px] px-3 bg-gradient-to-r from-[#D93A2B] to-[#FF5542] rounded-[8px] flex items-center justify-center font-['JetBrains_Mono'] font-medium text-[12px] text-white shrink-0 shadow-xs"
                     >
                         Contact Us
