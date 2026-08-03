@@ -265,7 +265,7 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                         {/* Red Back Chevron Button */}
                         <Link
                             href={route('public.fleets')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white p-3 rounded-[8px] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] flex items-center justify-center active:scale-[0.97] cursor-pointer shrink-0"
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white p-3 rounded-[8px] transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] flex items-center justify-center active:scale-[0.97] cursor-pointer shrink-0"
                             title="Back to Fleet Inventory"
                         >
                             <ChevronLeft className="w-5 h-5 stroke-[3] group-hover:-translate-x-0.5 transition-transform duration-150" />
@@ -319,7 +319,7 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                             <div className="pt-4 mt-4">
                                 <Link
                                     href={route('contacts.index')}
-                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white text-[14px] font-['Hanken_Grotesk'] font-semibold px-5 py-2.5 rounded-[4px] inline-flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer w-full"
+                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white text-[14px] font-['Hanken_Grotesk'] font-semibold px-5 py-2.5 rounded-[4px] inline-flex items-center justify-center gap-2 transition-[colors,shadow,opacity,transform] duration-200 cursor-pointer w-full"
                                 >
                                     Book This Vessel
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 group-active:translate-x-0 transition-transform duration-150" />
@@ -392,7 +392,7 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
                         <Link
                             href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all duration-200"
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[colors,shadow,opacity,transform] duration-200"
                         >
                             Request Charter Proposal
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 group-active:translate-x-0 transition-transform duration-150" />

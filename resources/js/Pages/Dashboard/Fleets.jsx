@@ -146,7 +146,7 @@ export default function Fleets({ fleets = [] }) {
 
                     <Link 
                         href={route('fleets.create')}
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-[colors,shadow,opacity,transform] cursor-pointer"
                     >
                         <Plus className="w-4 h-4" /> Add New Vessel
                     </Link>
@@ -258,7 +258,7 @@ export default function Fleets({ fleets = [] }) {
                                 return (
                                     <div 
                                         key={vessel.id} 
-                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-4  hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.25)] transition-all duration-300 flex flex-col justify-between group"
+                                        className="bg-white rounded-[8px] border border-[#E5E7EB] p-4  hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.25)] transition-[colors,shadow,opacity,transform] duration-300 flex flex-col justify-between group"
                                     >
                                         <div>
                                             {/* Featured Image Box */}
@@ -350,7 +350,7 @@ export default function Fleets({ fleets = [] }) {
                             <button
                                 type="button"
                                 onClick={handleResetFilters}
-                                className="inline-flex items-center gap-1.5 bg-[#00629D] text-white text-xs font-semibold px-4 py-2 rounded-[6px] hover:bg-[#3F96DD] transition-all cursor-pointer mt-2"
+                                className="inline-flex items-center gap-1.5 bg-[#00629D] text-white text-xs font-semibold px-4 py-2 rounded-[6px] hover:bg-[#3F96DD] transition-[colors,shadow,opacity,transform] cursor-pointer mt-2"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" /> Reset Filters
                             </button>
@@ -385,7 +385,7 @@ export default function Fleets({ fleets = [] }) {
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-[colors,shadow,opacity,transform] cursor-pointer ${
                                             currentPage === page
                                                 ? 'bg-[#00629D] text-white '
                                                 : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D]'

@@ -4,7 +4,9 @@ import { Head, useForm, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Briefcase, Anchor, Plus, Search, Edit2, Clock, Trash2, AlertTriangle, ArrowUpDown } from 'lucide-react';
 
-export default function Careers({ careers = [] }) {
+const EMPTY_CAREERS = [];
+
+export default function Careers({ careers = EMPTY_CAREERS }) {
     const authUser = usePage().props.auth.user;
     const userRole = authUser?.role || 'super_admin';
 
@@ -182,7 +184,7 @@ export default function Careers({ careers = [] }) {
 
                     <button
                         onClick={() => openModal()}
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-[colors,shadow,opacity,transform] cursor-pointer"
                     >
                         <Plus className="w-4 h-4" /> Post New Vacancy
                     </button>
@@ -200,7 +202,7 @@ export default function Careers({ careers = [] }) {
                             {userRole === 'super_admin' && (
                                 <button
                                     onClick={() => handleTabChange('all')}
-                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all cursor-pointer ${activeTab === 'all' ? 'bg-[#141B2C] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-[colors,shadow,opacity,transform] cursor-pointer ${activeTab === 'all' ? 'bg-[#141B2C] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                         }`}
                                 >
                                     All Vacancies ({(careers || []).length})
@@ -210,7 +212,7 @@ export default function Careers({ careers = [] }) {
                             {(userRole === 'super_admin' || userRole === 'hr_admin') && (
                                 <button
                                     onClick={() => handleTabChange('corporate')}
-                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === 'corporate' ? 'bg-[#00629D] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-[colors,shadow,opacity,transform] flex items-center gap-1.5 cursor-pointer ${activeTab === 'corporate' ? 'bg-[#00629D] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                         }`}
                                 >
                                     <Briefcase className="w-3.5 h-3.5" /> Corporate Jobs (Land)
@@ -220,7 +222,7 @@ export default function Careers({ careers = [] }) {
                             {(userRole === 'super_admin' || userRole === 'crew_admin') && (
                                 <button
                                     onClick={() => handleTabChange('crew')}
-                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === 'crew' ? 'bg-[#00629D] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-[6px] text-xs font-semibold transition-[colors,shadow,opacity,transform] flex items-center gap-1.5 cursor-pointer ${activeTab === 'crew' ? 'bg-[#00629D] text-white' : 'bg-[#F5F5F5] text-[#404750] hover:bg-slate-200'
                                         }`}
                                 >
                                     <Anchor className="w-3.5 h-3.5" /> Vessel Crew Jobs (Sea)
@@ -280,7 +282,7 @@ export default function Careers({ careers = [] }) {
                                 return (
                                     <div
                                         key={job.id}
-                                        className="bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-md p-5 transition-all flex flex-col justify-between group"
+                                        className="bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-md p-5 transition-[colors,shadow,opacity,transform] flex flex-col justify-between group"
                                     >
                                         <div>
                                             <div className="flex items-center justify-between mb-3">
@@ -589,7 +591,7 @@ export default function Careers({ careers = [] }) {
                         <button
                             type="button"
                             onClick={handleDelete}
-                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-[colors,shadow,opacity,transform] shadow-sm flex items-center gap-1.5 cursor-pointer"
                         >
                             <Trash2 className="w-3.5 h-3.5" /> Delete Vacancy
                         </button>

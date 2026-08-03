@@ -4,7 +4,9 @@ import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Building2, Plus, Search, Image as ImageIcon, Edit2, Trash2, Filter, ArrowUpDown, AlertTriangle } from 'lucide-react';
 
-export default function Clients({ clients = [] }) {
+const EMPTY_CLIENTS = [];
+
+export default function Clients({ clients = EMPTY_CLIENTS }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
@@ -148,7 +150,7 @@ export default function Clients({ clients = [] }) {
 
                     <button 
                         onClick={() => openModal()}
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-[colors,shadow,opacity,transform] cursor-pointer"
                     >
                         <Plus className="w-4 h-4" /> Add New Partner
                     </button>
@@ -179,7 +181,7 @@ export default function Clients({ clients = [] }) {
                             <div className="flex gap-1 bg-[#F5F5F5] p-1 rounded-[6px] border border-[#E5E7EB] w-full sm:w-auto">
                                 <button
                                     onClick={() => handleCategoryChange('all')}
-                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-all cursor-pointer ${
+                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-[colors,shadow,opacity,transform] cursor-pointer ${
                                         categoryFilter === 'all' ? 'bg-[#00629D] text-white' : 'text-[#404750] hover:text-[#141B2C]'
                                     }`}
                                 >
@@ -187,7 +189,7 @@ export default function Clients({ clients = [] }) {
                                 </button>
                                 <button
                                     onClick={() => handleCategoryChange('Domestic')}
-                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-all cursor-pointer ${
+                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-[colors,shadow,opacity,transform] cursor-pointer ${
                                         categoryFilter === 'Domestic' ? 'bg-[#00629D] text-white' : 'text-[#404750] hover:text-[#141B2C]'
                                     }`}
                                 >
@@ -195,7 +197,7 @@ export default function Clients({ clients = [] }) {
                                 </button>
                                 <button
                                     onClick={() => handleCategoryChange('International')}
-                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-all cursor-pointer ${
+                                    className={`px-3 py-1 text-xs font-semibold rounded-[4px] transition-[colors,shadow,opacity,transform] cursor-pointer ${
                                         categoryFilter === 'International' ? 'bg-[#00629D] text-white' : 'text-[#404750] hover:text-[#141B2C]'
                                     }`}
                                 >
@@ -245,7 +247,7 @@ export default function Clients({ clients = [] }) {
                                 const logoSrc = getLogoPath(item);
 
                                 return (
-                                    <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group">
+                                    <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 hover:border-[#00629D] hover:shadow-md transition-[colors,shadow,opacity,transform] flex flex-col justify-between group">
                                         <div>
                                             <div className="flex items-center justify-between mb-3">
                                                 <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00629D] uppercase tracking-wider bg-[#F5F5F5] px-2 py-0.5 rounded border border-[#E5E7EB]">
@@ -259,7 +261,7 @@ export default function Clients({ clients = [] }) {
                                                     src={logoSrc}
                                                     alt={item.name}
                                                     title={item.name}
-                                                    className="max-h-full max-w-full object-contain grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100 transition-all duration-300"
+                                                    className="max-h-full max-w-full object-contain grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100 transition-[colors,shadow,opacity,transform] duration-300"
                                                     onError={(e) => {
                                                         e.currentTarget.style.display = 'none';
                                                         if (e.currentTarget.nextSibling) {
@@ -482,7 +484,7 @@ export default function Clients({ clients = [] }) {
                         <button
                             type="button"
                             onClick={confirmDelete}
-                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-[colors,shadow,opacity,transform] shadow-sm flex items-center gap-1.5 cursor-pointer"
                         >
                             <Trash2 className="w-3.5 h-3.5" /> Remove Partner
                         </button>

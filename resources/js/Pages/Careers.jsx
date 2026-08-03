@@ -104,7 +104,7 @@ export default function Careers({ careers = [] }) {
                             className="flex flex-wrap items-center gap-[10px] pt-2"
                         >
                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                                <a href="#positions" className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2">
+                                <a href="#positions" className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[colors,shadow,opacity,transform] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2">
                                     Explore Careers <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                                 </a>
                             </motion.div>
@@ -156,7 +156,7 @@ export default function Careers({ careers = [] }) {
                                 const IconComponent = item.icon;
                                 return (
                                     <motion.div key={idx} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}
-                                        className="bg-white rounded-[6px] p-4 sm:p-5 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_4px_14px_rgba(0,98,157,0.15)] transition-all flex items-start gap-3"
+                                        className="bg-white rounded-[6px] p-4 sm:p-5 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_4px_14px_rgba(0,98,157,0.15)] transition-[colors,shadow,opacity,transform] flex items-start gap-3"
                                     >
                                         <div className="w-8 h-8 rounded-[6px] bg-[#F5F5F5] border border-[#E5E7EB] flex items-center justify-center shrink-0 mt-0.5">
                                             <IconComponent className="w-4 h-4 text-[#141B2C]" />
@@ -257,7 +257,7 @@ export default function Careers({ careers = [] }) {
                         </div>
                         {/* Red Search Button */}
                         <button type="button" title="Search"
-                            className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer"
+                            className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-[colors,shadow,opacity,transform] flex items-center justify-center shadow-sm cursor-pointer"
                         >
                             <Search className="w-4 h-4 stroke-[2.5]" />
                         </button>
@@ -267,7 +267,7 @@ export default function Careers({ careers = [] }) {
                                 type="button"
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                                 title="Filter Positions"
-                                className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer ${activeFiltersCount > 0 ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
+                                className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-[colors,shadow,opacity,transform] flex items-center justify-center shadow-sm cursor-pointer ${activeFiltersCount > 0 ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
                             >
                                 <Filter className="w-4 h-4 fill-white stroke-none" />
                                 {activeFiltersCount > 0 && (
@@ -336,7 +336,7 @@ export default function Careers({ careers = [] }) {
                                 key={career.id || idx}
                                 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                                 transition={{ duration: 0.35, delay: (idx % PER_PAGE) * 0.05 }}
-                                className="bg-white border border-[#E5E7EB] rounded-[8px] p-5 flex flex-col gap-4 hover:border-[#00629D] hover:shadow-[0_4px_14px_rgba(0,98,157,0.1)] transition-all duration-200"
+                                className="bg-white border border-[#E5E7EB] rounded-[8px] p-5 flex flex-col gap-4 hover:border-[#00629D] hover:shadow-[0_4px_14px_rgba(0,98,157,0.1)] transition-[colors,shadow,opacity,transform] duration-200"
                             >
                                 {/* Badges */}
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -392,7 +392,7 @@ export default function Careers({ careers = [] }) {
                                         Review Position
                                     </Link>
                                     <Link href={route('careers.index', career.id)}
-                                        className={`w-full text-center py-2 px-4 rounded-[4px] font-['Hanken_Grotesk'] font-semibold text-[13px] text-white transition-all cursor-pointer ${applyBtnClass(career.category)}`}
+                                        className={`w-full text-center py-2 px-4 rounded-[4px] font-['Hanken_Grotesk'] font-semibold text-[13px] text-white transition-[colors,shadow,opacity,transform] cursor-pointer ${applyBtnClass(career.category)}`}
                                     >
                                         Apply Securely
                                     </Link>
@@ -412,12 +412,12 @@ export default function Careers({ careers = [] }) {
                         </div>
                         <div className="flex items-center gap-2">
                             <button type="button" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                                className="w-9 h-9 rounded-[6px] flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer">
+                                className="w-9 h-9 rounded-[6px] flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-[colors,shadow,opacity,transform] cursor-pointer">
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                 <button key={page} type="button" onClick={() => setCurrentPage(page)}
-                                    className={`w-9 h-9 rounded-[6px] text-[14px] font-bold flex items-center justify-center transition-all cursor-pointer ${
+                                    className={`w-9 h-9 rounded-[6px] text-[14px] font-bold flex items-center justify-center transition-[colors,shadow,opacity,transform] cursor-pointer ${
                                         currentPage === page
                                             ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white border border-transparent'
                                             : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
@@ -427,7 +427,7 @@ export default function Careers({ careers = [] }) {
                                 </button>
                             ))}
                             <button type="button" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                                className="w-9 h-9 rounded-[6px] flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer">
+                                className="w-9 h-9 rounded-[6px] flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-[colors,shadow,opacity,transform] cursor-pointer">
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>

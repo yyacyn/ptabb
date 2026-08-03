@@ -130,7 +130,7 @@ export default function Milestones({ milestones = [] }) {
                     <button 
                         type="button"
                         onClick={() => openModal()}
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-[colors,shadow,opacity,transform] cursor-pointer"
                     >
                         <Plus className="w-4 h-4" /> Add Milestone
                     </button>
@@ -191,7 +191,7 @@ export default function Milestones({ milestones = [] }) {
                     {sortedMilestones.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {paginatedMilestones.map((item) => (
-                                <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 hover:border-[#00629D] hover:shadow-md transition-all flex flex-col justify-between group">
+                                <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 hover:border-[#00629D] hover:shadow-md transition-[colors,shadow,opacity,transform] flex flex-col justify-between group">
                                     <div>
                                         <div className="flex items-center justify-between mb-3">
                                             <span className="font-['JetBrains_Mono'] text-xs font-bold text-[#00629D] bg-sky-50 px-2.5 py-1 rounded border border-sky-100 flex items-center gap-1.5">
@@ -445,7 +445,7 @@ export default function Milestones({ milestones = [] }) {
                         <button
                             type="button"
                             onClick={confirmDelete}
-                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] transition-[colors,shadow,opacity,transform] shadow-sm flex items-center gap-1.5 cursor-pointer"
                         >
                             <Trash2 className="w-3.5 h-3.5" /> Remove Milestone
                         </button>

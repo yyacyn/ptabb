@@ -207,7 +207,7 @@ export default function NewsShow({ article, relatedNews = [] }) {
                                         <Link
                                             key={item.id}
                                             href={`/news/${item.slug || item.id}`}
-                                            className="group flex items-center gap-3.5 p-2 rounded-[8px] hover:bg-slate-50 transition-all cursor-pointer"
+                                            className="group flex items-center gap-3.5 p-2 rounded-[8px] hover:bg-slate-50 transition-[colors,shadow,opacity,transform] cursor-pointer"
                                         >
                                             <div className="relative w-20 h-16 rounded-[6px] overflow-hidden bg-slate-100 shrink-0">
                                                 <img

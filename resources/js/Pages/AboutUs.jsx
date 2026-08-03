@@ -181,7 +181,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                                         key={idx}
                                         whileHover={{ y: -2 }}
                                         transition={{ duration: 0.2 }}
-                                        className="group bg-white rounded-[6px] p-4 sm:p-5 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_4px_14px_rgba(0,98,157,0.15)] transition-all duration-200 flex flex-col justify-between h-full min-h-[110px]"
+                                        className="group bg-white rounded-[6px] p-4 sm:p-5 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_4px_14px_rgba(0,98,157,0.15)] transition-[colors,shadow,opacity,transform] duration-200 flex flex-col justify-between h-full min-h-[110px]"
                                     >
                                         <div className="w-8 h-8 rounded-[6px] bg-[#F5F5F5] border border-[#E5E7EB] flex items-center justify-center mb-3 text-[#141B2C] shrink-0">
                                             <IconComponent className="w-4 h-4 text-[#141B2C]" />
@@ -223,7 +223,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                         <motion.div
                             whileHover={{ y: -3 }}
                             transition={{ duration: 0.2 }}
-                            className="group bg-white rounded-[6px] p-6 sm:p-8 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-all duration-200 min-h-[260px] flex flex-col justify-between"
+                            className="group bg-white rounded-[6px] p-6 sm:p-8 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-[colors,shadow,opacity,transform] duration-200 min-h-[260px] flex flex-col justify-between"
                         >
                             <div>
                                 <div className="w-10 h-10 rounded-[6px] bg-[#F5F5F5] border border-[#E5E7EB] flex items-center justify-center mb-5 text-[#141B2C]">
@@ -244,7 +244,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                         <motion.div
                             whileHover={{ y: -3 }}
                             transition={{ duration: 0.2 }}
-                            className="group bg-white rounded-[6px] p-6 sm:p-8 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-all duration-200 min-h-[260px] flex flex-col justify-between"
+                            className="group bg-white rounded-[6px] p-6 sm:p-8 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-[colors,shadow,opacity,transform] duration-200 min-h-[260px] flex flex-col justify-between"
                         >
                             <div>
                                 <div className="w-10 h-10 rounded-[6px] bg-[#F5F5F5] border border-[#E5E7EB] flex items-center justify-center mb-5 text-[#141B2C]">
@@ -299,7 +299,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
 
                     {/* Sticky Center Year Spine (JetBrains Mono, Sticky at exact middle 50vh) */}
                     <div className="hidden lg:flex flex-col items-center absolute left-1/2 -translate-x-1/2 top-24 bottom-0 z-20 pointer-events-none w-32">
-                        <div className="sticky top-1/2 -translate-y-1/2 pointer-events-auto flex flex-col items-center gap-3 py-4 transition-all duration-300">
+                        <div className="sticky top-1/2 -translate-y-1/2 pointer-events-auto flex flex-col items-center gap-3 py-4 transition-[colors,shadow,opacity,transform] duration-300">
                             {milestones.map((m, idx) => {
                                 const isActive = activeYear === m.year;
                                 const nextMilestone = milestones[idx + 1];
@@ -313,7 +313,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                                                 setActiveYear(m.year);
                                                 scrollToMilestone(m.year);
                                             }}
-                                            className={`font-['JetBrains_Mono'] font-bold transition-all duration-300 cursor-pointer ${isActive
+                                            className={`font-['JetBrains_Mono'] font-bold transition-[colors,shadow,opacity,transform] duration-300 cursor-pointer ${isActive
                                                 ? 'text-[28px] sm:text-[34px] text-[#00629D] scale-110 tracking-tight'
                                                 : 'text-[16px] sm:text-[18px] text-[#8AAFC8] hover:text-[#00629D]'
                                                 }`}
@@ -350,7 +350,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true, amount: 0.3 }}
                                         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                                        className={`bg-white rounded-[12px] p-6 sm:p-8 border-2 transition-all duration-300 ${isActive
+                                        className={`bg-white rounded-[12px] p-6 sm:p-8 border-2 transition-[colors,shadow,opacity,transform] duration-300 ${isActive
                                             ? 'border-[#3F96DD] shadow-[0_8px_30px_rgba(0,98,157,0.15)]'
                                             : 'border-[#E5E7EB]'
                                             }`}
@@ -403,7 +403,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                                                 whileInView={{ opacity: 1, y: 0, x: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                                                className={`bg-white rounded-[12px] p-6 sm:p-8 border-2 transition-all duration-300 ${isActive
+                                                className={`bg-white rounded-[12px] p-6 sm:p-8 border-2 transition-[colors,shadow,opacity,transform] duration-300 ${isActive
                                                     ? 'border-[#3F96DD] shadow-[0_8px_30px_rgba(0,98,157,0.15)]'
                                                     : 'border-[#E5E7EB] hover:border-[#00629D]'
                                                     }`}
@@ -457,7 +457,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                                                 whileInView={{ opacity: 1, y: 0, x: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                                                className={`bg-white rounded-[12px] p-6 sm:p-8 border-2 transition-all duration-300 ${isActive
+                                                className={`bg-white rounded-[12px] p-6 sm:p-8 border-2 transition-[colors,shadow,opacity,transform] duration-300 ${isActive
                                                     ? 'border-[#3F96DD] shadow-[0_8px_30px_rgba(0,98,157,0.15)]'
                                                     : 'border-[#E5E7EB] hover:border-[#00629D]'
                                                     }`}

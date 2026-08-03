@@ -74,7 +74,7 @@ export default function Navbar({ onScrollToSection }) {
                 {/* Contact Us Pill */}
                 <Link
                     href={route('public.contacts')}
-                    className="flex-[151_1_0%] max-w-[155px] h-[42px] bg-gradient-to-r from-[#D93A2B] to-[#FF5542] rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-white hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] transition-all duration-200 whitespace-nowrap shrink shadow-xs"
+                    className="flex-[151_1_0%] max-w-[155px] h-[42px] bg-gradient-to-r from-[#D93A2B] to-[#FF5542] rounded-[8px] flex items-center justify-start px-3 font-['JetBrains_Mono'] font-medium text-[14px] text-white hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] transition-[colors,shadow,opacity,transform] duration-200 whitespace-nowrap shrink shadow-xs"
                 >
                     CONTACT US
                 </Link>

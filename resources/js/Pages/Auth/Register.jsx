@@ -222,7 +222,7 @@ export default function Register() {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="group w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white rounded-[8px] px-6 py-2.5 font-['Hanken_Grotesk'] font-semibold text-xs transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] disabled:opacity-50 cursor-pointer mt-3"
+                            className="group w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white rounded-[8px] px-6 py-2.5 font-['Hanken_Grotesk'] font-semibold text-xs transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] disabled:opacity-50 cursor-pointer mt-3"
                         >
                             {processing ? 'Registering Account...' : 'Create Account'}
                             <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1" />

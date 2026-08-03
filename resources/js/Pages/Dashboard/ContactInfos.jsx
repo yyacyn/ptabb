@@ -4,7 +4,9 @@ import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
 import { MapPin, Plus, Phone, Mail, Globe, Edit2, Trash2, AlertTriangle, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function ContactInfosManagement({ contactInfos = [] }) {
+const EMPTY_CONTACT_INFOS = [];
+
+export default function ContactInfosManagement({ contactInfos = EMPTY_CONTACT_INFOS }) {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,7 +111,7 @@ export default function ContactInfosManagement({ contactInfos = [] }) {
 
                     <button
                         onClick={() => openModal()}
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] hover:shadow-md transition-[colors,shadow,opacity,transform] cursor-pointer"
                     >
                         <Plus className="w-4 h-4" /> Add Contact Info
                     </button>
@@ -207,7 +209,7 @@ export default function ContactInfosManagement({ contactInfos = [] }) {
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                                        className={`w-8 h-8 rounded-[6px] text-xs font-bold transition-[colors,shadow,opacity,transform] cursor-pointer ${
                                             currentPage === page
                                                 ? 'bg-[#00629D] text-white'
                                                 : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D]'
@@ -309,7 +311,7 @@ export default function ContactInfosManagement({ contactInfos = [] }) {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="px-5 py-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold rounded-[6px] hover:shadow-md transition-all cursor-pointer"
+                                className="px-5 py-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold rounded-[6px] hover:shadow-md transition-[colors,shadow,opacity,transform] cursor-pointer"
                             >
                                 {editingInfo ? 'Update Info' : 'Save Info'}
                             </button>

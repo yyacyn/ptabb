@@ -18,7 +18,10 @@ import {
     Tag
 } from 'lucide-react';
 
-export default function NewsPage({ news = [], categories = [] }) {
+const EMPTY_NEWS = [];
+const EMPTY_CATEGORIES = [];
+
+export default function NewsPage({ news = EMPTY_NEWS, categories = EMPTY_CATEGORIES }) {
     // Only use backend data provided by controller (no static hardcoded fallbacks)
     const displayNews = news || [];
 
@@ -242,7 +245,7 @@ export default function NewsPage({ news = [], categories = [] }) {
                                                     key={idx}
                                                     type="button"
                                                     onClick={() => setCurrentHeroIdx(idx)}
-                                                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                                                    className={`h-2 rounded-full transition-[colors,shadow,opacity,transform] duration-300 cursor-pointer ${
                                                         currentHeroIdx % featuredNewsList.length === idx 
                                                             ? 'w-8 bg-white' 
                                                             : 'w-2 bg-white/40 hover:bg-white/70'
@@ -322,7 +325,7 @@ export default function NewsPage({ news = [], categories = [] }) {
                             {/* Red Search Button */}
                             <button
                                 type="button"
-                                className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer"
+                                className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-[colors,shadow,opacity,transform] flex items-center justify-center shadow-sm cursor-pointer"
                                 title="Search"
                             >
                                 <Search className="w-4 h-4 stroke-[2.5]" />
@@ -333,7 +336,7 @@ export default function NewsPage({ news = [], categories = [] }) {
                                 <button
                                     type="button"
                                     onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                                    className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer ${activeFiltersCount > 0 ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
+                                    className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-[colors,shadow,opacity,transform] flex items-center justify-center shadow-sm cursor-pointer ${activeFiltersCount > 0 ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
                                     title="Filter Articles"
                                 >
                                     <Filter className="w-4 h-4 fill-white stroke-none" />
@@ -537,7 +540,7 @@ export default function NewsPage({ news = [], categories = [] }) {
                                     type="button"
                                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-[colors,shadow,opacity,transform] cursor-pointer"
                                     title="Previous Page"
                                 >
                                     <ChevronLeft className="w-4 h-4" />
@@ -548,7 +551,7 @@ export default function NewsPage({ news = [], categories = [] }) {
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-bold flex items-center justify-center transition-all cursor-pointer ${currentPage === page
+                                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-bold flex items-center justify-center transition-[colors,shadow,opacity,transform] cursor-pointer ${currentPage === page
                                                 ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white shadow-xs border border-transparent'
                                                 : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
                                             }`}
@@ -561,7 +564,7 @@ export default function NewsPage({ news = [], categories = [] }) {
                                     type="button"
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-[colors,shadow,opacity,transform] cursor-pointer"
                                     title="Next Page"
                                 >
                                     <ChevronRight className="w-4 h-4" />

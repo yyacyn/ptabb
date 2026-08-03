@@ -536,7 +536,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <button
                                             type="button"
                                             onClick={() => setActiveTab('detailed')}
-                                            className="inline-flex items-center gap-2 bg-[#00629D] hover:bg-[#3F96DD] text-white text-xs font-semibold px-5 py-2.5 rounded-[6px] transition-all cursor-pointer"
+                                            className="inline-flex items-center gap-2 bg-[#00629D] hover:bg-[#3F96DD] text-white text-xs font-semibold px-5 py-2.5 rounded-[6px] transition-[colors,shadow,opacity,transform] cursor-pointer"
                                         >
                                             Next: Detailed Specs
                                             <ArrowRight className="w-4 h-4" />
@@ -545,7 +545,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-6 py-2.5 rounded-[6px] transition-all shadow-sm cursor-pointer"
+                                            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-6 py-2.5 rounded-[6px] transition-[colors,shadow,opacity,transform] shadow-sm cursor-pointer"
                                         >
                                             <CheckCircle2 className="w-4 h-4" />
                                             {isEditing ? 'Update Ship' : 'Save Ship'}
@@ -836,7 +836,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <button
                                             type="button"
                                             onClick={() => setActiveTab('basic')}
-                                            className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold px-5 py-2.5 rounded-[6px] transition-all cursor-pointer"
+                                            className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold px-5 py-2.5 rounded-[6px] transition-[colors,shadow,opacity,transform] cursor-pointer"
                                         >
                                             <ArrowLeft className="w-4 h-4" />
                                             Previous: Basic Info
@@ -845,7 +845,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-6 py-2.5 rounded-[6px] transition-all shadow-sm cursor-pointer"
+                                            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-6 py-2.5 rounded-[6px] transition-[colors,shadow,opacity,transform] shadow-sm cursor-pointer"
                                         >
                                             <CheckCircle2 className="w-4 h-4" />
                                             {isEditing ? 'Update Ship' : 'Save Ship'}
@@ -924,7 +924,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         setShowCategoryModal(false);
                                         setCatError(null);
                                     }}
-                                    className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold px-4 py-2 rounded-[6px] transition-all cursor-pointer"
+                                    className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold px-4 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] cursor-pointer"
                                 >
                                     Cancel
                                 </button>

@@ -60,7 +60,10 @@ const createVesselIcon = (vesselName = 'Vessel', heading = 0, pinColor = '#00629
     });
 };
 
-function RealTimeFleetMap({ waypoints = [], onSelectVessel }) {
+const EMPTY_WAYPOINTS = [];
+const EMPTY_FLEETS = [];
+
+function RealTimeFleetMap({ waypoints = EMPTY_WAYPOINTS, onSelectVessel }) {
     const mapRef = useRef(null);
     const mapInstance = useRef(null);
     const markersRef = useRef(new Map());
@@ -223,7 +226,7 @@ function LeafletViewer({ waypoint }) {
     return <div ref={mapRef} className="h-full w-full z-0" />;
 }
 
-export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
+export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY_WAYPOINTS }) {
     // Automatically poll backend every 3000ms for real-time AIS telemetry updates
     usePoll(3000, {
         only: ['voyage_waypoints'],
@@ -514,7 +517,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                         {/* Red Search Button */}
                         <button
                             type="button"
-                            className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer"
+                            className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-[colors,shadow,opacity,transform] flex items-center justify-center shadow-sm cursor-pointer"
                             title="Search"
                         >
                             <Search className="w-4 h-4 stroke-[2.5]" />
@@ -525,7 +528,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                             <button
                                 type="button"
                                 onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                                className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-all flex items-center justify-center shadow-sm cursor-pointer ${activeFiltersCount > 0 ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
+                                className={`relative bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white p-3 rounded-[4px] transition-[colors,shadow,opacity,transform] flex items-center justify-center shadow-sm cursor-pointer ${activeFiltersCount > 0 ? 'ring-2 ring-offset-1 ring-[#00629D]' : ''}`}
                                 title="Filter Vessels"
                             >
                                 <Filter className="w-4 h-4 fill-white stroke-none" />
@@ -770,7 +773,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                             key={vessel.id || idx}
                             whileHover={{ y: -4 }}
                             transition={{ duration: 0.2 }}
-                            className="group bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-all duration-300 overflow-hidden flex flex-col justify-between"
+                            className="group bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-[colors,shadow,opacity,transform] duration-300 overflow-hidden flex flex-col justify-between"
                         >
                             <div>
                                 {/* Vessel Image Container with Neutral Background behind */}
@@ -872,7 +875,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                                 type="button"
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-[colors,shadow,opacity,transform] cursor-pointer"
                                 title="Previous Page"
                             >
                                 <ChevronLeft className="w-4 h-4" />
@@ -883,7 +886,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                                     key={page}
                                     type="button"
                                     onClick={() => setCurrentPage(page)}
-                                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center transition-all cursor-pointer ${currentPage === page
+                                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center transition-[colors,shadow,opacity,transform] cursor-pointer ${currentPage === page
                                         ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white shadow-xs border border-transparent'
                                         : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
                                         }`}
@@ -896,7 +899,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                                 type="button"
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-[colors,shadow,opacity,transform] cursor-pointer"
                                 title="Next Page"
                             >
                                 <ChevronRight className="w-4 h-4" />
@@ -927,7 +930,7 @@ export default function Fleets({ fleets = [], voyage_waypoints = [] }) {
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
                         <Link
                             href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[colors,shadow,opacity,transform]"
                         >
                             Request Charter Proposal
                             <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />

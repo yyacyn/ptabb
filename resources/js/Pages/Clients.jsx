@@ -121,7 +121,7 @@ export default function Clients({ clients = [] }) {
                                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                         <Link
                                             href={route('contacts.index')}
-                                            className="group inline-flex items-center justify-center bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] transition-all duration-200"
+                                            className="group inline-flex items-center justify-center bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] transition-[colors,shadow,opacity,transform] duration-200"
                                         >
                                             Become a Partner
                                         </Link>
@@ -145,7 +145,7 @@ export default function Clients({ clients = [] }) {
 
                                 {/* 2 Stat Cards Strip (Side by Side) */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-all duration-200 shadow-xs">
+                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow,opacity,transform] duration-200 shadow-xs">
                                         <span className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-[#141B2C] leading-none tracking-tight mb-2">
                                             15+
                                         </span>
@@ -154,7 +154,7 @@ export default function Clients({ clients = [] }) {
                                         </span>
                                     </div>
 
-                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-all duration-200 shadow-xs">
+                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow,opacity,transform] duration-200 shadow-xs">
                                         <span className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-[#141B2C] leading-none tracking-tight mb-2">
                                             15+
                                         </span>
@@ -349,7 +349,7 @@ export default function Clients({ clients = [] }) {
                                 <button
                                     key={cat}
                                     onClick={() => setSelectedCategory(cat)}
-                                    className={`px-4 py-1.5 rounded-[8px] font-['JetBrains_Mono'] text-[12px] font-medium transition-all duration-200 cursor-pointer ${selectedCategory === cat
+                                    className={`px-4 py-1.5 rounded-[8px] font-['JetBrains_Mono'] text-[12px] font-medium transition-[colors,shadow,opacity,transform] duration-200 cursor-pointer ${selectedCategory === cat
                                             ? 'bg-[#141B2C] text-white'
                                             : 'bg-[#F5F5F5] text-[#404750] hover:bg-[#E5E7EB]'
                                         }`}
@@ -365,7 +365,7 @@ export default function Clients({ clients = [] }) {
                                 <motion.div
                                     key={client.id || idx}
                                     whileHover={{ y: -3 }}
-                                    className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 flex flex-col justify-between hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.25)] transition-all duration-300 group"
+                                    className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 flex flex-col justify-between hover:border-[#00629D] hover:shadow-[0_4px_20px_rgba(0,98,157,0.25)] transition-[colors,shadow,opacity,transform] duration-300 group"
                                 >
                                     <div>
                                         <div className="flex items-center justify-between mb-3">

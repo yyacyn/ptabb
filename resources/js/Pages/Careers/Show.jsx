@@ -53,7 +53,7 @@ export default function CareerShow({ career }) {
                 >
                     <Link
                         href={route('public.careers')}
-                        className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white p-3 rounded-[8px] transition-all hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] flex items-center justify-center active:scale-[0.97] cursor-pointer shrink-0"
+                        className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white p-3 rounded-[8px] transition-[colors,shadow,opacity,transform] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] flex items-center justify-center active:scale-[0.97] cursor-pointer shrink-0"
                         title="Back to Careers"
                     >
                         <ChevronLeft className="w-5 h-5 stroke-[3] group-hover:-translate-x-0.5 transition-transform duration-150" />

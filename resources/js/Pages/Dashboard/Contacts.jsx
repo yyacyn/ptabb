@@ -4,7 +4,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { Mail, Search, Filter, ArrowUpDown, Trash2, Eye, CheckCircle2, MessageSquare, Clock, User, Building2, Phone, Shield, X, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
-export default function Contacts({ contacts = [] }) {
+const EMPTY_CONTACTS = [];
+
+export default function Contacts({ contacts = EMPTY_CONTACTS }) {
     const pageProps = usePage().props;
     const userRole = pageProps.auth?.user?.role || 'super_admin';
 
@@ -243,7 +245,7 @@ export default function Contacts({ contacts = [] }) {
                                         onFinish: () => setIsRefreshing(false),
                                     });
                                 }}
-                                className="border border-[#E5E7EB] hover:border-[#00629D] bg-white hover:bg-slate-50 text-[#141B2C] rounded-[8px] p-2 transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
+                                className="border border-[#E5E7EB] hover:border-[#00629D] bg-white hover:bg-slate-50 text-[#141B2C] rounded-[8px] p-2 transition-[colors,shadow,opacity,transform] cursor-pointer flex items-center justify-center disabled:opacity-50"
                                 title="Refresh Contacts List"
                             >
                                 <RefreshCw className={`w-4 h-4 text-[#00629D] ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -369,7 +371,7 @@ export default function Contacts({ contacts = [] }) {
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-8 h-8 rounded-[6px] text-sm font-bold transition-all cursor-pointer ${currentPage === page
+                                        className={`w-8 h-8 rounded-[6px] text-sm font-bold transition-[colors,shadow,opacity,transform] cursor-pointer ${currentPage === page
                                             ? 'bg-[#00629D] text-white'
                                             : 'border border-[#E5E7EB] text-[#141B2C] hover:border-[#00629D]'
                                             }`}
@@ -482,7 +484,7 @@ export default function Contacts({ contacts = [] }) {
                                 <div className="space-y-2">
                                     <a
                                         href={`mailto:${selectedMessage.email}?subject=RE: ${encodeURIComponent(selectedMessage.subject || 'Inquiry')}`}
-                                        className="w-full bg-[#00629D] hover:bg-[#3F96DD] text-white text-sm font-semibold px-3 py-2 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
+                                        className="w-full bg-[#00629D] hover:bg-[#3F96DD] text-white text-sm font-semibold px-3 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] flex items-center justify-center gap-1.5 cursor-pointer "
                                     >
                                         <MessageSquare className="w-4 h-4" /> Reply via Email
                                     </a>
@@ -492,7 +494,7 @@ export default function Contacts({ contacts = [] }) {
                                             type="button"
                                             onClick={() => setShowConfirmReplied(true)}
                                             disabled={isUpdatingStatus}
-                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-2 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer "
+                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] flex items-center justify-center gap-1.5 cursor-pointer "
                                         >
                                             <CheckCircle2 className="w-4 h-4" /> Mark Replied
                                         </button>
@@ -501,7 +503,7 @@ export default function Contacts({ contacts = [] }) {
                                     <button
                                         type="button"
                                         onClick={() => setMessageToDelete(selectedMessage)}
-                                        className="w-full border border-red-200 text-red-600 hover:bg-red-50 text-sm font-semibold px-3 py-2 rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                        className="w-full border border-red-200 text-red-600 hover:bg-red-50 text-sm font-semibold px-3 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] flex items-center justify-center gap-1.5 cursor-pointer"
                                     >
                                         <Trash2 className="w-4 h-4" /> Delete Message
                                     </button>
@@ -544,7 +546,7 @@ export default function Contacts({ contacts = [] }) {
                             <button
                                 type="button"
                                 onClick={() => setMessageToDelete(null)}
-                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-sm font-semibold px-4 py-2 rounded-[6px] transition-all cursor-pointer"
+                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-sm font-semibold px-4 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] cursor-pointer"
                             >
                                 Cancel
                             </button>
@@ -552,7 +554,7 @@ export default function Contacts({ contacts = [] }) {
                                 type="button"
                                 onClick={handleDeleteConfirm}
                                 disabled={isDeleting}
-                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 rounded-[6px] transition-all cursor-pointer "
+                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] cursor-pointer "
                             >
                                 {isDeleting ? 'Deleting...' : 'Delete'}
                             </button>
@@ -578,7 +580,7 @@ export default function Contacts({ contacts = [] }) {
                             <button
                                 type="button"
                                 onClick={() => setShowConfirmReplied(false)}
-                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-sm font-semibold px-4 py-2 rounded-[6px] transition-all cursor-pointer"
+                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-sm font-semibold px-4 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] cursor-pointer"
                             >
                                 Cancel
                             </button>
@@ -589,7 +591,7 @@ export default function Contacts({ contacts = [] }) {
                                     await handleStatusUpdate('replied');
                                 }}
                                 disabled={isUpdatingStatus}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 rounded-[6px] transition-all cursor-pointer"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 rounded-[6px] transition-[colors,shadow,opacity,transform] cursor-pointer"
                             >
                                 {isUpdatingStatus ? 'Updating...' : 'Confirm'}
                             </button>

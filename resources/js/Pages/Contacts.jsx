@@ -4,7 +4,10 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { MapPin, Phone, Mail, Send, CheckCircle2, X } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Contacts({ contactInfos = [] }) {
+const EMPTY_CONTACT_INFOS = [];
+
+export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
+    const [activeRegion, setActiveRegion] = useState('pontianak');
     const [showToast, setShowToast] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -89,7 +92,7 @@ export default function Contacts({ contactInfos = [] }) {
                 </motion.section>
 
                 {/* 2. SPLIT CONTAINER: HQ ADDRESS & CONTACT INFO (LEFT 50%) + CONTACT FORM (RIGHT 50%) */}
-                <div className="flex flex-col lg:flex-row gap-[4px] items-stretch min-h-[580px]">
+                <div id="contact-form-section" className="flex flex-col lg:flex-row gap-[4px] items-stretch min-h-[580px]">
 
                     {/* Left Column: Head Office Info Card (50%) */}
                     <motion.div
@@ -260,7 +263,7 @@ export default function Contacts({ contactInfos = [] }) {
                                     <button
                                         type="submit"
                                         disabled={processing}
-                                        className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] disabled:opacity-50 text-white font-['Hanken_Grotesk'] font-medium text-[15px] px-4 py-2.5 rounded-[4px] inline-flex items-center gap-2 transition-all cursor-pointer"
+                                        className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] disabled:opacity-50 text-white font-['Hanken_Grotesk'] font-medium text-[15px] px-4 py-2.5 rounded-[4px] inline-flex items-center gap-2 transition-[colors,shadow,opacity,transform] cursor-pointer"
                                     >
                                         Send Message
                                         <Send className="w-4 h-4" />
@@ -270,6 +273,195 @@ export default function Contacts({ contactInfos = [] }) {
                         </div>
                     </motion.div>
                 </div>
+
+                {/* OPERATIONAL NETWORK & BRANCHES SECTION */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.6 }}
+                    className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 lg:p-12 text-center"
+                >
+                    <div className="max-w-[850px] mx-auto mb-8 lg:mb-10">
+                        <div className="font-['JetBrains_Mono'] font-bold text-[12px] uppercase text-[#00629D] tracking-wider mb-2">
+                            OPERATIONAL NETWORK &amp; BRANCHES
+                        </div>
+                        <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] lg:text-[44px] leading-[1.12] text-[#141B2C] tracking-tight">
+                            Strategic Footprint Across Key Maritime &amp; Industrial Centers
+                        </h2>
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[15px] lg:text-[17px] text-[#404750] leading-relaxed mt-3">
+                            Supported by our Jakarta Head Office, Batam Shipyard, and regional branch agencies across major Indonesian ports, ensuring seamless operational support wherever your cargo moves.
+                        </p>
+                    </div>
+
+                    {/* Dynamic Expandable Network Accordion */}
+                    <div
+                        className="bg-[#F5F5F5] rounded-[12px] border border-[#E5E7EB] p-1 flex flex-col lg:flex-row gap-1 h-auto lg:h-[480px] w-full items-stretch text-left"
+                    >
+                        {[
+                            {
+                                id: 'pontianak',
+                                title: 'Pontianak, West Kalimantan',
+                                type: 'Branch Office',
+                                company: 'PT. Pelayaran Andalas Bahtera Baruna Pontianak',
+                                shortDesc: 'Branch Office Indonesia',
+                                mapUrl: null,
+                                image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80'
+                            },
+                            {
+                                id: 'tuban',
+                                title: 'Tuban, East Java',
+                                type: 'Branch Office',
+                                company: 'PT. Pelayaran Andalas Bahtera Baruna Tuban',
+                                shortDesc: 'Branch Office Indonesia',
+                                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.7026954380094!2d111.9392790113708!3d-6.805974293163146!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e77a787f7ac8185%3A0xa63f277caab38294!2sPT.%20PELAYARAN%20ANDALAS%20BAHTERA%20BARUNA!5e0!3m2!1sen!2sid!4v1785750531242!5m2!1sen!2sid',
+                                image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80'
+                            },
+                            {
+                                id: 'padang',
+                                title: 'Padang, West Sumatra',
+                                type: 'Branch Office',
+                                company: 'PT. Pelayaran Andalas Bahtera Baruna Padang',
+                                shortDesc: 'Branch Office Indonesia',
+                                mapUrl: null,
+                                image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=1200&q=80'
+                            },
+                            {
+                                id: 'banyuwangi',
+                                title: 'Banyuwangi, East Java',
+                                type: 'Branch Office',
+                                company: 'PT. Pelayaran Andalas Bahtera Baruna Banyuwangi',
+                                shortDesc: 'Branch Office Indonesia',
+                                mapUrl: null,
+                                image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80'
+                            },
+                            {
+                                id: 'singapore',
+                                title: 'Singapore',
+                                type: 'Representative Office',
+                                company: 'PT. Pelayaran Andalas Bahtera Baruna Regional Agency',
+                                shortDesc: 'Representative Office',
+                                mapUrl: null,
+                                image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=1200&q=80'
+                            },
+                            {
+                                id: 'batam',
+                                title: 'Batam, Riau Islands',
+                                type: 'Shipyard',
+                                company: 'PT. Pelayaran Andalas Bahtera Baruna Batam Shipyard',
+                                shortDesc: 'Vessel Building & Repair Facility',
+                                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.1334440620126!2d103.91407751134618!3d1.0616303989236995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d9f2d3684f3d7f%3A0x57c21d1c7f3fa731!2sPT.%20Sumber%20Marine%20Shipyard!5e0!3m2!1sen!2sid!4v1785750320902!5m2!1sen!2sid',
+                                image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=1200&q=80'
+                            }
+                        ].map((region) => {
+                            const isActive = activeRegion === region.id;
+                            return (
+                                <div
+                                    key={region.id}
+                                    onMouseEnter={() => setActiveRegion(region.id)}
+                                    className={`rounded-[8px] overflow-hidden transition-[colors,shadow,opacity,transform] duration-300 ease-out cursor-pointer relative flex flex-col lg:h-full ${isActive
+                                        ? 'h-[260px] lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-4 lg:p-6 justify-between '
+                                        : 'h-[56px] lg:flex-[1_1_0%] border border-[#E5E7EB] items-center justify-center'
+                                        }`}
+                                >
+                                    {isActive ? (
+                                        /* Active Expanded Region Panel (Pure White Surface) */
+                                        <div className="h-full flex flex-col justify-between">
+                                            <div>
+                                                <h3 className="text-[20px] lg:text-[28px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-1 lg:mb-2 tracking-tight">
+                                                    {region.type}
+                                                </h3>
+                                                <div className="font-['Hanken_Grotesk'] font-bold text-[#00629D] text-[14px] lg:text-[17px] mb-0.5">
+                                                    {region.title}
+                                                </div>
+                                                <div className="font-['Hanken_Grotesk'] font-medium text-[#404750] text-[12px] lg:text-[17px]">
+                                                    {region.company}
+                                                </div>
+                                                <div className="font-['Hanken_Grotesk'] font-normal text-[#404750] text-[12px] lg:text-[14px]">
+                                                    {region.shortDesc}
+                                                </div>
+                                            </div>
+
+                                            <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-sm h-[130px] lg:h-[260px] w-full relative shrink-0 mt-2 lg:mt-3 bg-[#F5F5F5]">
+                                                {region.mapUrl ? (
+                                                    <iframe
+                                                        src={region.mapUrl}
+                                                        className="w-full h-full border-0"
+                                                        allowFullScreen=""
+                                                        loading="lazy"
+                                                        referrerPolicy="strict-origin-when-cross-origin"
+                                                        title={`${region.title} Google Map`}
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                                                        <MapPin className="w-8 h-8 text-slate-300 mb-1" />
+                                                        <span className="font-['Hanken_Grotesk'] text-xs font-semibold text-slate-500">
+                                                            Location Map Not Available
+                                                        </span>
+                                                        <span className="font-['JetBrains_Mono'] text-[10px] text-slate-400 mt-0.5">
+                                                            Detailed coordinates available upon request
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        /* Collapsed Vertical/Horizontal Image Strip Panel */
+                                        <>
+                                            <img
+                                                src={region.image}
+                                                alt={region.title}
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80';
+                                                }}
+                                            />
+
+                                            <div className="absolute inset-0 bg-gradient-to-b from-[#00629D]/75 via-[#00629D]/40 to-[#141B2C]/85 hover:from-[#00629D]/85 transition-colors duration-300" />
+
+                                            <div className="relative z-10 flex items-center justify-center p-2 h-full w-full">
+                                                <span className="font-['Hanken_Grotesk'] font-bold text-[15px] lg:text-[22px] text-white tracking-wide whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180 drop-shadow-md">
+                                                    {region.title}
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </motion.div>
+                {/* URGENT CHARTERING ASSISTANCE CTA BANNER */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="bg-gradient-to-r from-[#00558A] via-[#00629D] to-[#3F96DD] rounded-[8px] p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden my-6"
+                >
+                    <div className="max-w-3xl mx-auto flex flex-col items-center">
+                        <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] lg:text-[44px] tracking-tight mb-4 text-white leading-tight">
+                            Need Urgent Chartering Assistance<br className="hidden sm:inline" /> or Port Dispatch?
+                        </h2>
+
+                        <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
+                            Our 24/7 chartering desk and operations team are available around the clock to discuss vessel positioning, urgent cargo arrangements, and freight quotes.
+                        </p>
+
+                        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                            <a
+                                href="#contact-form-section"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    document.getElementById('contact-form-section')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="bg-[#EF4444] hover:bg-[#DC2626] text-white rounded-[6px] px-8 py-3.5 font-['Hanken_Grotesk'] font-semibold text-[15px] sm:text-[16px] hover:shadow-[0_4px_14px_rgba(239,68,68,0.4)] active:scale-[0.97] inline-flex items-center gap-2 transition-[colors,shadow,opacity,transform] cursor-pointer"
+                            >
+                                Speak to Chartering Desk
+                            </a>
+                        </motion.div>
+                    </div>
+                </motion.div>
             </div>
 
             {/* Floating Toast Notification Feedback */}
@@ -302,5 +494,4 @@ export default function Contacts({ contactInfos = [] }) {
                 )}
             </AnimatePresence>
         </GuestLayout>
-    );
-}
+    );}

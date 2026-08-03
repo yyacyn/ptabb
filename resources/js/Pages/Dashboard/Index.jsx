@@ -290,7 +290,7 @@ export default function Index({
 
                                 <Link
                                     href={safeRoute('contacts.index', '/dashboard/contacts')}
-                                    className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                    className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
@@ -298,13 +298,13 @@ export default function Index({
                                         </div>
                                         <span>Review messages</span>
                                     </div>
-                                    <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
+                                    <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
                                 </Link>
 
                                 {canManageCareers && (
                                     <Link
                                         href={safeRoute('careers.index', '/dashboard/careers')}
-                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
@@ -312,14 +312,14 @@ export default function Index({
                                             </div>
                                             <span>Manage job vacancies</span>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
+                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
                                     </Link>
                                 )}
 
                                 {canManageNews && (
                                     <Link
                                         href={safeRoute('news.index', '/dashboard/news')}
-                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
@@ -327,14 +327,14 @@ export default function Index({
                                             </div>
                                             <span>Add news article</span>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
+                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
                                     </Link>
                                 )}
 
                                 {canManageFleet && (
                                     <Link
                                         href={safeRoute('fleets.index', '/dashboard/fleets')}
-                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
@@ -342,7 +342,7 @@ export default function Index({
                                             </div>
                                             <span>Manage vessel fleet</span>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-all duration-150" />
+                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
                                     </Link>
                                 )}
                             </div>

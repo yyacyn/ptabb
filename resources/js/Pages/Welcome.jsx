@@ -19,7 +19,11 @@ import {
     Zap
 } from 'lucide-react';
 
-export default function Welcome({ auth, clients: initialClients = [], fleets: initialFleets = [], notifications: initialNotifications = [] }) {
+const EMPTY_CLIENTS = [];
+const EMPTY_FLEETS = [];
+const EMPTY_NOTIFICATIONS = [];
+
+export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS, fleets: initialFleets = EMPTY_FLEETS, notifications: initialNotifications = EMPTY_NOTIFICATIONS }) {
     const [activeFleetTab, setActiveFleetTab] = useState(0);
     const [heroVesselIndex, setHeroVesselIndex] = useState(0);
     const [activeRegion, setActiveRegion] = useState('indonesia');
@@ -181,7 +185,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                                 <Link
                                     href={route('contacts.index')}
-                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center justify-center gap-2"
+                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center justify-center gap-2"
                                 >
                                     Book Shipment
                                     <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
@@ -192,7 +196,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                 <a
                                     href="#fleet"
                                     onClick={(e) => { e.preventDefault(); scrollToSection('fleet'); }}
-                                    className="group rounded-[4px] border border-[#404750] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.2)] inline-flex items-center justify-center gap-2"
+                                    className="group rounded-[4px] border border-[#404750] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] transition-[colors,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.2)] inline-flex items-center justify-center gap-2"
                                 >
                                     Explore Fleet
                                     <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
@@ -321,7 +325,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                     src={client.src}
                                     alt={client.name}
                                     title={client.name}
-                                    className="max-h-12 max-w-full object-contain grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+                                    className="max-h-12 max-w-full object-contain grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-[opacity,filter] duration-300"
                                     onError={(e) => {
                                         e.currentTarget.style.display = 'none';
                                         if (e.currentTarget.nextSibling) {
@@ -388,7 +392,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                     key={idx}
                                     whileHover={{ y: -4 }}
                                     transition={{ duration: 0.2 }}
-                                    className="group bg-white rounded-[6px] p-8 lg:px-8 lg:py-10 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-all duration-200 min-h-[380px] flex flex-col justify-between"
+                                    className="group bg-white rounded-[6px] p-8 lg:px-8 lg:py-10 border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-[colors,shadow] duration-200 min-h-[380px] flex flex-col justify-between"
                                 >
                                     <div>
                                         {/* Icon Box */}
@@ -419,7 +423,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                         <Link
                             href={route('contacts.index')}
-                            className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
+                            className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                         >
                             Book Shipment
                             <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
@@ -486,7 +490,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.1 }}
                                 whileHover={{ y: -4 }}
-                                className="bg-[#141B2C] rounded-[6px] p-6 border border-white/5 flex flex-col justify-between min-h-[140px] cursor-pointer hover:border-[#3F96DD]/40 transition-all duration-200"
+                                className="bg-[#141B2C] rounded-[6px] p-6 border border-white/5 flex flex-col justify-between min-h-[140px] cursor-pointer hover:border-[#3F96DD]/40 transition-[colors,shadow] duration-200"
                             >
                                 <div className="flex items-center gap-1.5 text-[#3F96DD] mb-3">
                                     <TrendingUp className="w-4 h-4 text-[#3F96DD]" />
@@ -533,7 +537,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                             <Link
                                 href={route('contacts.index')}
-                                className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
+                                className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                             >
                                 Book Shipment
                                 <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
@@ -544,7 +548,6 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
 
                 {/* Dynamic Expandable Regions Accordion (Grey Outer Wrapper + Pure White Active Card) */}
                 <div
-                    onMouseLeave={() => setActiveRegion('indonesia')}
                     className="bg-[#F5F5F5] rounded-[12px] border border-[#E5E7EB] p-1 sm:p-1 flex flex-col lg:flex-row gap-1 h-auto lg:h-[620px] w-full items-stretch"
                 >
                     {[
@@ -578,7 +581,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                             <div
                                 key={region.id}
                                 onMouseEnter={() => setActiveRegion(region.id)}
-                                className={`rounded-[8px] overflow-hidden transition-all duration-300 ease-out cursor-pointer relative flex flex-col h-[460px] lg:h-full ${isActive
+                                className={`rounded-[8px] overflow-hidden transition-[flex,opacity,transform] duration-300 ease-out cursor-pointer relative flex flex-col h-[460px] lg:h-full ${isActive
                                     ? 'lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-6 sm:p-8 justify-between '
                                     : 'lg:flex-[1_1_0%] border border-[#E5E7EB] items-center justify-center'
                                     }`}
@@ -745,7 +748,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                                                 <Link
                                                     href={route('contacts.index')}
-                                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
+                                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                                                 >
                                                     Book Shipment
                                                     <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
@@ -755,7 +758,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                                                 <Link
                                                     href={safeRoute('fleets.index', '/fleets')}
-                                                    className="group rounded-[4px] border border-[#404750] px-[24px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] hover:text-[#00629D] hover:border-[#00629D] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.2)] inline-flex items-center gap-2"
+                                                    className="group rounded-[4px] border border-[#404750] px-[24px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] hover:text-[#00629D] hover:border-[#00629D] transition-[colors,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.2)] inline-flex items-center gap-2"
                                                 >
                                                     View Full Specs
                                                     <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
@@ -791,7 +794,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                                 key={idx}
                                 type="button"
                                 onClick={() => setActiveFleetTab(idx)}
-                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center transition-all cursor-pointer ${activeFleetTab === idx
+                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[6px] text-[14px] font-['Hanken_Grotesk'] font-bold flex items-center justify-center transition-[colors,shadow] cursor-pointer ${activeFleetTab === idx
                                     ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white shadow-xs border border-transparent'
                                     : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
                                     }`}
@@ -805,7 +808,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                         <Link
                             href={'/fleets'}
-                            className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
+                            className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                         >
                             See More Fleet
                             <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
@@ -835,7 +838,7 @@ export default function Welcome({ auth, clients: initialClients = [], fleets: in
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
                         <Link
                             href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[shadow,transform]"
                         >
                             Request Charter Proposal
                             <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />

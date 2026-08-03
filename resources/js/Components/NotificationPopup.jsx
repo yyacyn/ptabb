@@ -1,30 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bell, Info } from 'lucide-react';
 
-export default function NotificationPopup({ notifications = [], targetType = 'home' }) {
-    const [activeNotification, setActiveNotification] = useState(null);
+const EMPTY_NOTIFICATIONS = [];
+
+export default function NotificationPopup({ notifications = EMPTY_NOTIFICATIONS, targetType = 'home' }) {
     const [isOpen, setIsOpen] = useState(false);
 
-    useEffect(() => {
-        if (!notifications || !Array.isArray(notifications) || notifications.length === 0) return;
+    const activeNotification = useMemo(() => {
+        if (!notifications || !Array.isArray(notifications) || notifications.length === 0) return null;
 
-        // Find active notification matching targetType (home or career)
         const found = notifications.find(
             n => n.type === targetType && (n.status === 'active' || !n.status)
         );
 
-        if (found) {
-            // Check if already dismissed in this browser session
-            const dismissedKey = `dismissed_popup_${found.id}`;
-            const isDismissed = sessionStorage.getItem(dismissedKey);
+        if (!found) return null;
 
-            if (!isDismissed) {
-                setActiveNotification(found);
-                setIsOpen(true);
-            }
-        }
+        const dismissedKey = `dismissed_popup_${found.id}`;
+        const isDismissed = sessionStorage.getItem(dismissedKey);
+
+        return isDismissed ? null : found;
     }, [notifications, targetType]);
+
+    useEffect(() => {
+        if (activeNotification) {
+            setIsOpen(true);
+        }
+    }, [activeNotification]);
 
     const handleClose = () => {
         if (activeNotification) {
@@ -101,7 +103,7 @@ export default function NotificationPopup({ notifications = [], targetType = 'ho
                     {/* Action Button */}
                     <button
                         onClick={handleClose}
-                        className="w-full bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white font-semibold text-[14px] py-3 rounded-[8px] transition-all cursor-pointer text-center"
+                        className="w-full bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white font-semibold text-[14px] py-3 rounded-[8px] transition-[colors,shadow,opacity,transform] cursor-pointer text-center"
                     >
                         Dismiss Announcement
                     </button>

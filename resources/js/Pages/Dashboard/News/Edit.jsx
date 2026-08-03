@@ -195,7 +195,7 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="w-full inline-flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold rounded-[8px] hover:shadow-md transition-all cursor-pointer"
+                                            className="w-full inline-flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white text-xs font-semibold rounded-[8px] hover:shadow-md transition-[colors,shadow,opacity,transform] cursor-pointer"
                                         >
                                             <CheckCircle2 className="w-4 h-4" />
                                             {isEditing ? 'Save Article Changes' : 'Publish Article'}

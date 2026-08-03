@@ -26,7 +26,10 @@ import {
     Clock
 } from 'lucide-react';
 
-export default function Services({ fleets = [], clients = [] }) {
+const EMPTY_FLEETS = [];
+const EMPTY_CLIENTS = [];
+
+export default function Services({ fleets = EMPTY_FLEETS, clients = EMPTY_CLIENTS }) {
     const [selectedCharter, setSelectedCharter] = useState('time');
     const [activeTechPoint, setActiveTechPoint] = useState(0);
     const [activeRegion, setActiveRegion] = useState('indonesia');
@@ -175,7 +178,7 @@ export default function Services({ fleets = [], clients = [] }) {
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <Link
                                     href={route('contacts.index')}
-                                    className="group inline-flex items-center justify-center bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] transition-all duration-200"
+                                    className="group inline-flex items-center justify-center bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] transition-[opacity,shadow] duration-200"
                                 >
                                     Book Shipment
                                 </Link>
@@ -184,7 +187,7 @@ export default function Services({ fleets = [], clients = [] }) {
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <a
                                     href="#charter-types"
-                                    className="inline-flex items-center justify-center bg-white border border-[#404750] text-[#404750] hover:text-[#00629D] hover:border-[#00629D] font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.15)]"
+                                    className="inline-flex items-center justify-center bg-white border border-[#404750] text-[#404750] hover:text-[#00629D] hover:border-[#00629D] font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] transition-[colors,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.15)]"
                                 >
                                     Explore Charter Solutions
                                 </a>
@@ -215,7 +218,7 @@ export default function Services({ fleets = [], clients = [] }) {
 
                         {/* 3 Stat Cards Strip */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 ">
-                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 sm:p-5 flex flex-col justify-between hover:border-[#00629D] transition-all duration-200 shadow-xs">
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 sm:p-5 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow] duration-200 shadow-xs">
                                 <div className="flex items-center gap-3 mb-1">
                                     <Ship className="w-5 h-5 text-[#141B2C] shrink-0" />
                                     <span className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[34px] text-[#141B2C] leading-none tracking-tight">
@@ -227,7 +230,7 @@ export default function Services({ fleets = [], clients = [] }) {
                                 </span>
                             </div>
 
-                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 sm:p-5 flex flex-col justify-between hover:border-[#00629D] transition-all duration-200 shadow-xs">
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 sm:p-5 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow] duration-200 shadow-xs">
                                 <div className="flex items-center gap-3 mb-1">
                                     <Award className="w-5 h-5 text-[#141B2C] shrink-0" />
                                     <span className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[34px] text-[#141B2C] leading-none tracking-tight">
@@ -239,7 +242,7 @@ export default function Services({ fleets = [], clients = [] }) {
                                 </span>
                             </div>
 
-                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 sm:p-5 flex flex-col justify-between hover:border-[#00629D] transition-all duration-200 shadow-xs">
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-4 sm:p-5 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow] duration-200 shadow-xs">
                                 <div className="flex items-center gap-3 mb-1">
                                     <ShieldCheck className="w-5 h-5 text-[#141B2C] shrink-0" />
                                     <span className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[34px] text-[#141B2C] leading-none tracking-tight">
@@ -282,7 +285,7 @@ export default function Services({ fleets = [], clients = [] }) {
                         <motion.div
                             whileHover={{ y: -2 }}
                             transition={{ duration: 0.2 }}
-                            className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-8 lg:p-10 flex flex-col justify-between h-full hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.12)] transition-all duration-200"
+                            className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-8 lg:p-10 flex flex-col justify-between h-full hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.12)] transition-[colors,shadow] duration-200"
                         >
                             <div>
                                 {/* Card Title & Icon */}
@@ -339,7 +342,7 @@ export default function Services({ fleets = [], clients = [] }) {
                         <motion.div
                             whileHover={{ y: -2 }}
                             transition={{ duration: 0.2 }}
-                            className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-8 lg:p-10 flex flex-col justify-between h-full hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.12)] transition-all duration-200"
+                            className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 sm:p-8 lg:p-10 flex flex-col justify-between h-full hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.12)] transition-[colors,shadow] duration-200"
                         >
                             <div>
                                 {/* Card Title & Icon */}
@@ -429,22 +432,22 @@ export default function Services({ fleets = [], clients = [] }) {
 
                 {/* Bottom 4 Pill Highlights Row */}
                 <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-[1100px] mx-auto">
-                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-all duration-200">
+                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-[colors,shadow] duration-200">
                         <ShieldCheck className="w-4 h-4 text-[#00629D] shrink-0" />
                         <span>Dust-Free Transfer</span>
                     </div>
 
-                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-all duration-200">
+                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-[colors,shadow] duration-200">
                         <CheckCircle2 className="w-4 h-4 text-[#00629D] shrink-0" />
                         <span>Zero Contamination</span>
                     </div>
 
-                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-all duration-200">
+                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-[colors,shadow] duration-200">
                         <Gauge className="w-4 h-4 text-[#00629D] shrink-0" />
                         <span>High Efficiency</span>
                     </div>
 
-                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-all duration-200">
+                    <div className="bg-[#F0F5FA] rounded-full px-5 py-2.5 flex items-center gap-2.5 text-[#00629D] font-['Hanken_Grotesk'] font-medium text-[14px] shadow-xs hover:border-[#00629D] transition-[colors,shadow] duration-200">
                         <Clock className="w-4 h-4 text-[#00629D] shrink-0" />
                         <span>Reduced Port Stay</span>
                     </div>
@@ -497,7 +500,7 @@ export default function Services({ fleets = [], clients = [] }) {
                             <div
                                 onMouseEnter={() => setActiveHoverGroup(1)}
                                 onMouseLeave={() => setActiveHoverGroup(0)}
-                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-all duration-200 cursor-pointer ${
+                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-[colors,shadow] duration-200 cursor-pointer ${
                                     activeHoverGroup === 1 ? 'bg-white/10' : 'hover:bg-white/5'
                                 }`}
                             >
@@ -516,7 +519,7 @@ export default function Services({ fleets = [], clients = [] }) {
                             <div
                                 onMouseEnter={() => setActiveHoverGroup(2)}
                                 onMouseLeave={() => setActiveHoverGroup(0)}
-                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-all duration-200 cursor-pointer ${
+                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-[colors,shadow] duration-200 cursor-pointer ${
                                     activeHoverGroup === 2 ? 'bg-white/10' : 'hover:bg-white/5'
                                 }`}
                             >
@@ -535,7 +538,7 @@ export default function Services({ fleets = [], clients = [] }) {
                             <div
                                 onMouseEnter={() => setActiveHoverGroup(3)}
                                 onMouseLeave={() => setActiveHoverGroup(0)}
-                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-all duration-200 cursor-pointer ${
+                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-[colors,shadow] duration-200 cursor-pointer ${
                                     activeHoverGroup === 3 ? 'bg-white/10' : 'hover:bg-white/5'
                                 }`}
                             >
@@ -554,7 +557,7 @@ export default function Services({ fleets = [], clients = [] }) {
                             <div
                                 onMouseEnter={() => setActiveHoverGroup(4)}
                                 onMouseLeave={() => setActiveHoverGroup(0)}
-                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-all duration-200 cursor-pointer ${
+                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-[colors,shadow] duration-200 cursor-pointer ${
                                     activeHoverGroup === 4 ? 'bg-white/10' : 'hover:bg-white/5'
                                 }`}
                             >
@@ -573,7 +576,7 @@ export default function Services({ fleets = [], clients = [] }) {
                             <div
                                 onMouseEnter={() => setActiveHoverGroup(5)}
                                 onMouseLeave={() => setActiveHoverGroup(0)}
-                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-all duration-200 cursor-pointer ${
+                                className={`flex items-start gap-4 p-2 sm:p-3 rounded-[8px] transition-[colors,shadow] duration-200 cursor-pointer ${
                                     activeHoverGroup === 5 ? 'bg-white/10' : 'hover:bg-white/5'
                                 }`}
                             >
@@ -613,7 +616,7 @@ export default function Services({ fleets = [], clients = [] }) {
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
                         <Link
                             href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[shadow,transform]"
                         >
                             Request Charter Proposal
                             <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
