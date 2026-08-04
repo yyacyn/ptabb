@@ -38,15 +38,14 @@ export default function Login({ status, canResetPassword }) {
 
                     {/* Top Brand Wordmark */}
                     <div className="relative z-10 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[8px] bg-gradient-to-r from-[#00629D] to-[#3F96DD] flex items-center justify-center shadow-lg">
-                            <Anchor className="w-5 h-5 text-white" />
-                        </div>
+                        <img
+                            src="/images/logo-abb1.png"
+                            alt="PT. ABB Logo"
+                            className="w-12 h-12 object-contain"
+                        />
                         <div>
                             <span className="font-['Hanken_Grotesk'] font-bold text-[18px] text-white tracking-tight leading-none block">
-                                PT. PELAYARAN ANDALAS
-                            </span>
-                            <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8] uppercase tracking-wider block mt-0.5">
-                                BAHTERA BARUNA
+                                PT. PELAYARAN ANDALAS BAHTERA BARUNA
                             </span>
                         </div>
                     </div>
@@ -92,7 +91,7 @@ export default function Login({ status, canResetPassword }) {
                         
                         {/* Username Input */}
                         <div>
-                            <InputLabel htmlFor="username" value="Username or Email" className="font-['Hanken_Grotesk'] font-semibold text-[#141B2C] text-sm mb-1.5" />
+                            <InputLabel htmlFor="username" value="Username" className="font-['Hanken_Grotesk'] font-semibold text-[#141B2C] text-sm mb-1.5" />
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                                     <User className="w-4 h-4" />

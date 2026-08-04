@@ -221,7 +221,7 @@ class ChatbotController extends Controller
             }
 
             if ($news->isEmpty()) {
-                $news = News::where('status', 'published')->latest()->get();
+                $news = News::where('status', 'published')->latest()->take(4)->get();
             }
 
             foreach ($news as $n) {
@@ -239,7 +239,19 @@ class ChatbotController extends Controller
             } catch (Throwable $e) {
                 // Ignore if empty
             }
-            $contextChunks[] = "Branch Offices & Locations: Jakarta (Head Office), Banyuwangi (Branch Office), Batam (Shipyard Facility), Singapore (Regional Representative Office).";
+
+            try {
+                $branches = \App\Models\Branch::where('is_active', true)->get();
+                $branchList = [];
+                foreach ($branches as $b) {
+                    $branchList[] = "{$b->name} ({$b->type} - {$b->company_name}: {$b->short_desc})";
+                }
+                if (!empty($branchList)) {
+                    $contextChunks[] = "Branch Offices & Key Maritime Locations: " . implode('; ', $branchList);
+                }
+            } catch (Throwable $e) {
+                $contextChunks[] = "Branch Offices & Locations: Jakarta (Head Office), Banyuwangi (Branch Office), Padang (Branch Office), Tuban (Branch Office), Pontianak (Branch Office), PT Sumber Marine Shipyard Batam (Vessel Building & Repair Facility), Duta Buana Marine & Machinery Pte. Ltd. Singapore (Representative Office).";
+            }
         }
 
         return implode("\n", $contextChunks);
@@ -252,7 +264,7 @@ class ChatbotController extends Controller
     {
         return <<<EOT
 You are Sarah Wijaya, Senior Customer Service & Chartering Specialist at PT Pelayaran Andalas Bahtera Baruna (PT. ABB).
-You are professional, polite, helpful, and concise. Never use emojis in your text responses.
+You communicate warmly, naturally, and professionally, like an experienced and attentive staff member speaking directly to a valued client or visitor.
 
 Company Background:
 PT. ABB is a premier Indonesian maritime shipping company specializing in bulk cement transport, tugboats, industrial cargo logistics, and strategic regional & international maritime shipping.
@@ -260,12 +272,13 @@ PT. ABB is a premier Indonesian maritime shipping company specializing in bulk c
 Knowledge & Retrieved Database Context:
 {$retrievedContext}
 
-Strict Instructions:
-1. Always respond in the exact language used by the visitor (if the user speaks Bahasa Indonesia, respond in professional Bahasa Indonesia; if English, respond in English).
-2. Answer the user's questions clearly based strictly on the provided company database context.
-3. CRITICAL: Never invent, guess, or hallucinate unverified contact details, phone numbers, addresses, or operational facts that are not present in the context above.
-4. If specific information (e.g. detailed branch address or unlisted spec) is not present in the context, state that you do not have that exact detail in the current system context and direct them to submit an inquiry at /contacts.
-5. Keep responses direct, helpful, polite, and professional without using emojis.
+Instructions:
+1. Always respond in the exact language used by the visitor (if the user speaks Bahasa Indonesia, reply in natural, polite Bahasa Indonesia; if English, reply in natural, fluent English).
+2. Talk naturally and conversationally like a human customer specialist. Avoid sounding like a rigid database search dump or repeating bullet points verbatim.
+3. Summarize news or company updates concisely in conversational paragraphs or 2-3 key highlights instead of dumping exhaustive, cut-off bullet lists.
+4. CRITICAL: Never invent, guess, or hallucinate unverified contact details, phone numbers, addresses, or operational facts that are not present in the context above.
+5. If specific information is not present in the context, politely let the visitor know and suggest reaching out to the team via the contact page.
+6. NEVER format responses as markdown tables. Do NOT use text emojis.
 EOT;
     }
 
@@ -294,11 +307,11 @@ EOT;
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$apiKey}",
                 'Content-Type' => 'application/json',
-            ])->timeout(10)->post('https://api.groq.com/openai/v1/chat/completions', [
+            ])->timeout(12)->post('https://api.groq.com/openai/v1/chat/completions', [
                 'model' => $model,
                 'messages' => $messages,
-                'temperature' => 0.4,
-                'max_tokens' => 400,
+                'temperature' => 0.5,
+                'max_tokens' => 1000,
             ]);
 
             if ($response->successful()) {
@@ -325,11 +338,11 @@ EOT;
                 'HTTP-Referer' => config('app.url', 'http://ptabb.test'),
                 'X-Title' => 'PT. ABB Logistics Portal',
                 'Content-Type' => 'application/json',
-            ])->timeout(12)->post('https://openrouter.ai/api/v1/chat/completions', [
+            ])->timeout(15)->post('https://openrouter.ai/api/v1/chat/completions', [
                 'model' => $model,
                 'messages' => $messages,
-                'temperature' => 0.4,
-                'max_tokens' => 350,
+                'temperature' => 0.5,
+                'max_tokens' => 1000,
             ]);
 
             if ($response->successful()) {

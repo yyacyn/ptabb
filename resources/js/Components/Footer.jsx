@@ -13,8 +13,8 @@ export default function Footer() {
                             alt="PT. ABB Logo"
                             className="h-10 w-auto object-contain shrink-0"
                         />
-                        <span className="text-[18px] lg:text-[20px] font-bold text-[#141B2C] leading-snug">
-                            PT Pelayaran Andalas Bahtera Baruna
+                        <span className="text-[16px] lg:text-[18px] font-bold text-[#141B2C] leading-snug">
+                            PT PELAYARAN ANDALAS BAHTERA BARUNA
                         </span>
                     </div>
 
@@ -105,7 +105,7 @@ export default function Footer() {
 
             {/* Bottom Row */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-[13px] font-['JetBrains_Mono'] text-[#404750]">
-                <div>© {new Date().getFullYear()} PT Pelayaran Andalas Bahtera Baruna. All rights reserved.</div>
+                <div>© {new Date().getFullYear()} PT PELAYARAN ANDALAS BAHTERA BARUNA. All rights reserved.</div>
                 <div className="flex gap-6">
                     <a href="#" className="hover:text-[#00629D] transition-colors">Privacy Policy</a>
                     <a href="#" className="hover:text-[#00629D] transition-colors">Terms of Charter</a>

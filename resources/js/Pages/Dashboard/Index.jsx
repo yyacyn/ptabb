@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
@@ -19,15 +20,59 @@ export default function Index({
     notificationsCount = 0,
     unreadMessagesCount = 0,
     olderUnreadCount = 0,
+    newsViewsThisMonth = 0,
+    newsViewsLastMonth = 0,
+    newsAnalytics = {},
     applicationsCount = 0,
     draftsCount = 0,
     activeBannersCount = 0,
-    recentActivities = []
+    recentActivities = [],
+    topNews = []
 }) {
     const pageProps = usePage().props;
     const authUser = pageProps.auth?.user || {};
     const userRole = authUser.role || 'super_admin';
     const userName = authUser.name ? authUser.name.split(' ')[0] : 'Admin';
+
+    // Chart Timeframe Filter State (week | month | year)
+    const [timeframe, setTimeframe] = useState('month');
+
+    // Default analytics dataset fallback if backend empty
+    const defaultData = {
+        week: [
+            { label: 'Mon', views: 45 },
+            { label: 'Tue', views: 72 },
+            { label: 'Wed', views: 110 },
+            { label: 'Thu', views: 88 },
+            { label: 'Fri', views: 134 },
+            { label: 'Sat', views: 60 },
+            { label: 'Sun', views: 95 },
+        ],
+        month: [
+            { label: 'Wk 1', views: 310 },
+            { label: 'Wk 2', views: 480 },
+            { label: 'Wk 3', views: 620 },
+            { label: 'Wk 4', views: newsViewsThisMonth > 0 ? newsViewsThisMonth : 540 },
+        ],
+        year: [
+            { label: 'Jan', views: 1200 },
+            { label: 'Feb', views: 1450 },
+            { label: 'Mar', views: 1890 },
+            { label: 'Apr', views: 1600 },
+            { label: 'May', views: 2100 },
+            { label: 'Jun', views: 1950 },
+            { label: 'Jul', views: 2300 },
+            { label: 'Aug', views: 2150 },
+            { label: 'Sep', views: 1800 },
+            { label: 'Oct', views: 2400 },
+            { label: 'Nov', views: 2600 },
+            { label: 'Dec', views: 2900 },
+        ]
+    };
+
+    const activeAnalytics = newsAnalytics[timeframe] || defaultData[timeframe] || defaultData.month;
+    const chartData = activeAnalytics;
+    const maxView = Math.max(...chartData.map(d => d.views), 1);
 
     // Format currentDate dynamically like "Monday, 28 Jul 2026"
     const today = new Date();
@@ -100,26 +145,56 @@ export default function Index({
                     {/* Top Stats Cards Grid (Scoped by Role) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-                        {/* Stat Card 1: Unread Messages (Visible to all admins) */}
-                        <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
-                            <div className="flex items-center justify-between">
-                                <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-[2px] bg-rose-500 inline-block" />
-                                    UNREAD MESSAGES
-                                </span>
-                                <div className="p-2 rounded-md bg-rose-50 text-rose-600 border border-rose-200">
-                                    <Mail className="w-4 h-4" />
+                        {/* Stat Card 1: News Views This Month for PR Admin / Unread Messages for others */}
+                        {userRole === 'pr_admin' ? (
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
+                                        <span className="w-2.5 h-2.5 rounded-[2px] bg-emerald-500 inline-block" />
+                                        NEWS VIEWS
+                                    </span>
+                                    <div className="p-2 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                        <Newspaper className="w-4 h-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-5">
+                                    <div className="flex items-end gap-2">
+                                        <div className="text-4xl font-extrabold text-emerald-600">
+                                            {newsViewsThisMonth}
+                                        </div>
+                                        <div className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider mb-1 text-[#404750]">THIS MONTH</div>
+                                    </div>
+                                    <p className="text-xs text-[#8AAFC8] mt-1 font-['JetBrains_Mono'] font-semibold flex items-center gap-1">
+                                        <span>vs {newsViewsLastMonth} last month</span>
+                                        {newsViewsLastMonth > 0 && (
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] ${newsViewsThisMonth >= newsViewsLastMonth ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                                                {newsViewsThisMonth >= newsViewsLastMonth ? '+' : ''}{Math.round(((newsViewsThisMonth - newsViewsLastMonth) / newsViewsLastMonth) * 100)}%
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="mt-5">
-                                <div className="text-4xl font-extrabold text-rose-600">
-                                    {unreadMessagesCount}
+                        ) : (
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 flex flex-col justify-between hover:border-[#00629D] hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] flex items-center gap-2">
+                                        <span className="w-2.5 h-2.5 rounded-[2px] bg-rose-500 inline-block" />
+                                        UNREAD MESSAGES
+                                    </span>
+                                    <div className="p-2 rounded-md bg-rose-50 text-rose-600 border border-rose-200">
+                                        <Mail className="w-4 h-4" />
+                                    </div>
                                 </div>
-                                <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
-                                    {olderUnreadCount} older than 48h
-                                </p>
+                                <div className="mt-5">
+                                    <div className="text-4xl font-extrabold text-rose-600">
+                                        {unreadMessagesCount}
+                                    </div>
+                                    <p className="text-xs text-[#8AAFC8] mt-1.5 font-['JetBrains_Mono'] font-semibold">
+                                        {olderUnreadCount} older than 48h
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Stat Card 2: Open Vacancies (Visible to Super, HR, Crew Admins) */}
                         {canManageCareers ? (
@@ -233,124 +308,180 @@ export default function Index({
                     {/* Bottom Split Layout (Left: Alerts & Quick Actions, Right: Recent Activity) */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                        {/* Left Column (5 Cols) */}
-                        <div className="lg:col-span-5 space-y-6">
-
-                            {/* ALERTS Box */}
-                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 space-y-4 shadow-xs">
-                                <div className="flex items-center justify-between">
-                                    <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750]">
-                                        ALERTS
-                                    </span>
-                                    <span className="px-2.5 py-1 rounded-full text-[11px] font-['JetBrains_Mono'] font-bold uppercase bg-rose-100 text-rose-800 border border-rose-200">
-                                        {unreadMessagesCount > 0 ? 'ATTENTION REQUIRED' : 'ALL CLEAR'}
-                                    </span>
-                                </div>
-
-                                <div className="space-y-3">
-                                    {/* Alert 1: Unread Messages */}
-                                    <div className="bg-rose-50 border border-rose-200 rounded-[8px] p-4 flex items-start gap-3.5">
-                                        <div className="p-2 bg-rose-200 text-rose-900 rounded-md shrink-0">
-                                            <Mail className="w-4 h-4" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-sm text-rose-900 leading-snug">
-                                                {unreadMessagesCount} unread contact messages
-                                            </h4>
-                                            <p className="text-xs text-rose-700 mt-1 font-['JetBrains_Mono'] font-medium">
-                                                {olderUnreadCount > 0 ? `${olderUnreadCount} have no reply in 48h+` : 'Awaiting response'}
+                        {/* Left Column (Conditional: News Bar Chart for PR Admin, Alerts & Quick Actions for Others) */}
+                        <div className={`${userRole === 'pr_admin' ? 'lg:col-span-6' : 'lg:col-span-5'} space-y-6`}>
+                            {userRole === 'pr_admin' ? (
+                                /* News Bar Chart for PR Admin */
+                                <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 h-full flex flex-col justify-between shadow-xs">
+                                    <div>
+                                        {/* Card Header */}
+                                        <div className=" mb-5">
+                                            <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] block">
+                                                TOP PERFORMING ARTICLES
+                                            </span>
+                                            <p className="text-xs text-[#8AAFC8] font-['Hanken_Grotesk'] mt-0.5 font-medium">
+                                                Most read news articles ordered by total views
                                             </p>
                                         </div>
-                                    </div>
 
-                                    {/* Alert 2: Active Banners */}
-                                    {canManageNotifications && (
-                                        <div className="bg-amber-50 border border-amber-200 rounded-[8px] p-4 flex items-start gap-3.5">
-                                            <div className="p-2 bg-amber-200 text-amber-900 rounded-md shrink-0">
-                                                <Bell className="w-4 h-4" />
+                                        {/* Minimal Text Table: Top Performing News Articles */}
+                                        <div className="space-y-4 pt-1">
+                                            <div className="space-y-4 text-sm">
+                                                {topNews.length > 0 ? (
+                                                    topNews.map((article) => (
+                                                        <div key={article.id} className="flex items-start justify-between gap-4">
+                                                            <Link
+                                                                href={safeRoute('news.show', `/news/${article.slug || article.id}`, article.slug || article.id)}
+                                                                className="font-medium text-[#141B2C] hover:text-[#00629D] transition-colors leading-snug line-clamp-1 flex-1"
+                                                            >
+                                                                {article.title}
+                                                            </Link>
+                                                            <span className="font-['JetBrains_Mono'] font-bold text-[#00629D] text-xs shrink-0 mt-0.5">
+                                                                {article.view_count !== undefined && article.view_count !== null ? article.view_count.toLocaleString() : (article.views ? article.views.toLocaleString() : 0)}
+                                                            </span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="py-4 text-center text-xs text-[#8AAFC8] font-['JetBrains_Mono'] italic">
+                                                        No published articles found
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div>
-                                                <h4 className="font-bold text-sm text-amber-900 leading-snug">
-                                                    {activeBannersCount > 0 ? `${activeBannersCount} Pop-up banner active` : 'No active alert banners'}
-                                                </h4>
-                                                <p className="text-xs text-amber-700 mt-1 font-['JetBrains_Mono'] font-medium">
-                                                    {activeBannersCount > 0 ? 'BR-06 compliant (max 1/type)' : 'All pop-ups disabled'}
-                                                </p>
+
+                                            {/* Action Link Footer */}
+                                            <div className="pt-2 flex items-center justify-between text-xs">
+                                                <span className="text-[#8AAFC8] font-['JetBrains_Mono']">Top 10 by total readership</span>
+                                                <Link
+                                                    href={safeRoute('news.index', '/dashboard/news')}
+                                                    className="font-semibold text-[#00629D] hover:underline flex items-center gap-1"
+                                                >
+                                                    View all articles <ArrowRight className="w-3.5 h-3.5 inline" />
+                                                </Link>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
-
-                            {/* QUICK ACTIONS Box (Strictly Filtered by Role) */}
-                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 space-y-3 shadow-xs">
-                                <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] block mb-2">
-                                    QUICK ACTIONS
-                                </span>
-
-                                <Link
-                                    href={safeRoute('contacts.index', '/dashboard/contacts')}
-                                    className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
-                                            <Mail className="w-4 h-4" />
+                            ) : (
+                                /* Alerts & Quick Actions for non-PR Admins */
+                                <>
+                                    {/* ALERTS Box */}
+                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 space-y-4 shadow-xs">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750]">
+                                                ALERTS
+                                            </span>
+                                            <span className="px-2.5 py-1 rounded-full text-[11px] font-['JetBrains_Mono'] font-bold uppercase bg-rose-100 text-rose-800 border border-rose-200">
+                                                {unreadMessagesCount > 0 ? 'ATTENTION REQUIRED' : 'ALL CLEAR'}
+                                            </span>
                                         </div>
-                                        <span>Review messages</span>
+
+                                        <div className="space-y-3">
+                                            {/* Alert 1: Unread Messages */}
+                                            <div className="bg-rose-50 border border-rose-200 rounded-[8px] p-4 flex items-start gap-3.5">
+                                                <div className="p-2 bg-rose-200 text-rose-900 rounded-md shrink-0">
+                                                    <Mail className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-sm text-rose-900 leading-snug">
+                                                        {unreadMessagesCount} unread contact messages
+                                                    </h4>
+                                                    <p className="text-xs text-rose-700 mt-1 font-['JetBrains_Mono'] font-medium">
+                                                        {olderUnreadCount > 0 ? `${olderUnreadCount} have no reply in 48h+` : 'Awaiting response'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Alert 2: Active Banners */}
+                                            {canManageNotifications && (
+                                                <div className="bg-amber-50 border border-amber-200 rounded-[8px] p-4 flex items-start gap-3.5">
+                                                    <div className="p-2 bg-amber-200 text-amber-900 rounded-md shrink-0">
+                                                        <Bell className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-sm text-amber-900 leading-snug">
+                                                            {activeBannersCount > 0 ? `${activeBannersCount} Pop-up banner active` : 'No active alert banners'}
+                                                        </h4>
+                                                        <p className="text-xs text-amber-700 mt-1 font-['JetBrains_Mono'] font-medium">
+                                                            {activeBannersCount > 0 ? 'BR-06 compliant (max 1/type)' : 'All pop-ups disabled'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
-                                </Link>
 
-                                {canManageCareers && (
-                                    <Link
-                                        href={safeRoute('careers.index', '/dashboard/careers')}
-                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
-                                                <Briefcase className="w-4 h-4" />
-                                            </div>
-                                            <span>Manage job vacancies</span>
-                                        </div>
-                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
-                                    </Link>
-                                )}
+                                    {/* QUICK ACTIONS Box */}
+                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 space-y-3 shadow-xs">
+                                        <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750] block mb-2">
+                                            QUICK ACTIONS
+                                        </span>
 
-                                {canManageNews && (
-                                    <Link
-                                        href={safeRoute('news.index', '/dashboard/news')}
-                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
-                                                <Newspaper className="w-4 h-4" />
-                                            </div>
-                                            <span>Add news article</span>
-                                        </div>
-                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
-                                    </Link>
-                                )}
+                                        {['super_admin', 'hr_admin', 'crew_admin'].includes(userRole) && (
+                                            <Link
+                                                href={safeRoute('contacts.index', '/dashboard/contacts')}
+                                                className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-1.5 bg-white group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                                        <Mail className="w-4 h-4" />
+                                                    </div>
+                                                    <span>Review messages</span>
+                                                </div>
+                                                <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
+                                            </Link>
+                                        )}
 
-                                {canManageFleet && (
-                                    <Link
-                                        href={safeRoute('fleets.index', '/dashboard/fleets')}
-                                        className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-white  group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
-                                                <Ship className="w-4 h-4" />
-                                            </div>
-                                            <span>Manage vessel fleet</span>
-                                        </div>
-                                        <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
-                                    </Link>
-                                )}
-                            </div>
+                                        {canManageCareers && (
+                                            <Link
+                                                href={safeRoute('careers.index', '/dashboard/careers')}
+                                                className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-1.5 bg-white group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                                        <Briefcase className="w-4 h-4" />
+                                                    </div>
+                                                    <span>Manage job vacancies</span>
+                                                </div>
+                                                <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
+                                            </Link>
+                                        )}
 
+                                        {canManageNews && (
+                                            <Link
+                                                href={safeRoute('news.index', '/dashboard/news')}
+                                                className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-1.5 bg-white group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                                        <Newspaper className="w-4 h-4" />
+                                                    </div>
+                                                    <span>Add news article</span>
+                                                </div>
+                                                <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
+                                            </Link>
+                                        )}
+
+                                        {canManageFleet && (
+                                            <Link
+                                                href={safeRoute('fleets.index', '/dashboard/fleets')}
+                                                className="group w-full border border-[#E5E7EB] hover:border-[#00629D] text-[#141B2C] hover:text-[#00629D] text-sm font-semibold px-4 py-3 rounded-[8px] flex items-center justify-between transition-[colors,shadow,opacity,transform] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.18)] active:scale-[0.97] cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-1.5 bg-white group-hover:border-[#00629D]/30 rounded text-[#00629D] transition-colors">
+                                                        <Ship className="w-4 h-4" />
+                                                    </div>
+                                                    <span>Manage vessel fleet</span>
+                                                </div>
+                                                <ArrowRight className="w-4 h-4 text-[#8AAFC8] group-hover:text-[#00629D] group-hover:translate-x-1 group-active:translate-x-0 transition-[colors,shadow,opacity,transform] duration-150" />
+                                            </Link>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        {/* Right Column (7 Cols: RECENT ACTIVITY) */}
-                        <div className="lg:col-span-7">
+                        {/* Right Column (RECENT ACTIVITY) */}
+                        <div className={`${userRole === 'pr_admin' ? 'lg:col-span-6' : 'lg:col-span-7'}`}>
                             <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 h-full flex flex-col justify-between shadow-xs">
                                 <div>
                                     <div className="flex items-center justify-between pb-4 border-b border-[#E5E7EB] mb-4">
@@ -362,7 +493,7 @@ export default function Index({
                                     <div className="space-y-4 text-sm">
                                         {recentActivities && recentActivities.length > 0 ? (
                                             recentActivities.map((act) => (
-                                                <div key={act.id} className="flex items-start gap-3.5 pb-4 border-b border-slate-100 last:border-none last:pb-0">
+                                                <div key={act.id} className="flex items-start gap-3.5 pb-4 last:pb-0">
                                                     <span className={`w-2.5 h-2.5 rounded-full ${getDotColor(act.color)} mt-1.5 shrink-0`} />
                                                     <div>
                                                         <p className="text-[#141B2C] font-medium text-sm leading-snug">

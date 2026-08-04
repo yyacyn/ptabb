@@ -20,6 +20,45 @@ export default function GuestLayout({ children, onScrollToSection }) {
     const [chatInput, setChatInput] = useState('');
     const chatScrollRef = useRef(null);
 
+    // Format Markdown text (bold, lists, line breaks) inside chat bubbles
+    const renderFormattedText = (text) => {
+        if (!text) return null;
+
+        // Split text by line breaks
+        const lines = text.split('\n');
+
+        return lines.map((line, lineIdx) => {
+            const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('* ');
+            const cleanLine = isBullet ? line.trim().substring(2) : line;
+
+            // Parse bold tags **bold text**
+            const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
+
+            const content = parts.map((part, partIdx) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={partIdx} className="font-bold">{part.slice(2, -2)}</strong>;
+                }
+                return part;
+            });
+
+            if (isBullet) {
+                return (
+                    <div key={lineIdx} className="flex items-start gap-1.5 my-1 pl-1">
+                        <span className="text-[#00629D] font-bold shrink-0 mt-0.5">&bull;</span>
+                        <span>{content}</span>
+                    </div>
+                );
+            }
+
+            return (
+                <span key={lineIdx}>
+                    {content}
+                    {lineIdx < lines.length - 1 && <br />}
+                </span>
+            );
+        });
+    };
+
     // Save chat messages to sessionStorage whenever chatMessages update
     useEffect(() => {
         if (chatMessages.length > 0) {
@@ -130,7 +169,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                 {
                     sender: 'bot',
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    text: 'Our primary network connection is experiencing high load. Please leave your inquiry on our Contact page at /contacts.'
+                    text: 'Our primary network connection is experiencing high load. Please leave your inquiry on our Contact page.'
                 }
             ]);
         } finally {
@@ -237,7 +276,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                                                         : 'bg-white text-[#141B2C] border border-[#E5E7EB] rounded-bl-none'
                                                 }`}
                                             >
-                                                {msg.text}
+                                                {renderFormattedText(msg.text)}
                                             </div>
                                             {msg.time && (
                                                 <span className="text-[10px] font-['JetBrains_Mono'] text-slate-400 mt-1 px-1">
@@ -291,7 +330,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                                     value={chatInput}
                                     onChange={(e) => setChatInput(e.target.value)}
                                     placeholder="Ask Sarah a question..."
-                                    className="flex-1 text-[13px] font-['Hanken_Grotesk'] px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-full focus:outline-none focus:border-[#00629D] focus:bg-white transition-all placeholder-[#9CA3AF]"
+                                    className="flex-1 text-[13px] font-['Hanken_Grotesk'] px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-full focus:outline-none focus:border-[#00629D] focus:bg-white transition-color placeholder-[#9CA3AF]"
                                 />
                                 <button
                                     type="submit"

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\AisIngestController;
+use App\Http\Controllers\BranchesController;
 use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ClientsController;
@@ -156,6 +157,12 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     Route::post('/contact-info', [ContactInfosController::class, 'store'])->name('contact-info.store');
     Route::put('/contact-info/{id}', [ContactInfosController::class, 'update'])->name('contact-info.update');
     Route::delete('/contact-info/{id}', [ContactInfosController::class, 'destroy'])->name('contact-info.destroy');
+
+    // Branch Offices Management (Super Admin Only)
+    Route::get('/branches', [BranchesController::class, 'index'])->name('branches.index');
+    Route::post('/branches', [BranchesController::class, 'store'])->name('branches.store');
+    Route::put('/branches/{id}', [BranchesController::class, 'update'])->name('branches.update');
+    Route::delete('/branches/{id}', [BranchesController::class, 'destroy'])->name('branches.destroy');
 
     // Profile Settings
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

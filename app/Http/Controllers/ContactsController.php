@@ -43,15 +43,18 @@ class ContactsController extends Controller
     public function publicIndex(Request $request)
     {
         $contactInfos = \App\Models\ContactInfo::orderBy('display_order', 'asc')->get();
+        $branches = \App\Models\Branch::where('is_active', true)->orderBy('sort_order', 'asc')->get();
 
         if ($request->wantsJson()) {
             return response()->json([
                 'contactInfos' => $contactInfos,
+                'branches' => $branches,
             ]);
         }
 
         return Inertia::render('Contacts', [
             'contactInfos' => $contactInfos,
+            'branches' => $branches,
         ]);
     }
 

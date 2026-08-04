@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 const EMPTY_CONTACT_INFOS = [];
 
-export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
+export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches = [] }) {
     const [activeRegion, setActiveRegion] = useState('pontianak');
     const [showToast, setShowToast] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -298,7 +298,7 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
                     <div
                         className="bg-[#F5F5F5] rounded-[12px] border border-[#E5E7EB] p-1 flex flex-col lg:flex-row gap-1 h-auto lg:h-[480px] w-full items-stretch text-left"
                     >
-                        {[
+                        {(branches && branches.length > 0 ? branches : [
                             {
                                 id: 'pontianak',
                                 title: 'Pontianak, West Kalimantan',
@@ -339,7 +339,7 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
                                 id: 'singapore',
                                 title: 'Singapore',
                                 type: 'Representative Office',
-                                company: 'PT. Pelayaran Andalas Bahtera Baruna Regional Agency',
+                                company: 'Duta Buana Marine & Machinery Pte. Ltd.',
                                 shortDesc: 'Representative Office',
                                 mapUrl: null,
                                 image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=1200&q=80'
@@ -353,44 +353,53 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
                                 mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.1334440620126!2d103.91407751134618!3d1.0616303989236995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d9f2d3684f3d7f%3A0x57c21d1c7f3fa731!2sPT.%20Sumber%20Marine%20Shipyard!5e0!3m2!1sen!2sid!4v1785750320902!5m2!1sen!2sid',
                                 image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=1200&q=80'
                             }
-                        ].map((region) => {
-                            const isActive = activeRegion === region.id;
+                        ]).map((b) => {
+                            const regionId = b.slug || b.id;
+                            const isActive = activeRegion === regionId;
+                            const title = b.name || b.title;
+                            const type = b.type;
+                            const company = b.company_name || b.company;
+                            const shortDesc = b.short_desc || b.shortDesc;
+                            const mapUrl = b.map_url || b.mapUrl;
+                            const imageUrl = b.image_url || b.image;
+
                             return (
                                 <div
-                                    key={region.id}
-                                    onMouseEnter={() => setActiveRegion(region.id)}
+                                    key={regionId}
+                                    onMouseEnter={() => setActiveRegion(regionId)}
+                                    onClick={() => setActiveRegion(regionId)}
                                     className={`rounded-[8px] overflow-hidden transition-[flex,height,opacity,transform] duration-300 ease-out cursor-pointer relative flex flex-col lg:h-full ${isActive
-                                        ? 'h-[260px] lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-4 lg:p-6 justify-between '
-                                        : 'h-[56px] lg:flex-[1_1_0%] border border-[#E5E7EB] items-center justify-center'
+                                        ? 'h-[260px] lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-4 lg:p-6 justify-between'
+                                        : 'h-[56px] lg:flex-[1_1_0%] bg-white border border-[#E5E7EB] items-center justify-center hover:bg-slate-50'
                                         }`}
                                 >
                                     {isActive ? (
-                                        /* Active Expanded Region Panel (Pure White Surface) */
-                                        <div className="h-full flex flex-col justify-between">
+                                        /* Active Expanded Region Panel (Clean Solid Surface) */
+                                        <div className="h-full flex flex-col justify-between bg-white">
                                             <div>
                                                 <h3 className="text-[20px] lg:text-[28px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-1 lg:mb-2 tracking-tight">
-                                                    {region.type}
+                                                    {type}
                                                 </h3>
                                                 <div className="font-['Hanken_Grotesk'] font-bold text-[#00629D] text-[14px] lg:text-[17px] mb-0.5">
-                                                    {region.title}
+                                                    {title}
                                                 </div>
-                                                <div className="font-['Hanken_Grotesk'] font-medium text-[#404750] text-[12px] lg:text-[17px]">
-                                                    {region.company}
+                                                <div className="font-['Hanken_Grotesk'] font-medium text-[#404750] text-[12px] lg:text-[14px]">
+                                                    {company}
                                                 </div>
-                                                <div className="font-['Hanken_Grotesk'] font-normal text-[#404750] text-[12px] lg:text-[14px]">
-                                                    {region.shortDesc}
-                                                </div>
+                                                <p className="text-[12px] lg:text-[14px] text-[#404750] mt-2 font-['Hanken_Grotesk']">
+                                                    {shortDesc}
+                                                </p>
                                             </div>
 
-                                            <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-sm h-[130px] lg:h-[260px] w-full relative shrink-0 mt-2 lg:mt-3 bg-[#F5F5F5]">
-                                                {region.mapUrl ? (
+                                            <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-xs h-[110px] lg:h-[270px] w-full relative shrink-0 mt-2 lg:mt-3 bg-[#F5F5F5]">
+                                                {mapUrl ? (
                                                     <iframe
-                                                        src={region.mapUrl}
+                                                        src={mapUrl}
                                                         className="w-full h-full border-0"
                                                         allowFullScreen=""
                                                         loading="lazy"
                                                         referrerPolicy="strict-origin-when-cross-origin"
-                                                        title={`${region.title} Google Map`}
+                                                        title={`${title} Google Map`}
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
@@ -406,22 +415,22 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
                                             </div>
                                         </div>
                                     ) : (
-                                        /* Collapsed Vertical/Horizontal Image Strip Panel */
+                                        /* Collapsed Vertical/Horizontal Photo Strip Panel */
                                         <>
-                                            <img
-                                                src={region.image}
-                                                alt={region.title}
-                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                                onError={(e) => {
-                                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80';
-                                                }}
-                                            />
-
-                                            <div className="absolute inset-0 bg-gradient-to-b from-[#00629D]/75 via-[#00629D]/40 to-[#141B2C]/85 hover:from-[#00629D]/85 transition-colors duration-300" />
-
-                                            <div className="relative z-10 flex items-center justify-center p-2 h-full w-full">
-                                                <span className="font-['Hanken_Grotesk'] font-bold text-[15px] lg:text-[22px] text-white tracking-wide whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180 drop-shadow-md">
-                                                    {region.title}
+                                            {imageUrl && (
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={title}
+                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none';
+                                                    }}
+                                                />
+                                            )}
+                                            <div className="absolute inset-0 bg-gradient-to-b from-[#141B2C]/75 via-[#00629D]/50 to-[#141B2C]/85 hover:from-[#00629D]/75 transition-colors duration-300" />
+                                            <div className="relative z-10 w-full h-full flex items-center justify-center p-2">
+                                                <span className="font-['Hanken_Grotesk'] font-bold text-[14px] lg:text-[22px] text-white drop-shadow-md whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180">
+                                                    {title}
                                                 </span>
                                             </div>
                                         </>

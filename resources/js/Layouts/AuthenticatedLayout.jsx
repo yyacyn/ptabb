@@ -17,7 +17,8 @@ import {
     User as UserIcon,
     ChevronRight,
     Flag,
-    Building
+    Building,
+    MapPin
 } from 'lucide-react';
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -62,8 +63,8 @@ export default function AuthenticatedLayout({ header, children }) {
 
     const canAccess = (module) => {
         if (userRole === 'super_admin') return true;
-        if (userRole === 'hr_admin') return ['dashboard', 'careers', 'notifications', 'milestones'].includes(module);
-        if (userRole === 'crew_admin') return ['dashboard', 'careers'].includes(module);
+        if (userRole === 'hr_admin') return ['dashboard', 'careers', 'notifications', 'milestones', 'contacts'].includes(module);
+        if (userRole === 'crew_admin') return ['dashboard', 'careers', 'contacts'].includes(module);
         if (userRole === 'pr_admin') return ['dashboard', 'news', 'clients', 'milestones'].includes(module);
         return false;
     };
@@ -97,6 +98,7 @@ export default function AuthenticatedLayout({ header, children }) {
         { name: 'Contact Messages', href: route('contacts.index'), icon: Mail, pattern: 'contacts.*', module: 'contacts' },
         { name: 'System Users', href: route('users.index'), icon: UserIcon, pattern: 'users.*', module: 'users' },
         { name: 'HQ Contact Info', href: route('contact-info.index'), icon: Building, pattern: 'contact-info.*', module: 'contact_info' },
+        { name: 'Branch Offices', href: route('branches.index'), icon: MapPin, pattern: 'branches.*', module: 'branches' },
     ];
 
     const accessibleNavItems = navItems.filter(item => canAccess(item.module));
@@ -118,7 +120,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     PT. ABB
                                 </span>
                                 <span className="font-['JetBrains_Mono'] text-[9px] uppercase tracking-wider text-[#8AAFC8] block mt-1">
-                                    Maritime System
+                                    Dashboard System
                                 </span>
                             </div>
                         </Link>
