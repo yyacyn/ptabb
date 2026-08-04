@@ -348,7 +348,7 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
                                 id: 'batam',
                                 title: 'Batam, Riau Islands',
                                 type: 'Shipyard',
-                                company: 'PT. Pelayaran Andalas Bahtera Baruna Batam Shipyard',
+                                company: 'PT. Sumber Marine Shipyard',
                                 shortDesc: 'Vessel Building & Repair Facility',
                                 mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.1334440620126!2d103.91407751134618!3d1.0616303989236995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d9f2d3684f3d7f%3A0x57c21d1c7f3fa731!2sPT.%20Sumber%20Marine%20Shipyard!5e0!3m2!1sen!2sid!4v1785750320902!5m2!1sen!2sid',
                                 image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=1200&q=80'
@@ -359,7 +359,7 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS }) {
                                 <div
                                     key={region.id}
                                     onMouseEnter={() => setActiveRegion(region.id)}
-                                    className={`rounded-[8px] overflow-hidden transition-[colors,shadow,opacity,transform] duration-300 ease-out cursor-pointer relative flex flex-col lg:h-full ${isActive
+                                    className={`rounded-[8px] overflow-hidden transition-[flex,height,opacity,transform] duration-300 ease-out cursor-pointer relative flex flex-col lg:h-full ${isActive
                                         ? 'h-[260px] lg:flex-[3.5_1_0%] bg-white border border-[#E5E7EB] p-4 lg:p-6 justify-between '
                                         : 'h-[56px] lg:flex-[1_1_0%] border border-[#E5E7EB] items-center justify-center'
                                         }`}

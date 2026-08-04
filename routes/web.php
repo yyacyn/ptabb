@@ -3,6 +3,7 @@
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\AisIngestController;
 use App\Http\Controllers\CareersController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ContactsController;
 use App\Http\Controllers\ContactInfosController;
@@ -51,6 +52,9 @@ Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.s
 // AISStream.io Telemetry Ingestion Endpoint & Simulator Trigger
 Route::post('/api/ais/ingest', [AisIngestController::class, 'ingest'])->name('ais.ingest');
 Route::get('/api/ais/simulate', [AisIngestController::class, 'simulate'])->name('ais.simulate');
+
+// AI RAG Chatbot Endpoint
+Route::post('/api/chat', [ChatbotController::class, 'chat'])->name('api.chat');
 
 // Utility Helper Routes
 Route::get('/setup-storage-link', function () {

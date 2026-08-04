@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import {
@@ -185,44 +185,76 @@ export default function Careers({ careers = [] }) {
                         A transparent, step-by-step hiring process designed to evaluate technical expertise, safety awareness, and cultural fit for land and sea positions.
                     </p>
                 </div>
-                {(() => {
-                    const steps = [
+                {/* Desktop view (horizontal step flow) */}
+                <div className="hidden md:flex w-full flex-row items-start justify-between pt-6">
+                    {[
                         { icon: FileText,         title: 'Application & Document Submission' },
                         { icon: Search,           title: 'Screening & Verification' },
                         { icon: Wrench,           title: 'Technical & Competency Interview' },
                         { icon: BriefcaseMedical, title: 'Medical Check-Up' },
-                    ];
-                    const items = [];
-                    steps.forEach((step, idx) => {
+                    ].map((step, idx, arr) => {
                         const Icon = step.icon;
-                        items.push(
+                        return (
+                            <React.Fragment key={idx}>
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+                                    transition={{ duration: 0.4, delay: idx * 0.15 + 0.3, ease: 'easeOut' }}
+                                    className="flex-1 flex flex-col items-center text-center gap-3"
+                                >
+                                    <div className="w-16 h-16 rounded-[12px] bg-gradient-to-br from-[#00629D] to-[#3F96DD] flex items-center justify-center text-white shadow-sm hover:scale-105 transition-transform">
+                                        <Icon className="w-7 h-7 stroke-[1.8]" />
+                                    </div>
+                                    <h4 className="font-['Hanken_Grotesk'] font-bold text-[14px] sm:text-[15px] text-[#141B2C] max-w-[130px] leading-snug">{step.title}</h4>
+                                </motion.div>
+                                {idx < arr.length - 1 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+                                        transition={{ duration: 0.3, delay: idx * 0.15 + 0.3, ease: 'easeOut' }}
+                                        className="flex items-center self-start mt-7 shrink-0 px-2"
+                                    >
+                                        <img src="/images/Arrow right.svg" alt="arrow" className="h-3 w-auto opacity-60" />
+                                    </motion.div>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+
+                {/* Mobile view (grid / step list layout) */}
+                <div className="grid grid-cols-2 gap-4 md:hidden pt-4">
+                    {[
+                        { icon: FileText,         title: 'Application & Document Submission', stepNum: '01' },
+                        { icon: Search,           title: 'Screening & Verification',          stepNum: '02' },
+                        { icon: Wrench,           title: 'Technical & Competency Interview',  stepNum: '03' },
+                        { icon: BriefcaseMedical, title: 'Medical Check-Up',                  stepNum: '04' },
+                    ].map((step, idx) => {
+                        const Icon = step.icon;
+                        return (
                             <motion.div
-                                key={`step-${idx}`}
-                                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: idx * 0.15 + 0.3, ease: 'easeOut' }}
-                                className="flex-1 flex flex-col items-center text-center gap-3"
+                                key={idx}
+                                initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                                transition={{ duration: 0.3, delay: idx * 0.1 }}
+                                className="border border-[#E5E7EB] rounded-[8px] p-4 flex flex-col items-center text-center gap-2.5 relative"
                             >
-                                <div className="w-16 h-16 rounded-[12px] bg-gradient-to-br from-[#00629D] to-[#3F96DD] flex items-center justify-center text-white shadow-sm hover:scale-105 transition-transform">
-                                    <Icon className="w-7 h-7 stroke-[1.8]" />
+                                <span className="absolute top-2 right-2 text-[10px] font-['JetBrains_Mono'] font-bold text-[#00629D]/50 bg-[#00629D]/10 px-1.5 py-0.5 rounded">
+                                    {step.stepNum}
+                                </span>
+                                <div className="w-12 h-12 rounded-[10px] bg-gradient-to-br from-[#00629D] to-[#3F96DD] flex items-center justify-center text-white shadow-sm mt-1">
+                                    <Icon className="w-5 h-5 stroke-[1.8]" />
                                 </div>
-                                <h4 className="font-['Hanken_Grotesk'] font-bold text-[14px] sm:text-[15px] text-[#141B2C] max-w-[130px] leading-snug">{step.title}</h4>
+                                <h4 className="font-['Hanken_Grotesk'] font-bold text-[13px] text-[#141B2C] leading-tight">
+                                    {step.title}
+                                </h4>
+                                {idx < 3 && (
+                                    <div className="text-[10px] text-[#00629D] font-['JetBrains_Mono'] font-semibold flex items-center gap-1 mt-auto pt-1">
+                                        <span>Next Step</span>
+                                        <span>&rarr;</span>
+                                    </div>
+                                )}
                             </motion.div>
                         );
-                        if (idx < steps.length - 1) {
-                            items.push(
-                                <motion.div
-                                    key={`arrow-${idx}`}
-                                    initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-                                    transition={{ duration: 0.3, delay: idx * 0.15 + 0.3, ease: 'easeOut' }}
-                                    className="flex items-center self-start mt-7 shrink-0 px-2"
-                                >
-                                    <img src="/images/Arrow right.svg" alt="arrow" className="h-3 w-auto opacity-60" />
-                                </motion.div>
-                            );
-                        }
-                    });
-                    return <div className="w-full flex flex-row items-start justify-between pt-6">{items}</div>;
-                })()}
+                    })}
+                </div>
             </motion.div>
 
             {/* 4. Career Vacancy Section */}
@@ -247,7 +279,7 @@ export default function Careers({ careers = [] }) {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search here..."
-                                className="w-52 sm:w-64 px-4 py-2 text-[13px] font-['Hanken_Grotesk'] text-[#141B2C] placeholder-[#9CA3AF] bg-white border border-[#E5E7EB] rounded-[4px] focus:outline-none focus:border-[#00629D] focus:ring-1 focus:ring-[#00629D] transition-colors"
+                                className="w-52 sm:w-64 px-4 py-2 text-[13px] font-['JetBrains_Mono'] text-[#141B2C] placeholder-[#9CA3AF] bg-white border border-[#E5E7EB] rounded-[4px] focus:outline-none focus:border-[#00629D] focus:ring-1 focus:ring-[#00629D] transition-colors"
                             />
                             {searchQuery && (
                                 <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -340,28 +372,28 @@ export default function Careers({ careers = [] }) {
                             >
                                 {/* Badges */}
                                 <div className="flex items-center gap-2 flex-wrap">
-                                    <span className={`text-[11px] font-['JetBrains_Mono'] font-bold uppercase px-2 py-0.5 rounded-[3px] ${categoryColor(career.category)}`}>
+                                    <span className={`text-[12px] font-['JetBrains_Mono'] font-bold uppercase px-2 py-0.5 rounded-[3px] ${categoryColor(career.category)}`}>
                                         {(career.category || 'General').toUpperCase()}
                                     </span>
-                                    <span className="text-[11px] font-['JetBrains_Mono'] font-bold uppercase px-2 py-0.5 rounded-[3px] text-[#404750] border border-[#E5E7EB]">
+                                    <span className="text-[12px] font-['JetBrains_Mono'] font-bold uppercase px-2 py-0.5 rounded-[3px] text-[#404750] border border-[#E5E7EB]">
                                         {formatType(career.employment_type)}
                                     </span>
                                 </div>
 
                                 {/* Position + Meta */}
                                 <div>
-                                    <h3 className="font-['Hanken_Grotesk'] font-bold text-[18px] sm:text-[20px] text-[#141B2C] leading-snug tracking-tight">
+                                    <h3 className="font-['Hanken_Grotesk'] font-bold lg:text-[24px] text-[20px] text-[#141B2C] leading-snug tracking-tight">
                                         {career.position}
                                     </h3>
                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
                                         {career.department && (
-                                            <span className="flex items-center gap-1.5 text-[13px] text-[#404750] font-['Hanken_Grotesk']">
+                                            <span className="flex items-center gap-1.5 lg:text-[15px] text-[13px] text-[#404750] font-['Hanken_Grotesk']">
                                                 <Briefcase className="w-3.5 h-3.5 shrink-0 stroke-[2]" />
                                                 {career.department}
                                             </span>
                                         )}
                                         {career.location && (
-                                            <span className="flex items-center gap-1.5 text-[13px] text-[#404750] font-['Hanken_Grotesk']">
+                                            <span className="flex items-center gap-1.5 lg:text-[15px] text-[13px] text-[#404750] font-['Hanken_Grotesk']">
                                                 <MapPin className="w-3.5 h-3.5 shrink-0 stroke-[2]" />
                                                 {career.location}
                                             </span>
@@ -371,7 +403,7 @@ export default function Careers({ careers = [] }) {
 
                                 {/* Description */}
                                 {career.description && (
-                                    <p className="font-['Hanken_Grotesk'] text-[13px] text-[#404750] leading-relaxed line-clamp-2 flex-1">
+                                    <p className="font-['Hanken_Grotesk'] lg:text-[15px] text-[13px] text-[#404750] leading-relaxed line-clamp-2 flex-1">
                                         {career.description}
                                     </p>
                                 )}
@@ -387,12 +419,12 @@ export default function Careers({ careers = [] }) {
                                 {/* Action Buttons */}
                                 <div className="flex flex-col gap-2 mt-auto pt-1">
                                     <Link href={route('public.careers.show', career.id)}
-                                        className="w-full text-center py-2 px-4 border border-[#E5E7EB] rounded-[4px] font-['Hanken_Grotesk'] font-medium text-[13px] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D] transition-colors cursor-pointer"
+                                        className="w-full text-center py-2 px-4 border border-[#E5E7EB] rounded-[4px] font-['Hanken_Grotesk'] font-medium lg:text-[15px] text-[13px] text-[#141B2C] hover:border-[#00629D] hover:text-[#00629D] transition-colors cursor-pointer"
                                     >
                                         Review Position
                                     </Link>
                                     <Link href={route('careers.index', career.id)}
-                                        className={`w-full text-center py-2 px-4 rounded-[4px] font-['Hanken_Grotesk'] font-semibold text-[13px] text-white transition-[colors,shadow,opacity,transform] cursor-pointer ${applyBtnClass(career.category)}`}
+                                        className={`w-full text-center py-2 px-4 rounded-[4px] font-['Hanken_Grotesk'] font-semibold lg:text-[15px] text-[13px] text-white transition-[colors,shadow,opacity,transform] cursor-pointer ${applyBtnClass(career.category)}`}
                                     >
                                         Apply Securely
                                     </Link>

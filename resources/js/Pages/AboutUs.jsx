@@ -511,7 +511,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
 
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
                         <Link
-                            href={route('contacts.index')}
+                            href={route('public.contacts')}
                             className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
                         >
                             Request Charter Proposal

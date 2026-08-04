@@ -29,7 +29,7 @@ export default function Navbar({ onScrollToSection }) {
                         className="h-[24px] w-auto object-contain shrink-0"
                     />
                     <span className="font-['Hanken_Grotesk'] font-bold text-[17px] text-[#141B2C] tracking-tight truncate whitespace-nowrap">
-                        PT Pelayaran Andalas Bahtera Baruna
+                        PT PELAYARAN ANDALAS BAHTERA BARUNA
                     </span>
                 </Link>
 
