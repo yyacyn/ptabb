@@ -26,6 +26,21 @@ class BranchesController extends Controller
     }
 
     /**
+     * Helper to clean Google Maps embed URL by stripping <iframe> tags if present.
+     */
+    private function cleanMapUrl(?string $url): ?string
+    {
+        if (!$url) return null;
+        $url = trim($url);
+
+        if (preg_match('/src=["\']([^"\']+)["\']/i', $url, $matches)) {
+            $url = $matches[1];
+        }
+
+        return $url;
+    }
+
+    /**
      * Store a newly created branch in storage.
      */
     public function store(Request $request)
@@ -43,7 +58,20 @@ class BranchesController extends Controller
             'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+        ], [
+            'name.max' => 'The branch name must not be greater than 255 characters.',
+            'short_desc.max' => 'The short description must not be greater than 255 characters.',
+            'image_file.max' => 'The branch photo image may not be greater than 5MB.',
+            'image_file.image' => 'The branch photo must be a valid image file.',
         ]);
+
+        if (!empty($validated['map_url'])) {
+            $cleaned = $this->cleanMapUrl($validated['map_url']);
+            if (!str_contains($cleaned, 'maps/embed') && !str_contains($cleaned, 'google.com/maps')) {
+                return back()->withErrors(['map_url' => 'The Google Maps URL must contain "maps/embed".']);
+            }
+            $validated['map_url'] = $cleaned;
+        }
 
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('branches', 'public');
@@ -90,7 +118,20 @@ class BranchesController extends Controller
             'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+        ], [
+            'name.max' => 'The branch name must not be greater than 255 characters.',
+            'short_desc.max' => 'The short description must not be greater than 255 characters.',
+            'image_file.max' => 'The branch photo image may not be greater than 5MB.',
+            'image_file.image' => 'The branch photo must be a valid image file.',
         ]);
+
+        if (!empty($validated['map_url'])) {
+            $cleaned = $this->cleanMapUrl($validated['map_url']);
+            if (!str_contains($cleaned, 'maps/embed') && !str_contains($cleaned, 'google.com/maps')) {
+                return back()->withErrors(['map_url' => 'The Google Maps URL must contain "maps/embed".']);
+            }
+            $validated['map_url'] = $cleaned;
+        }
 
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('branches', 'public');

@@ -25,18 +25,7 @@ class PdfAiParserService
         // 1. Run local deterministic parser tuned for ABB Vessel Particular sheets
         $localData = $this->parseLocalRegex($text);
 
-        // 2. Try OpenRouter AI for advanced machinery & equipment parsing if key exists
-        $apiKey = env('OPENROUTER_API_KEY');
-        if (!empty($apiKey)) {
-            $models = [
-                'nvidia/nemotron-3-ultra-550b-a55b:free',
-                'google/gemma-2-9b-it:free',
-                'meta-llama/llama-3.3-70b-instruct:free',
-                'qwen/qwen-2.5-72b-instruct:free',
-                'mistralai/mistral-7b-instruct:free',
-            ];
-
-            $systemPrompt = <<<PROMPT
+        $systemPrompt = <<<PROMPT
 You are a maritime specification parser for PT. ABB. Read the vessel specification sheet text and extract all technical details into valid JSON matching this exact structure:
 
 {
@@ -66,6 +55,72 @@ You are a maritime specification parser for PT. ABB. Read the vessel specificati
 
 Return ONLY raw valid JSON. Do not include markdown code block backticks.
 PROMPT;
+
+        // 2. Try Groq API for ultra-fast PDF spec parsing if GROQ_API_KEY is configured
+        $groqApiKey = env('GROQ_API_KEY');
+        if (!empty($groqApiKey)) {
+            $groqModels = [
+                'openai/gpt-oss-20b',
+                'llama-3.3-70b-versatile',
+                'mixtral-8x7b-32768',
+                'llama-3.1-8b-instant',
+            ];
+
+            foreach ($groqModels as $model) {
+                try {
+                    $response = Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $groqApiKey,
+                        'Content-Type' => 'application/json',
+                    ])->timeout(30)->post('https://api.groq.com/openai/v1/chat/completions', [
+                        'model' => $model,
+                        'messages' => [
+                            ['role' => 'system', 'content' => $systemPrompt],
+                            ['role' => 'user', 'content' => "Extract specifications from text:\n\n" . substr($text, 0, 4000)],
+                        ],
+                        'temperature' => 0.1,
+                    ]);
+
+                    if ($response->successful()) {
+                        $rawBody = $response->json();
+                        $content = $rawBody['choices'][0]['message']['content'] ?? '';
+
+                        Log::info("Groq response for PDF parsing [{$model}]: " . substr($content, 0, 500));
+
+                        if (!empty($content)) {
+                            $cleaned = preg_replace('/^```(?:json)?|```$/m', '', trim($content));
+
+                            if (preg_match('/\{[\s\S]*\}/', $cleaned, $matches)) {
+                                $aiData = json_decode($matches[0], true);
+                                if (json_last_error() === JSON_ERROR_NONE && is_array($aiData)) {
+                                    // AI data takes priority for clean values, filling in local data where missing
+                                    $merged = array_merge(array_filter($localData), array_filter($aiData));
+                                    return [
+                                        'success' => true,
+                                        'model_used' => "groq/{$model}",
+                                        'data' => $merged,
+                                    ];
+                                }
+                            }
+                        }
+                    } else {
+                        Log::warning("Groq API non-successful for model {$model}: Status " . $response->status() . " - " . $response->body());
+                    }
+                } catch (\Exception $e) {
+                    Log::warning("Groq PDF parser failed for model {$model}: " . $e->getMessage());
+                }
+            }
+        }
+
+        // 3. Try OpenRouter AI for advanced machinery & equipment parsing if key exists
+        $apiKey = env('OPENROUTER_API_KEY');
+        if (!empty($apiKey)) {
+            $models = [
+                'nvidia/nemotron-3-ultra-550b-a55b:free',
+                'google/gemma-2-9b-it:free',
+                'meta-llama/llama-3.3-70b-instruct:free',
+                'qwen/qwen-2.5-72b-instruct:free',
+                'mistralai/mistral-7b-instruct:free',
+            ];
 
             foreach ($models as $model) {
                 try {
@@ -99,7 +154,7 @@ PROMPT;
                                     $merged = array_merge(array_filter($localData), array_filter($aiData));
                                     return [
                                         'success' => true,
-                                        'model_used' => $model,
+                                        'model_used' => "openrouter/{$model}",
                                         'data' => $merged,
                                     ];
                                 }

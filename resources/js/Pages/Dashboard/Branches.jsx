@@ -11,6 +11,7 @@ export default function Branches({ branches = [] }) {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [editingBranch, setEditingBranch] = useState(null);
     const [deletingBranch, setDeletingBranch] = useState(null);
+    const [imageError, setImageError] = useState(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -267,23 +268,27 @@ export default function Branches({ branches = [] }) {
                     <form onSubmit={handleSubmit} className="space-y-4 text-xs font-['Hanken_Grotesk']">
                         <div>
                             <label className="block text-xs font-bold text-[#141B2C] mb-1">
-                                Branch / Facility Name *
+                                Branch / Facility Name <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 required
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) => setData('name', e.target.value.slice(0, 255))}
+                                maxLength={255}
                                 placeholder="e.g. Batam, Riau Islands"
                                 className="w-full px-3 py-2 border border-[#E5E7EB] rounded-[6px] text-xs focus:outline-hidden focus:border-[#00629D]"
                             />
+                            {(data.name || '').length >= 255 && (
+                                <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (255 chars).</span>
+                            )}
                             {errors.name && <span className="text-red-500 text-[11px] font-['JetBrains_Mono'] mt-1 block">{errors.name}</span>}
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-[#141B2C] mb-1">
-                                    Facility Type *
+                                    Facility Type <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     value={data.type}
@@ -311,30 +316,37 @@ export default function Branches({ branches = [] }) {
 
                         <div>
                             <label className="block text-xs font-bold text-[#141B2C] mb-1">
-                                Operating Company *
+                                Operating Company <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 required
                                 value={data.company_name}
-                                onChange={(e) => setData('company_name', e.target.value)}
+                                onChange={(e) => setData('company_name', e.target.value.slice(0, 255))}
+                                maxLength={255}
                                 placeholder="e.g. PT. Sumber Marine Shipyard"
                                 className="w-full px-3 py-2 border border-[#E5E7EB] rounded-[6px] text-xs focus:outline-hidden focus:border-[#00629D]"
                             />
+                            {(data.company_name || '').length >= 255 && (
+                                <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (255 chars).</span>
+                            )}
                             {errors.company_name && <span className="text-red-500 text-[11px] font-['JetBrains_Mono'] mt-1 block">{errors.company_name}</span>}
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
-                                Short Description
-                            </label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Short Description</label>
                             <input
                                 type="text"
                                 value={data.short_desc}
-                                onChange={(e) => setData('short_desc', e.target.value)}
+                                onChange={(e) => setData('short_desc', e.target.value.slice(0, 255))}
+                                maxLength={255}
                                 placeholder="e.g. Vessel Building & Repair Facility"
                                 className="w-full px-3 py-2 border border-[#E5E7EB] rounded-[6px] text-xs focus:outline-hidden focus:border-[#00629D]"
                             />
+                            {(data.short_desc || '').length >= 255 && (
+                                <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (255 chars).</span>
+                            )}
+                            {errors.short_desc && <span className="text-red-500 text-[11px] font-['JetBrains_Mono'] mt-1 block">{errors.short_desc}</span>}
                         </div>
 
                         <div>
@@ -344,34 +356,55 @@ export default function Branches({ branches = [] }) {
                             <input
                                 type="text"
                                 value={data.map_url}
-                                onChange={(e) => setData('map_url', e.target.value)}
-                                placeholder="https://www.google.com/maps/embed?pb=..."
+                                onChange={(e) => {
+                                    let raw = e.target.value;
+                                    const match = raw.match(/src=["']([^"']+)["']/i);
+                                    if (match) {
+                                        raw = match[1];
+                                    }
+                                    setData('map_url', raw.slice(0, 2000));
+                                }}
+                                placeholder="e.g. https://www.google.com/maps/embed?pb=..."
+                                maxLength={2000}
                                 className="w-full px-3 py-2 border border-[#E5E7EB] rounded-[6px] text-xs font-['JetBrains_Mono'] focus:outline-hidden focus:border-[#00629D]"
                             />
+                            {errors.map_url && <span className="text-red-500 text-[11px] font-['JetBrains_Mono'] mt-1 block">{errors.map_url}</span>}
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-[#141B2C] mb-1">
-                                Branch Image Photo (Upload File or Enter URL)
+                                Branch Photo
                             </label>
                             <div className="space-y-2">
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => setData('image_file', e.target.files[0])}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        setImageError(null);
+                                        if (!file) return;
+                                        const isImg = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+                                        if (!isImg) {
+                                            setImageError('The branch photo image must be a valid image file (jpeg, png, webp).');
+                                            setData('image_file', null);
+                                            e.target.value = null;
+                                            return;
+                                        }
+                                        if (file.size > 5 * 1024 * 1024) {
+                                            setImageError('The branch photo image size may not be greater than 5MB.');
+                                            setData('image_file', null);
+                                            e.target.value = null;
+                                            return;
+                                        }
+                                        setData('image_file', file);
+                                    }}
                                     className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D]/10 file:text-[#00629D] hover:file:bg-[#00629D]/20 cursor-pointer"
                                 />
-                                <div className="text-[11px] font-['JetBrains_Mono'] text-slate-400 text-center">- OR -</div>
-                                <input
-                                    type="text"
-                                    value={data.image_url}
-                                    onChange={(e) => setData('image_url', e.target.value)}
-                                    placeholder="Enter Image URL (e.g. https://images.unsplash.com/...)"
-                                    className="w-full px-3 py-2 border border-[#E5E7EB] rounded-[6px] text-xs font-['JetBrains_Mono'] focus:outline-hidden focus:border-[#00629D]"
-                                />
+                                {(imageError || errors.image_file) && (
+                                    <p className="text-xs text-rose-500 mt-1 font-medium">{imageError || errors.image_file}</p>
+                                )}
                             </div>
                             {errors.image_file && <span className="text-red-500 text-[11px] font-['JetBrains_Mono'] mt-1 block">{errors.image_file}</span>}
-                            {errors.image_url && <span className="text-red-500 text-[11px] font-['JetBrains_Mono'] mt-1 block">{errors.image_url}</span>}
                         </div>
 
                         <div className="flex items-center justify-end gap-2 pt-4 border-[#E5E7EB]">

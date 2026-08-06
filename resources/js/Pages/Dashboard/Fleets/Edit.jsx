@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import { Ship, ArrowLeft, ArrowRight, FileText, CheckCircle2, Loader2, Sparkles, Plus, X } from 'lucide-react';
+import { Ship, ArrowLeft, ArrowRight, FileText, CheckCircle2, Loader2, Sparkles, Plus, X, Trash2, AlertTriangle } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import axios from 'axios';
 
@@ -22,6 +22,12 @@ export default function Edit({ fleet = null, categories = [] }) {
     const [newCatDesc, setNewCatDesc] = useState('');
     const [submittingCat, setSubmittingCat] = useState(false);
     const [catError, setCatError] = useState(null);
+    const [imageError, setImageError] = useState(null);
+    const [pdfError, setPdfError] = useState(null);
+    const [showDeleteCatModal, setShowDeleteCatModal] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
+    const [deletingCat, setDeletingCat] = useState(false);
+    const [deleteCatError, setDeleteCatError] = useState(null);
 
     const resolveImage = (img) => {
         if (!img) return null;
@@ -91,10 +97,28 @@ export default function Edit({ fleet = null, categories = [] }) {
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setData('featured_image', file);
-            setPreviewImage(URL.createObjectURL(file));
+        if (!file) return;
+
+        const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+        if (!isImage) {
+            setImageError('The featured image must be a file of type: jpeg, png, jpg, webp.');
+            setData('featured_image', null);
+            setPreviewImage(null);
+            e.target.value = null;
+            return;
         }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setImageError('The featured image may not be greater than 5MB.');
+            setData('featured_image', null);
+            setPreviewImage(null);
+            e.target.value = null;
+            return;
+        }
+
+        setImageError(null);
+        setData('featured_image', file);
+        setPreviewImage(URL.createObjectURL(file));
     };
 
     // Modal Action to Add a New Vessel Category
@@ -121,9 +145,9 @@ export default function Edit({ fleet = null, categories = [] }) {
 
             if (newCat && newCat.id) {
                 const updatedList = responseData?.categories || [...categoriesList, newCat];
-                
+
                 setCategoriesList(updatedList);
-                
+
                 // Auto-select newly created category in the vessel form
                 setData(prevData => ({
                     ...prevData,
@@ -140,9 +164,44 @@ export default function Edit({ fleet = null, categories = [] }) {
             }
         } catch (err) {
             console.error('Error adding category:', err);
-            setCatError(err.response?.data?.errors?.name?.[0] || 'Failed to add vessel category. Please try again.');
+            const errMsg = err.response?.data?.errors?.name?.[0]
+                        || err.response?.data?.errors?.description?.[0]
+                        || err.response?.data?.message 
+                        || 'Failed to add vessel category. Please try again.';
+            setCatError(errMsg);
         } finally {
             setSubmittingCat(false);
+        }
+    };
+
+    // Modal Action to Delete Selected Vessel Category
+    const handleDeleteCategorySubmit = async () => {
+        const catId = categoryToDelete?.id || data.category_id;
+        if (!catId) return;
+        setDeletingCat(true);
+        setDeleteCatError(null);
+
+        try {
+            const res = await axios.delete(route('fleet-category.destroy', catId), {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            const updatedList = res.data?.categories || categoriesList.filter(c => String(c.id) !== String(catId));
+            setCategoriesList(updatedList);
+            if (String(data.category_id) === String(catId)) {
+                setData(prev => ({
+                    ...prev,
+                    category_id: '',
+                    vessel_type: '',
+                }));
+            }
+            setCategoryToDelete(null);
+            setShowDeleteCatModal(false);
+        } catch (err) {
+            console.error('Error deleting category:', err);
+            setDeleteCatError(err.response?.data?.message || 'Failed to delete vessel category. Please try again.');
+        } finally {
+            setDeletingCat(false);
         }
     };
 
@@ -151,6 +210,24 @@ export default function Edit({ fleet = null, categories = [] }) {
         const file = e.target.files[0];
         if (!file) return;
 
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+        if (!isPdf) {
+            setPdfError('The ship particular pdf must be a file of type: pdf.');
+            setParseSuccessMessage(null);
+            setData('ship_particular_pdf', null);
+            e.target.value = null;
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            setPdfError('The specification document may not be greater than 10MB.');
+            setParseSuccessMessage(null);
+            setData('ship_particular_pdf', null);
+            e.target.value = null;
+            return;
+        }
+
+        setPdfError(null);
         setData('ship_particular_pdf', file);
         setParsingPdf(true);
         setParseSuccessMessage(null);
@@ -159,6 +236,7 @@ export default function Edit({ fleet = null, categories = [] }) {
         formData.append('ship_particular_pdf', file);
 
         const detailedSpecKeys = [
+            'ship_name', 'imo_number', 'vessel_type', 'description',
             'loa', 'lbp', 'breadth', 'depth', 'dwt', 'capacity',
             'gross_tonnage', 'net_tonnage', 'light_ship', 'summer_draft',
             'build_year', 'flag', 'classification_society', 'port_of_registry',
@@ -172,17 +250,33 @@ export default function Edit({ fleet = null, categories = [] }) {
 
             if (aiRes.data && aiRes.data.success && aiRes.data.data) {
                 const parsed = aiRes.data.data;
+                let countExtracted = 0;
                 detailedSpecKeys.forEach(k => {
-                    if (parsed[k] !== undefined && parsed[k] !== null && parsed[k] !== '') {
+                    if (parsed[k] !== undefined && parsed[k] !== null && parsed[k] !== '' && parsed[k] !== 'N/A') {
                         setData(k, parsed[k]);
+                        countExtracted++;
                     }
                 });
 
-                setParseSuccessMessage(`AI parsed PDF successful! Detailed specs auto-populated.`);
+                if (countExtracted < 5) {
+                    setPdfError('The uploaded PDF does not appear to be a valid vessel specification document (less than 5 vessel specifications detected). Please check the file and try again.');
+                    setParseSuccessMessage(null);
+                    setParsingPdf(false);
+                    return;
+                }
+
+                setPdfError(null);
+                setParseSuccessMessage(`AI parsed PDF successful! Auto-filled ${countExtracted} vessel specifications.`);
                 setParsingPdf(false);
                 return;
             }
         } catch (err) {
+            if (err.response?.status === 422 && err.response?.data?.message) {
+                setPdfError(err.response.data.message);
+                setParseSuccessMessage(null);
+                setParsingPdf(false);
+                return;
+            }
             console.warn('AI Parser endpoint error, executing local fallback parser:', err);
         }
 
@@ -271,16 +365,23 @@ export default function Edit({ fleet = null, categories = [] }) {
             const hullMatch = fullText.match(/Hull\s*No\.?\s*:?\s*([A-Z0-9\-]+)/i);
             if (hullMatch) { extracted.hull_no = hullMatch[1]; countExtracted++; }
 
-            detailedSpecKeys.forEach(key => {
-                if (extracted[key]) {
-                    setData(key, extracted[key]);
-                }
-            });
+            if (countExtracted < 5) {
+                setPdfError('The uploaded PDF does not appear to be a valid vessel specification document (less than 5 vessel specifications detected). Please check the file and try again.');
+                setParseSuccessMessage(null);
+            } else {
+                detailedSpecKeys.forEach(key => {
+                    if (extracted[key]) {
+                        setData(key, extracted[key]);
+                    }
+                });
 
-            setParseSuccessMessage(`PDF uploaded! Auto-filled ${countExtracted} detailed vessel specifications into the form. Please re-check all fields to ensure accuracy.`);
+                setPdfError(null);
+                setParseSuccessMessage(`PDF uploaded! Auto-filled ${countExtracted} detailed vessel specifications into the form. Please re-check all fields to ensure accuracy.`);
+            }
         } catch (err) {
             console.error('PDF processing error:', err);
-            setParseSuccessMessage('PDF uploaded successfully. Please review and complete detailed specifications.');
+            setPdfError('The uploaded PDF does not appear to be a valid vessel specification document. Please check the file and try again.');
+            setParseSuccessMessage(null);
         } finally {
             setParsingPdf(false);
         }
@@ -288,6 +389,19 @@ export default function Edit({ fleet = null, categories = [] }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!isEditing && !data.featured_image) {
+            setImageError('The featured image field is required.');
+            setActiveTab('basic');
+            return;
+        }
+        if (!data.vessel_type && !data.category_id) {
+            setActiveTab('basic');
+            return;
+        }
+        if (!/^(IMO\s*)?\d{7}$/i.test((data.imo_number || '').trim())) {
+            setActiveTab('basic');
+            return;
+        }
         const targetUrl = isEditing ? route('fleets.update', fleet.id) : route('fleets.store');
         post(targetUrl, {
             forceFormData: true,
@@ -300,7 +414,7 @@ export default function Edit({ fleet = null, categories = [] }) {
             header={
                 <div className="flex items-center justify-between font-['Hanken_Grotesk']">
                     <div>
-                        <Link 
+                        <Link
                             href={route('fleets.index')}
                             className="font-['JetBrains_Mono'] text-xs font-bold text-[#00629D] hover:underline uppercase tracking-wider mb-1 flex items-center gap-1.5"
                         >
@@ -318,37 +432,35 @@ export default function Edit({ fleet = null, categories = [] }) {
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1000px] mx-auto px-4 sm:px-6 space-y-6">
-                    
+
                     <form onSubmit={handleSubmit} className="bg-[#FFFFFF] rounded-[10px] border border-[#E5E7EB] shadow-sm overflow-hidden">
-                        
+
                         {/* 2 Clean Tab Header Navigation */}
-                        <div className="flex border-b border-[#E5E7EB] bg-[#F5F5F5]/50 px-6 pt-4 space-x-2">
+                        <div className="flex  border-[#E5E7EB] bg-[#F5F5F5]/50 px-6 pt-4 space-x-2">
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('basic')}
-                                className={`pb-3 px-6 text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
-                                    activeTab === 'basic' 
-                                        ? 'border-[#00629D] text-[#00629D] bg-white rounded-t-[8px]' 
-                                        : 'border-transparent text-[#404750] hover:text-[#141B2C]'
-                                }`}
+                                className={`pb-3 px-6 text-sm font-bold transition-colors cursor-pointer flex items-center gap-2 ${activeTab === 'basic'
+                                        ? 'border-[#00629D] border-b-2  text-[#00629D] bg-white rounded-t-[8px]'
+                                        : 'transparent text-[#404750] hover:text-[#141B2C]'
+                                    }`}
                             >
                                 Basic Info
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('detailed')}
-                                className={`pb-3 px-6 text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
-                                    activeTab === 'detailed' 
-                                        ? 'border-[#00629D] text-[#00629D] bg-white rounded-t-[8px]' 
-                                        : 'border-transparent text-[#404750] hover:text-[#141B2C]'
-                                }`}
+                                className={`pb-3 px-6 text-sm font-bold transition-colors cursor-pointer flex items-center gap-2 ${activeTab === 'detailed'
+                                        ? 'border-[#00629D] border-b-2  text-[#00629D] bg-white rounded-t-[8px]'
+                                        : 'ransparent text-[#404750] hover:text-[#141B2C]'
+                                    }`}
                             >
                                 Detailed Specs
                             </button>
                         </div>
 
                         <div className="p-6 sm:p-8">
-                            
+
                             {/* TAB 1: BASIC INFO */}
                             {activeTab === 'basic' && (
                                 <div className="space-y-6">
@@ -360,11 +472,15 @@ export default function Edit({ fleet = null, categories = [] }) {
                                             <input
                                                 type="text"
                                                 value={data.ship_name}
-                                                onChange={(e) => setData('ship_name', e.target.value)}
+                                                onChange={(e) => setData('ship_name', e.target.value.slice(0, 255))}
                                                 placeholder="e.g. MV. PRILLY / MV. MUMBAI"
+                                                maxLength={255}
                                                 required
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
+                                            {(data.ship_name || '').length >= 255 && (
+                                                <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (255 chars).</p>
+                                            )}
                                             {errors.ship_name && <p className="text-xs text-red-500 mt-1">{errors.ship_name}</p>}
                                         </div>
 
@@ -375,8 +491,11 @@ export default function Edit({ fleet = null, categories = [] }) {
                                             <input
                                                 type="text"
                                                 value={data.imo_number}
-                                                onChange={(e) => setData('imo_number', e.target.value)}
-                                                placeholder="e.g. 8816364"
+                                                onChange={(e) => setData('imo_number', e.target.value.slice(0, 11))}
+                                                placeholder="e.g. 9123456 or IMO 9123456"
+                                                pattern="(IMO\s*)?[0-9]{7}"
+                                                title="IMO number must be 7 digits (e.g. 9123456 or IMO 9123456)"
+                                                maxLength={11}
                                                 required
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -406,18 +525,31 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <div className="flex items-center justify-between mb-1.5">
                                                 <label className="text-xs font-bold text-[#141B2C]">
-                                                    Vessel Type / Category
+                                                    Vessel Type / Category <span className="text-red-500">*</span>
                                                 </label>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowCategoryModal(true)}
-                                                    className="text-xs font-bold text-[#00629D] hover:underline flex items-center gap-1 cursor-pointer"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5" /> Add Category
-                                                </button>
+                                                <div className="flex items-center gap-3">
+                                                    {data.category_id && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowDeleteCatModal(true)}
+                                                            className="text-xs font-bold text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
+                                                            title="Delete selected category"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5 text-rose-500" /> Delete Category
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowCategoryModal(true)}
+                                                        className="text-xs font-bold text-[#00629D] hover:underline flex items-center gap-1 cursor-pointer"
+                                                    >
+                                                        <Plus className="w-3.5 h-3.5" /> Add Category
+                                                    </button>
+                                                </div>
                                             </div>
                                             <select
                                                 value={data.category_id || ''}
+                                                required
                                                 onChange={(e) => {
                                                     const val = e.target.value;
                                                     if (val === '__ADD_NEW__') {
@@ -456,9 +588,12 @@ export default function Edit({ fleet = null, categories = [] }) {
                                                     </>
                                                 )}
                                                 <option value="__ADD_NEW__" className="font-bold text-[#00629D] bg-blue-50">
-                                                    + Add New Category...
+                                                    + Add Category...
                                                 </option>
                                             </select>
+                                            {(errors.vessel_type || errors.category_id) && (
+                                                <p className="text-xs text-red-500 mt-1">{errors.vessel_type || errors.category_id}</p>
+                                            )}
                                         </div>
                                     </div>
 
@@ -491,9 +626,8 @@ export default function Edit({ fleet = null, categories = [] }) {
                                             <label className="text-xs font-bold text-[#141B2C]">
                                                 Vessel Description & Overview
                                             </label>
-                                            <span className={`font-['JetBrains_Mono'] text-[11px] ${
-                                                (data.description || '').length >= 190 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'
-                                            }`}>
+                                            <span className={`font-['JetBrains_Mono'] text-[11px] ${(data.description || '').length >= 190 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'
+                                                }`}>
                                                 {(data.description || '').length} / 200 chars
                                             </span>
                                         </div>
@@ -517,9 +651,13 @@ export default function Edit({ fleet = null, categories = [] }) {
                                             type="file"
                                             accept="image/*"
                                             onChange={handleImageChange}
+                                            required={!isEditing && !previewImage}
                                             className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 file:mr-4 file:py-1.5 file:px-3 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
                                         />
                                         <p className="text-[11px] text-slate-400 mt-1">Max 5MB, JPG / PNG / WEBP format</p>
+                                        {(imageError || errors.featured_image) && (
+                                            <p className="text-xs text-red-500 mt-1.5 font-medium">{imageError || errors.featured_image}</p>
+                                        )}
 
                                         {previewImage && (
                                             <div className="mt-3">
@@ -532,7 +670,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="pt-6 border-t border-[#E5E7EB] flex items-center justify-between">
+                                    <div className="pt-6  border-[#E5E7EB] flex items-center justify-between">
                                         <button
                                             type="button"
                                             onClick={() => setActiveTab('detailed')}
@@ -557,9 +695,9 @@ export default function Edit({ fleet = null, categories = [] }) {
                             {/* TAB 2: DETAILED SPECS */}
                             {activeTab === 'detailed' && (
                                 <div className="space-y-6">
-                                    
+
                                     {/* 1. AI PDF File Input */}
-                                    <div className="pb-6 border-b border-[#E5E7EB]">
+                                    <div className="pb-6">
                                         <label className="text-xs font-bold text-[#141B2C] mb-1.5 flex items-center gap-1.5">
                                             <Sparkles className="w-4 h-4 text-amber-500" />
                                             Ship Particular Document (PDF) — AI Intelligent Auto-Fill
@@ -573,6 +711,9 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <p className="text-[11px] text-slate-400 mt-1">
                                             Upload a PDF specification sheet. AI will automatically extract and fill in detailed specs below. Please re-check all fields after uploading.
                                         </p>
+                                        {(pdfError || errors.ship_particular_pdf) && (
+                                            <p className="text-xs text-red-500 mt-1.5 font-medium">{pdfError || errors.ship_particular_pdf}</p>
+                                        )}
 
                                         {parsingPdf && (
                                             <p className="text-xs font-semibold text-[#00629D] mt-2 flex items-center gap-1.5">
@@ -595,7 +736,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                                         Current File: {fleet.ship_particular_pdf.split('/').pop()}
                                                     </span>
                                                 </div>
-                                                <a 
+                                                <a
                                                     href={fleet.ship_particular_pdf.startsWith('/documents/') || fleet.ship_particular_pdf.startsWith('/storage/') ? fleet.ship_particular_pdf : `/documents/fleets/${fleet.ship_particular_pdf}`}
                                                     target="_blank"
                                                     rel="noreferrer"
@@ -832,7 +973,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="pt-6 border-t border-[#E5E7EB] flex items-center justify-between">
+                                    <div className="pt-6  border-[#E5E7EB] flex items-center justify-between">
                                         <button
                                             type="button"
                                             onClick={() => setActiveTab('basic')}
@@ -865,8 +1006,8 @@ export default function Edit({ fleet = null, categories = [] }) {
             {showCategoryModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
                     <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-md w-full p-6 space-y-5">
-                        
-                        <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+
+                        <div className="flex items-center justify-between  border-[#E5E7EB] pb-3">
                             <h3 className="text-base font-bold text-[#141B2C] flex items-center gap-2">
                                 <Plus className="w-4 h-4 text-[#00629D]" />
                                 Add New Vessel Category
@@ -917,7 +1058,7 @@ export default function Edit({ fleet = null, categories = [] }) {
                                 />
                             </div>
 
-                            <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+                            <div className="pt-3  border-[#E5E7EB] flex items-center justify-end gap-3">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -948,6 +1089,103 @@ export default function Edit({ fleet = null, categories = [] }) {
                             </div>
                         </form>
 
+                        {/* Existing Categories List with Individual Delete Buttons */}
+                        {/* {categoriesList.length > 0 && (
+                            <div className="pt-4  border-[#E5E7EB] space-y-2">
+                                <label className="block text-xs font-bold text-[#141B2C]">
+                                    Existing Vessel Categories ({categoriesList.length})
+                                </label>
+                                <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
+                                    {categoriesList.map((cat) => (
+                                        <div key={cat.id} className="flex items-center justify-between p-2.5 border border-[#E5E7EB] rounded-[8px]">
+                                            <div>
+                                                <p className="text-xs font-bold text-[#141B2C]">{cat.name}</p>
+                                                {cat.description && (
+                                                    <p className="text-[11px] text-slate-500 truncate max-w-xs">{cat.description}</p>
+                                                )}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setCategoryToDelete(cat)}
+                                                className="p-1.5 text-rose-500 hover:bg-rose-100 rounded-[6px] transition-colors cursor-pointer"
+                                                title={`Delete ${cat.name}`}
+                                            >
+                                                <Trash2 className="w-4 h-4 text-rose-500" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )} */}
+
+                    </div>
+                </div>
+            )}
+
+            {/* DELETE CATEGORY CONFIRMATION MODAL */}
+            {(showDeleteCatModal || categoryToDelete) && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-md w-full p-6 space-y-5">
+                        <div className="flex items-center justify-between  border-[#E5E7EB] pb-3">
+                            <h3 className="text-base font-bold text-rose-600 flex items-center gap-2">
+                                <AlertTriangle className="w-5 h-5 text-rose-500" />
+                                Confirm Category Deletion
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowDeleteCatModal(false);
+                                    setCategoryToDelete(null);
+                                    setDeleteCatError(null);
+                                }}
+                                className="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {deleteCatError && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-[6px]">
+                                {deleteCatError}
+                            </div>
+                        )}
+
+                        <p className="text-xs text-[#141B2C] leading-relaxed">
+                            Are you sure you want to delete the category <span className="font-bold text-rose-600">{categoryToDelete?.name || categoriesList.find(c => String(c.id) === String(data.category_id))?.name || data.vessel_type}</span>? This action is permanent and cannot be undone.
+                        </p>
+
+                        <div className="pt-3  border-[#E5E7EB] flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowDeleteCatModal(false);
+                                    setCategoryToDelete(null);
+                                    setDeleteCatError(null);
+                                }}
+                                disabled={deletingCat}
+                                className="bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold px-4 py-2 rounded-[6px] transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDeleteCategorySubmit}
+                                disabled={deletingCat}
+                                className="inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-5 py-2 rounded-[6px] transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+                            >
+                                {deletingCat ? (
+                                    <>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        Delete Category
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

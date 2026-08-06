@@ -79,7 +79,12 @@ class CareersController extends Controller
             'requirements' => 'nullable|string',
             'responsibilities' => 'nullable|string',
             'status' => 'nullable|in:open,closed,expired',
-            'application_deadline' => 'nullable|date',
+            'application_deadline' => 'required|date|after_or_equal:today',
+        ], [
+            'position.max' => 'The job position title must not be greater than 255 characters.',
+            'application_deadline.required' => 'The application deadline is required.',
+            'application_deadline.date' => 'The application deadline must be a valid date format.',
+            'application_deadline.after_or_equal' => 'The application deadline cannot be a date in the past.',
         ]);
 
         if (!empty($validated['application_deadline'])) {
@@ -134,7 +139,12 @@ class CareersController extends Controller
             'requirements' => 'nullable|string',
             'responsibilities' => 'nullable|string',
             'status' => 'nullable|in:open,closed,expired',
-            'application_deadline' => 'nullable|date',
+            'application_deadline' => 'required|date|after_or_equal:today',
+        ], [
+            'position.max' => 'The job position title must not be greater than 255 characters.',
+            'application_deadline.required' => 'The application deadline is required.',
+            'application_deadline.date' => 'The application deadline must be a valid date format.',
+            'application_deadline.after_or_equal' => 'The application deadline cannot be a date in the past.',
         ]);
 
         if (!empty($validated['application_deadline'])) {

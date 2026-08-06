@@ -22,6 +22,7 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
 
     const [previewImage, setPreviewImage] = useState(getNewsImage(article));
     const [addingAuthor, setAddingAuthor] = useState(false);
+    const [imageError, setImageError] = useState(null);
 
     const { data, setData, post, processing, errors } = useForm({
         _method: isEditing ? 'PUT' : 'POST',
@@ -37,8 +38,34 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
         featured_image: null,
     });
 
+    const [contentError, setContentError] = useState(null);
+
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        let hasError = false;
+        setContentError(null);
+
+        const cleanContent = (data.content || '').replace(/<[^>]*>/g, '').trim();
+        if (!cleanContent) {
+            setContentError('The article content body is required.');
+            hasError = true;
+        } else if ((data.content || '').length > 10000) {
+            setContentError('The article content body must not exceed 10000 characters.');
+            hasError = true;
+        }
+
+        if (!isEditing && !data.featured_image && !previewImage) {
+            setImageError('The header featured image is required when creating a new article.');
+            hasError = true;
+        }
+
+        if (imageError) {
+            hasError = true;
+        }
+
+        if (hasError) return;
+
         const targetUrl = isEditing ? route('news.update', article.id) : route('news.store');
         post(targetUrl);
     };
@@ -109,7 +136,7 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
                                             type="text"
                                             value={data.title}
                                             onChange={(e) => {
-                                                const val = e.target.value;
+                                                const val = e.target.value.slice(0, 255);
                                                 setData(prev => ({
                                                     ...prev,
                                                     title: val,
@@ -117,32 +144,48 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
                                                 }));
                                             }}
                                             placeholder="e.g. Annual Medical Check-Up 2026 at TZU CHI Hospital"
+                                            maxLength={255}
                                             required
                                             className="w-full border border-[#E5E7EB] rounded-[8px] text-base p-3.5 focus:border-[#00629D] focus:ring-[#00629D] font-bold text-[#141B2C]"
                                         />
+                                        {(data.title || '').length >= 255 && (
+                                            <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (255 chars).</p>
+                                        )}
                                         {errors.title && <p className="text-xs text-rose-500 mt-1">{errors.title}</p>}
                                     </div>
 
                                     {/* Short Excerpt */}
                                     <div>
-                                        <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
-                                            Short Excerpt / Summary Preview
-                                        </label>
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <label className="text-xs font-bold text-[#141B2C]">
+                                                Short Excerpt / Summary Preview
+                                            </label>
+                                            <span className={`font-['JetBrains_Mono'] text-[11px] ${(data.excerpt || '').length >= 450 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'}`}>
+                                                {(data.excerpt || '').length} / 500 chars
+                                            </span>
+                                        </div>
                                         <textarea
                                             value={data.excerpt}
-                                            onChange={(e) => setData('excerpt', e.target.value)}
+                                            onChange={(e) => setData('excerpt', e.target.value.slice(0, 500))}
+                                            maxLength={500}
                                             rows={2}
                                             placeholder="Brief summary displayed on news cards, search results, and social previews..."
                                             className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 focus:border-[#00629D] focus:ring-[#00629D] leading-relaxed"
                                         />
+                                        {errors.excerpt && <p className="text-xs text-rose-500 mt-1">{errors.excerpt}</p>}
                                     </div>
 
                                     {/* Article Content Editor (ReactQuill 70% main canvas) */}
                                     <div className="max-h-[80%]">
-                                        <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
-                                            Article Content Body <span className="text-rose-500">*</span>
-                                        </label>
-                                        <div className="bg-white  overflow-hidden">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <label className="text-xs font-bold text-[#141B2C]">
+                                                Article Content Body <span className="text-rose-500">*</span>
+                                            </label>
+                                            <span className={`font-['JetBrains_Mono'] text-[11px] ${(data.content || '').length >= 9500 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'}`}>
+                                                {(data.content || '').length} / 10000 chars
+                                            </span>
+                                        </div>
+                                        <div className="bg-white overflow-hidden">
                                             <ReactQuill
                                                 theme="snow"
                                                 value={data.content}
@@ -152,6 +195,7 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
                                                 className="h-[500px] mb-14 text-sm font-['Hanken_Grotesk']"
                                             />
                                         </div>
+                                        {(contentError || errors.content) && <p className="text-xs text-rose-500 mt-1 font-medium">{contentError || errors.content}</p>}
                                     </div>
 
                                 </div>
@@ -301,16 +345,35 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
                                         <input
                                             type="file"
                                             accept="image/*"
+                                            required={!isEditing && !previewImage}
                                             onChange={(e) => {
                                                 const file = e.target.files[0];
-                                                if (file) {
-                                                    setData('featured_image', file);
-                                                    setPreviewImage(URL.createObjectURL(file));
+                                                if (!file) return;
+                                                const isImg = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+                                                if (!isImg) {
+                                                    setImageError('The featured image must be a file of type: jpeg, png, jpg, webp.');
+                                                    setData('featured_image', null);
+                                                    setPreviewImage(null);
+                                                    e.target.value = null;
+                                                    return;
                                                 }
+                                                if (file.size > 5 * 1024 * 1024) {
+                                                    setImageError('The featured image may not be greater than 5MB.');
+                                                    setData('featured_image', null);
+                                                    setPreviewImage(null);
+                                                    e.target.value = null;
+                                                    return;
+                                                }
+                                                setImageError(null);
+                                                setData('featured_image', file);
+                                                setPreviewImage(URL.createObjectURL(file));
                                             }}
                                             className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 bg-[#F5F5F5] file:mr-3 file:py-1 file:px-2.5 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
                                         />
                                         <p className="text-[11px] text-[#8AAFC8] mt-1.5">PNG, JPG, or WEBP, max 5MB</p>
+                                        {(imageError || errors.featured_image) && (
+                                            <p className="text-xs text-rose-500 mt-1.5 font-medium">{imageError || errors.featured_image}</p>
+                                        )}
                                     </div>
 
                                     {previewImage ? (

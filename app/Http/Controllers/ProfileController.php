@@ -45,11 +45,17 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if ($user->role === 'super_admin') {
+            return back()->withErrors([
+                'user' => 'Super Admin accounts cannot delete their own account for security and system governance protection (BR-01).',
+            ]);
+        }
+
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
-
-        $user = $request->user();
 
         Auth::logout();
 

@@ -34,11 +34,17 @@ class UsersController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'username' => 'required|string|max:50|unique:users,username',
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:100|unique:users,username',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:8|max:255',
             'role' => ['required', Rule::in(['super_admin', 'hr_admin', 'crew_admin', 'pr_admin'])],
+        ], [
+            'name.max' => 'The full name must not be greater than 255 characters.',
+            'username.max' => 'The username must not be greater than 100 characters.',
+            'email.max' => 'The email address must not be greater than 255 characters.',
+            'password.required' => 'The password is required when creating an account.',
+            'password.min' => 'The password must be at least 8 characters.',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -57,11 +63,16 @@ class UsersController extends Controller
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'name' => 'required|string|max:255',
+            'username' => ['required', 'string', 'max:100', Rule::unique('users')->ignore($user->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:8|max:255',
             'role' => ['required', Rule::in(['super_admin', 'hr_admin', 'crew_admin', 'pr_admin'])],
+        ], [
+            'name.max' => 'The full name must not be greater than 255 characters.',
+            'username.max' => 'The username must not be greater than 100 characters.',
+            'email.max' => 'The email address must not be greater than 255 characters.',
+            'password.min' => 'The password must be at least 8 characters.',
         ]);
 
         if (!empty($validated['password'])) {

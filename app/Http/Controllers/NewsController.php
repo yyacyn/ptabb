@@ -127,9 +127,15 @@ class NewsController extends Controller
             'published_at' => 'nullable|date',
             'status' => 'nullable|in:published,draft',
             'author' => 'nullable|string|max:100',
-            'excerpt' => 'nullable|string',
-            'featured_image' => 'nullable',
-            'content' => 'required|string',
+            'excerpt' => 'nullable|string|max:500',
+            'featured_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'content' => 'required|string|max:10000',
+        ], [
+            'title.max' => 'The article title must not be greater than 255 characters.',
+            'content.max' => 'The article content must not exceed 10000 characters.',
+            'featured_image.required' => 'The header featured image is required.',
+            'featured_image.image' => 'The featured image must be a valid image file.',
+            'featured_image.max' => 'The featured image may not be greater than 5MB.',
         ]);
 
         $dataToSave = [
@@ -177,9 +183,14 @@ class NewsController extends Controller
             'published_at' => 'nullable|date',
             'status' => 'nullable|in:published,draft',
             'author' => 'nullable|string|max:100',
-            'excerpt' => 'nullable|string',
-            'featured_image' => 'nullable',
-            'content' => 'required|string',
+            'excerpt' => 'nullable|string|max:500',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'content' => 'required|string|max:10000',
+        ], [
+            'title.max' => 'The article title must not be greater than 255 characters.',
+            'content.max' => 'The article content must not exceed 10000 characters.',
+            'featured_image.image' => 'The featured image must be a valid image file.',
+            'featured_image.max' => 'The featured image may not be greater than 5MB.',
         ]);
 
         $dataToSave = [

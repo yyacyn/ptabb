@@ -223,7 +223,7 @@ export default function NewsPage({ news = EMPTY_NEWS, categories = EMPTY_CATEGOR
                                 </motion.div>
 
                                 {/* Headline Title */}
-                                <motion.h1
+                                <motion.h2
                                     key={`title-${activeHeadline.id || currentHeroIdx}`}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -233,7 +233,7 @@ export default function NewsPage({ news = EMPTY_NEWS, categories = EMPTY_CATEGOR
                                     <Link href={`/news/${activeHeadline.slug || activeHeadline.id}`}>
                                         {activeHeadline.title}
                                     </Link>
-                                </motion.h1>
+                                </motion.h2>
 
                                 {/* Bottom Row: Slide Dots Indicator Centered in Middle & Read Link on Right */}
                                 <div className="relative flex items-end justify-between gap-4">

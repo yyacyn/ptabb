@@ -29,8 +29,11 @@ class FleetCatController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $validated['slug'] = Str::slug($validated['name']);
+
         $category = FleetCategory::create([
             'name' => $validated['name'],
+            'slug' => $validated['slug'],
             'description' => $validated['description'] ?? null,
         ]);
 
@@ -50,8 +53,11 @@ class FleetCatController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $validated['slug'] = Str::slug($validated['name']);
+
         $category->update([
             'name' => $validated['name'],
+            'slug' => $validated['slug'],
             'description' => $validated['description'] ?? null,
         ]);
 
@@ -68,7 +74,10 @@ class FleetCatController extends Controller
         $category->delete();
 
         if ($request->wantsJson()) {
-            return response()->json(['message' => 'Fleet category deleted successfully.']);
+            return response()->json([
+                'message' => 'Fleet category deleted successfully.',
+                'categories' => FleetCategory::all(),
+            ]);
         }
 
         return back()->with('success', 'Fleet category deleted successfully.');

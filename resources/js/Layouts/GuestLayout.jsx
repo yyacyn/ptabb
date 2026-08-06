@@ -153,7 +153,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                 console.groupEnd();
             }
 
-            const botReply = data?.reply || 'Thank you for reaching out. Our dispatch desk will assist you shortly.';
+            const botReply = data?.reply || data?.message || (data?.errors?.message ? data.errors.message[0] : 'Thank you for reaching out. Our dispatch desk will assist you shortly.');
 
             setChatMessages(prev => [
                 ...prev,
@@ -328,7 +328,8 @@ export default function GuestLayout({ children, onScrollToSection }) {
                                 <input
                                     type="text"
                                     value={chatInput}
-                                    onChange={(e) => setChatInput(e.target.value)}
+                                    onChange={(e) => setChatInput(e.target.value.slice(0, 1000))}
+                                    maxLength={1000}
                                     placeholder="Ask Sarah a question..."
                                     className="flex-1 text-[13px] font-['Hanken_Grotesk'] px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-full focus:outline-none focus:border-[#00629D] focus:bg-white transition-color placeholder-[#9CA3AF]"
                                 />

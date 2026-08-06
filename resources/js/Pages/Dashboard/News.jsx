@@ -1,14 +1,23 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import Modal from '@/Components/Modal';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Newspaper, Plus, Search, Calendar, Edit2, Filter, ArrowUpDown, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Newspaper, Plus, Search, Calendar, Edit2, Trash2, Filter, ArrowUpDown, Eye, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 
 export default function News({ news = [] }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
     const [currentPage, setCurrentPage] = useState(1);
+    const [deletingArticle, setDeletingArticle] = useState(null);
     const itemsPerPage = 8;
+
+    const handleDelete = () => {
+        if (!deletingArticle) return;
+        router.delete(route('news.destroy', deletingArticle.id), {
+            onSuccess: () => setDeletingArticle(null),
+        });
+    };
 
     const getNewsImage = (item) => {
         if (!item || !item.featured_image) return '/images/news/top.jpg';
@@ -207,12 +216,21 @@ export default function News({ news = [] }) {
                                         </div>
 
                                         <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs font-semibold">
-                                            <Link
-                                                href={route('news.edit', item.id)}
-                                                className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
-                                            >
-                                                <Edit2 className="w-3.5 h-3.5" /> Edit Article
-                                            </Link>
+                                            <div className="flex items-center gap-3">
+                                                <Link
+                                                    href={route('news.edit', item.id)}
+                                                    className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
+                                                >
+                                                    <Edit2 className="w-3.5 h-3.5" /> Edit
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDeletingArticle(item)}
+                                                    className="inline-flex items-center gap-1 text-rose-600 hover:underline cursor-pointer"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                                                </button>
+                                            </div>
 
                                             {item.author && (
                                                 <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8]">
@@ -280,6 +298,35 @@ export default function News({ news = [] }) {
 
                 </div>
             </div>
+
+            {/* Confirmation Modal for Delete */}
+            <Modal show={!!deletingArticle} onClose={() => setDeletingArticle(null)} maxWidth="sm">
+                <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
+                    <div className="flex items-center gap-3 text-rose-600 mb-4">
+                        <AlertTriangle className="w-6 h-6 shrink-0" />
+                        <h3 className="text-lg font-bold">Delete Press Release Article</h3>
+                    </div>
+                    <p className="text-xs text-[#404750] mb-6">
+                        Are you sure you want to delete <strong className="text-[#141B2C]">"{deletingArticle?.title}"</strong>? This action is permanent and cannot be undone.
+                    </p>
+                    <div className="flex items-center justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setDeletingArticle(null)}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold rounded-[6px]"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleDelete}
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-[6px] cursor-pointer"
+                        >
+                            Confirm Delete
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

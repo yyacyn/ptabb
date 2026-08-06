@@ -70,13 +70,13 @@ class ChatbotController extends Controller
             }
         }
 
-        // Priority 2: OpenRouter API Fallback
+        // Priority 2: OpenRouter API Fallback (per rule.md)
         if (!empty($openRouterApiKey)) {
-            $reply = $this->callOpenRouter($openRouterApiKey, 'nvidia/nemotron-3-ultra-550b-a55b:free', $messages);
+            $reply = $this->callOpenRouter($openRouterApiKey, 'google/gemma-2-9b-it:free', $messages);
 
             if (!$reply) {
-                Log::warning("OpenRouter primary model failed. Trying OpenRouter secondary model.");
-                $reply = $this->callOpenRouter($openRouterApiKey, 'inclusionai/ling-3.0-flash:free', $messages);
+                Log::warning("OpenRouter primary Gemma model failed. Trying Nemotron fallback.");
+                $reply = $this->callOpenRouter($openRouterApiKey, 'nvidia/nemotron-3-ultra-550b-a55b:free', $messages);
             }
 
             if ($reply) {
@@ -279,6 +279,7 @@ Instructions:
 4. CRITICAL: Never invent, guess, or hallucinate unverified contact details, phone numbers, addresses, or operational facts that are not present in the context above.
 5. If specific information is not present in the context, politely let the visitor know and suggest reaching out to the team via the contact page.
 6. NEVER format responses as markdown tables. Do NOT use text emojis.
+7. HQ contact Jl. Roa Malaka Utara No. 17-18, Jakarta Barat 11230, Indonesia, +62 21 691 8822, info@ptabb.com.
 EOT;
     }
 

@@ -216,7 +216,7 @@ export default function Notifications({ notifications = [] }) {
             {/* Add / Edit Notification Modal */}
             <Modal show={isModalOpen} onClose={closeModal} maxWidth="lg">
                 <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
-                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
+                    <div className="flex items-center justify-between  border-[#E5E7EB] pb-4 mb-5">
                         <div className="flex items-center gap-2">
                             <Bell className="w-5 h-5 text-[#00629D]" />
                             <h3 className="text-lg font-bold text-[#141B2C]">
@@ -228,15 +228,21 @@ export default function Notifications({ notifications = [] }) {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Banner Title *</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                Banner Title <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={data.title}
-                                onChange={(e) => setData('title', e.target.value)}
+                                onChange={(e) => setData('title', e.target.value.slice(0, 255))}
+                                maxLength={255}
                                 placeholder="e.g. Annual Medical Check-Up Reminder"
                                 required
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
+                            {(data.title || '').length >= 255 && (
+                                <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (255 chars).</span>
+                            )}
                             {errors.title && <span className="text-red-500 text-[11px] mt-1 block">{errors.title}</span>}
                         </div>
 
@@ -269,10 +275,18 @@ export default function Notifications({ notifications = [] }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Banner Announcement Content *</label>
+                            <div className="flex items-center justify-between mb-1">
+                                <label className="text-xs font-bold text-[#141B2C]">
+                                    Banner Announcement Content <span className="text-red-500">*</span>
+                                </label>
+                                <span className={`font-['JetBrains_Mono'] text-[11px] ${(data.content || '').length >= 950 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'}`}>
+                                    {(data.content || '').length} / 1000 chars
+                                </span>
+                            </div>
                             <textarea
                                 value={data.content}
-                                onChange={(e) => setData('content', e.target.value)}
+                                onChange={(e) => setData('content', e.target.value.slice(0, 1000))}
+                                maxLength={1000}
                                 rows={3}
                                 required
                                 placeholder="Write the pop-up announcement message..."
@@ -281,7 +295,7 @@ export default function Notifications({ notifications = [] }) {
                             {errors.content && <span className="text-red-500 text-[11px] mt-1 block">{errors.content}</span>}
                         </div>
 
-                        <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+                        <div className="pt-4  border-[#E5E7EB] flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={closeModal}

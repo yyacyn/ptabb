@@ -85,7 +85,7 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
 
     const defaultCategory = userRole === 'crew_admin' ? 'crew' : 'corporate';
 
-    const { data, setData, post, put, processing, reset } = useForm({
+    const { data, setData, post, put, processing, reset, errors } = useForm({
         position: '',
         department: '',
         category: defaultCategory,
@@ -288,7 +288,7 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                                             <div className="flex items-center justify-between mb-3">
                                                 <span className={`font-['JetBrains_Mono'] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border flex items-center gap-1 ${isCrew
                                                         ? 'bg-amber-50 text-amber-900 border-amber-200'
-                                                        : 'bg-[#F5F5F5] text-[#00629D] border-[#E5E7EB]'
+                                                        : 'bg-[#eff9ff] text-[#00629D] border-[#b6e4ff]'
                                                     }`}>
                                                     {isCrew ? <Anchor className="w-3 h-3 text-amber-700" /> : <Briefcase className="w-3 h-3 text-[#00629D]" />}
                                                     {isCrew ? 'Vessel Crew (Sea)' : 'Corporate (Land)'}
@@ -321,7 +321,7 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                                                 {job.description || '\u00A0'}
                                             </p>
 
-                                            <div className="space-y-1.5 font-['JetBrains_Mono'] text-xs text-[#404750] pt-3 border-t border-[#E5E7EB]">
+                                            <div className="space-y-1.5 font-['JetBrains_Mono'] text-xs text-[#404750] pt-3  border-[#E5E7EB]">
                                                 <div className="flex justify-between">
                                                     <span className="text-[#8AAFC8]">Type:</span>
                                                     <span className="font-bold uppercase">{job.employment_type || 'fulltime'}</span>
@@ -343,7 +343,7 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                                             </div>
                                         </div>
 
-                                        <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between">
+                                        <div className="pt-3  border-[#E5E7EB] mt-4 flex items-center justify-between">
                                             <button
                                                 onClick={() => openModal(job)}
                                                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#00629D] hover:underline cursor-pointer"
@@ -415,7 +415,7 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
             {/* Add / Edit Vacancy Modal */}
             <Modal show={isModalOpen} onClose={closeModal} maxWidth="2xl">
                 <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
-                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
+                    <div className="flex items-center justify-between  border-[#E5E7EB]  mb-5">
                         <div className="flex items-center gap-2">
                             <Briefcase className="w-5 h-5 text-[#00629D]" />
                             <h3 className="text-lg font-bold text-[#141B2C]">
@@ -432,11 +432,16 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                                 <input
                                     type="text"
                                     value={data.position}
-                                    onChange={(e) => setData('position', e.target.value)}
+                                    onChange={(e) => setData('position', e.target.value.slice(0, 255))}
                                     placeholder="e.g. Master Mariner / Senior Controller"
+                                    maxLength={255}
                                     required
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
+                                {(data.position || '').length >= 255 && (
+                                    <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (255 chars).</p>
+                                )}
+                                {errors.position && <p className="text-xs text-red-500 mt-1">{errors.position}</p>}
                             </div>
 
                             <div>
@@ -444,10 +449,14 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                                 <input
                                     type="text"
                                     value={data.department}
-                                    onChange={(e) => setData('department', e.target.value)}
+                                    onChange={(e) => setData('department', e.target.value.slice(0, 100))}
                                     placeholder="e.g. Operations / Deck / Finance"
+                                    maxLength={100}
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
+                                {(data.department || '').length >= 100 && (
+                                    <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (100 chars).</p>
+                                )}
                             </div>
                         </div>
 
@@ -502,28 +511,42 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                                 <input
                                     type="text"
                                     value={data.location}
-                                    onChange={(e) => setData('location', e.target.value)}
+                                    onChange={(e) => setData('location', e.target.value.slice(0, 100))}
                                     placeholder="e.g. Jakarta HQ / Onboard MV Iriana"
+                                    maxLength={100}
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
+                                {(data.location || '').length >= 100 && (
+                                    <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (100 chars).</p>
+                                )}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-[#141B2C] mb-1">Application Deadline</label>
+                                <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                    Application Deadline <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="date"
                                     value={data.application_deadline}
+                                    required
                                     onChange={(e) => handleDeadlineChange(e.target.value)}
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
+                                {errors.application_deadline && <p className="text-xs text-red-500 mt-1">{errors.application_deadline}</p>}
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Job Description</label>
+                            <div className="flex items-center justify-between mb-1">
+                                <label className="text-xs font-bold text-[#141B2C]">Job Description</label>
+                                <span className={`font-['JetBrains_Mono'] text-[11px] ${(data.description || '').length >= 1900 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'}`}>
+                                    {(data.description || '').length} / 2000 chars
+                                </span>
+                            </div>
                             <textarea
                                 value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
+                                onChange={(e) => setData('description', e.target.value.slice(0, 2000))}
+                                maxLength={2000}
                                 rows={2}
                                 placeholder="Key duties and strategic operational goals..."
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
@@ -531,17 +554,23 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Requirements &amp; Experience</label>
+                            <div className="flex items-center justify-between mb-1">
+                                <label className="text-xs font-bold text-[#141B2C]">Requirements &amp; Experience</label>
+                                <span className={`font-['JetBrains_Mono'] text-[11px] ${(data.requirements || '').length >= 1900 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'}`}>
+                                    {(data.requirements || '').length} / 2000 chars
+                                </span>
+                            </div>
                             <textarea
                                 value={data.requirements}
-                                onChange={(e) => setData('requirements', e.target.value)}
+                                onChange={(e) => setData('requirements', e.target.value.slice(0, 2000))}
+                                maxLength={2000}
                                 rows={2}
                                 placeholder="Required sea time, COC certificates, degree requirements..."
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
                         </div>
 
-                        <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+                        <div className="  border-[#E5E7EB] flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={closeModal}
@@ -580,7 +609,7 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
                         This action cannot be undone.
                     </p>
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E5E7EB]">
+                    <div className="flex items-center justify-end gap-3   border-[#E5E7EB]">
                         <button
                             type="button"
                             onClick={() => setDeletingCareer(null)}

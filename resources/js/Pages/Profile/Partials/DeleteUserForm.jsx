@@ -4,10 +4,11 @@ import InputLabel from '@/Components/InputLabel';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
 export default function DeleteUserForm({ className = '' }) {
+    const currentUser = usePage().props.auth.user;
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const passwordInput = useRef();
 
@@ -30,10 +31,14 @@ export default function DeleteUserForm({ className = '' }) {
     const deleteUser = (e) => {
         e.preventDefault();
 
+        if (currentUser?.role === 'super_admin') {
+            return;
+        }
+
         destroy(route('profile.destroy'), {
             preserveScroll: true,
             onSuccess: () => closeModal(),
-            onError: () => passwordInput.current.focus(),
+            onError: () => passwordInput.current?.focus(),
             onFinish: () => reset(),
         });
     };
@@ -44,6 +49,25 @@ export default function DeleteUserForm({ className = '' }) {
         clearErrors();
         reset();
     };
+
+    if (currentUser?.role === 'super_admin') {
+        return (
+            <section className={`space-y-6 ${className}`}>
+                <header>
+                    <h2 className="text-lg font-medium text-gray-900">
+                        Delete Account
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-600">
+                        Once your account is deleted, all of its resources and data will be permanently deleted.
+                    </p>
+                </header>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-[8px] p-4 text-xs text-amber-800 font-medium">
+                    🔒 <strong>Super Admin Protection (BR-01):</strong> Super Admin accounts cannot delete their own account for system security, governance, and audit trail protection.
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className={`space-y-6 ${className}`}>
@@ -99,7 +123,7 @@ export default function DeleteUserForm({ className = '' }) {
                         />
 
                         <InputError
-                            message={errors.password}
+                            message={errors.user || errors.password}
                             className="mt-2"
                         />
                     </div>

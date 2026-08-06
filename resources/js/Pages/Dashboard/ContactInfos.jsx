@@ -237,7 +237,7 @@ export default function ContactInfosManagement({ contactInfos = EMPTY_CONTACT_IN
             {/* Add / Edit Contact Modal */}
             <Modal show={isModalOpen} onClose={closeModal} maxWidth="md">
                 <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
-                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
+                    <div className="flex items-center justify-between  border-[#E5E7EB] pb-4 mb-5">
                         <div className="flex items-center gap-2">
                             <Building className="w-5 h-5 text-[#00629D]" />
                             <h3 className="text-lg font-bold text-[#141B2C]">
@@ -300,7 +300,7 @@ export default function ContactInfosManagement({ contactInfos = EMPTY_CONTACT_IN
                             {errors.value && <span className="text-red-500 text-[11px] mt-1 block">{errors.value}</span>}
                         </div>
 
-                        <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+                        <div className="pt-4  border-[#E5E7EB] flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={closeModal}

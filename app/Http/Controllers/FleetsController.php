@@ -169,12 +169,34 @@ class FleetsController extends Controller
     {
         $request->validate([
             'ship_particular_pdf' => 'required|file|mimes:pdf|max:10240',
+        ], [
+            'ship_particular_pdf.mimes' => 'The specification document must be a file of type: pdf.',
+            'ship_particular_pdf.max' => 'The specification document may not be greater than 10MB.',
         ]);
 
         $file = $request->file('ship_particular_pdf');
         $tempPath = $file->getRealPath();
 
         $result = $parserService->parsePdfDocument($tempPath);
+
+        $extractedData = $result['data'] ?? [];
+        $filledCount = 0;
+        if (is_array($extractedData)) {
+            foreach ($extractedData as $val) {
+                if ($val !== null && $val !== '' && $val !== 'N/A') {
+                    $filledCount++;
+                }
+            }
+        }
+
+        if ($filledCount < 5) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The uploaded PDF does not appear to be a valid vessel specification document. Please upload the proper vessel spec and try again.',
+                'data' => null,
+                'filled_count' => $filledCount,
+            ], 422);
+        }
 
         return response()->json($result);
     }
@@ -183,9 +205,9 @@ class FleetsController extends Controller
     {
         $validated = $request->validate([
             'ship_name' => 'required|string|max:255',
-            'imo_number' => 'required|string|max:20|unique:fleets,imo_number',
+            'imo_number' => ['required', 'string', 'regex:/^(IMO\s*)?\d{7}$/i', 'unique:fleets,imo_number'],
             'category_id' => 'nullable|exists:fleet_categories,id',
-            'vessel_type' => 'nullable|string|max:100',
+            'vessel_type' => 'required|string|max:100',
             'status' => 'required|string',
             'operational_area' => 'nullable|string|max:255',
             'build_year' => 'nullable|integer',
@@ -209,6 +231,12 @@ class FleetsController extends Controller
             'description' => 'nullable|string|max:200',
             'voyage_description' => 'nullable|string',
             'particulars_data' => 'nullable|array',
+            'featured_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'ship_particular_pdf' => 'nullable|file|mimes:pdf|max:10240',
+        ], [
+            'imo_number.regex' => 'The IMO number must consist of 7 digits (e.g. 9123456 or IMO 9123456).',
+            'featured_image.max' => 'The featured image may not be greater than 5MB.',
+            'ship_particular_pdf.max' => 'The specification document may not be greater than 10MB.',
         ]);
 
         if ($request->hasFile('featured_image')) {
@@ -232,9 +260,9 @@ class FleetsController extends Controller
 
         $validated = $request->validate([
             'ship_name' => 'required|string|max:255',
-            'imo_number' => 'required|string|max:20|unique:fleets,imo_number,' . $fleet->id,
+            'imo_number' => ['required', 'string', 'regex:/^(IMO\s*)?\d{7}$/i', 'unique:fleets,imo_number,' . $fleet->id],
             'category_id' => 'nullable|exists:fleet_categories,id',
-            'vessel_type' => 'nullable|string|max:100',
+            'vessel_type' => 'required|string|max:100',
             'status' => 'required|string',
             'operational_area' => 'nullable|string|max:255',
             'build_year' => 'nullable|integer',
@@ -258,6 +286,12 @@ class FleetsController extends Controller
             'description' => 'nullable|string|max:200',
             'voyage_description' => 'nullable|string',
             'particulars_data' => 'nullable|array',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'ship_particular_pdf' => 'nullable|file|mimes:pdf|max:10240',
+        ], [
+            'imo_number.regex' => 'The IMO number must consist of 7 digits (e.g. 9123456 or IMO 9123456).',
+            'featured_image.max' => 'The featured image may not be greater than 5MB.',
+            'ship_particular_pdf.max' => 'The specification document may not be greater than 10MB.',
         ]);
 
         if ($request->hasFile('featured_image')) {

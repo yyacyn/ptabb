@@ -373,68 +373,65 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                         : 'h-[56px] lg:flex-[1_1_0%] bg-white border border-[#E5E7EB] items-center justify-center hover:bg-slate-50'
                                         }`}
                                 >
-                                    {isActive ? (
-                                        /* Active Expanded Region Panel (Clean Solid Surface) */
-                                        <div className="h-full flex flex-col justify-between bg-white">
-                                            <div>
-                                                <h3 className="text-[20px] lg:text-[28px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-1 lg:mb-2 tracking-tight">
-                                                    {type}
-                                                </h3>
-                                                <div className="font-['Hanken_Grotesk'] font-bold text-[#00629D] text-[14px] lg:text-[17px] mb-0.5">
-                                                    {title}
-                                                </div>
-                                                <div className="font-['Hanken_Grotesk'] font-medium text-[#404750] text-[12px] lg:text-[14px]">
-                                                    {company}
-                                                </div>
-                                                <p className="text-[12px] lg:text-[14px] text-[#404750] mt-2 font-['Hanken_Grotesk']">
-                                                    {shortDesc}
-                                                </p>
-                                            </div>
-
-                                            <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-xs h-[110px] lg:h-[270px] w-full relative shrink-0 mt-2 lg:mt-3 bg-[#F5F5F5]">
-                                                {mapUrl ? (
-                                                    <iframe
-                                                        src={mapUrl}
-                                                        className="w-full h-full border-0"
-                                                        allowFullScreen=""
-                                                        loading="lazy"
-                                                        referrerPolicy="strict-origin-when-cross-origin"
-                                                        title={`${title} Google Map`}
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                                                        <MapPin className="w-8 h-8 text-slate-300 mb-1" />
-                                                        <span className="font-['Hanken_Grotesk'] text-xs font-semibold text-slate-500">
-                                                            Location Map Not Available
-                                                        </span>
-                                                        <span className="font-['JetBrains_Mono'] text-[10px] text-slate-400 mt-0.5">
-                                                            Detailed coordinates available upon request
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                    {/* Active Region Header Info */}
+                                    <div className={`transition-opacity duration-300 ${isActive ? 'block' : 'hidden'}`}>
+                                        <h3 className="text-[20px] lg:text-[28px] font-['Hanken_Grotesk'] font-bold text-[#141B2C] mb-1 lg:mb-2 tracking-tight">
+                                            {type}
+                                        </h3>
+                                        <div className="font-['Hanken_Grotesk'] font-bold text-[#00629D] text-[14px] lg:text-[17px] mb-0.5">
+                                            {title}
                                         </div>
-                                    ) : (
-                                        /* Collapsed Vertical/Horizontal Photo Strip Panel */
-                                        <>
-                                            {imageUrl && (
-                                                <img
-                                                    src={imageUrl}
-                                                    alt={title}
-                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                                    onError={(e) => {
-                                                        e.currentTarget.style.display = 'none';
-                                                    }}
-                                                />
-                                            )}
-                                            <div className="absolute inset-0 bg-gradient-to-b from-[#141B2C]/75 via-[#00629D]/50 to-[#141B2C]/85 hover:from-[#00629D]/75 transition-colors duration-300" />
-                                            <div className="relative z-10 w-full h-full flex items-center justify-center p-2">
-                                                <span className="font-['Hanken_Grotesk'] font-bold text-[14px] lg:text-[22px] text-white drop-shadow-md whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180">
-                                                    {title}
+                                        <div className="font-['Hanken_Grotesk'] font-medium text-[#404750] text-[12px] lg:text-[14px]">
+                                            {company}
+                                        </div>
+                                        <p className="text-[12px] lg:text-[14px] text-[#404750] mt-2 font-['Hanken_Grotesk']">
+                                            {shortDesc}
+                                        </p>
+                                    </div>
+
+                                    {/* Map Container - always mounted once per branch so it loads only once */}
+                                    <div className={`rounded-[8px] overflow-hidden border border-[#E5E7EB] shadow-xs h-[110px] lg:h-[270px] w-full relative shrink-0 mt-2 lg:mt-3 bg-[#F5F5F5] ${isActive ? 'block' : 'hidden'}`}>
+                                        {mapUrl ? (
+                                            <iframe
+                                                src={mapUrl}
+                                                className="w-full h-full border-0"
+                                                allowFullScreen=""
+                                                loading="lazy"
+                                                referrerPolicy="strict-origin-when-cross-origin"
+                                                title={`${title} Google Map`}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                                                <MapPin className="w-8 h-8 text-slate-300 mb-1" />
+                                                <span className="font-['Hanken_Grotesk'] text-xs font-semibold text-slate-500">
+                                                    Location Map Not Available
+                                                </span>
+                                                <span className="font-['JetBrains_Mono'] text-[10px] text-slate-400 mt-0.5">
+                                                    Detailed coordinates available upon request
                                                 </span>
                                             </div>
-                                        </>
-                                    )}
+                                        )}
+                                    </div>
+
+                                    {/* Collapsed Vertical/Horizontal Photo Strip Panel */}
+                                    <div className={`absolute inset-0 transition-opacity duration-300 ${!isActive ? 'block' : 'hidden'}`}>
+                                        {imageUrl && (
+                                            <img
+                                                src={imageUrl}
+                                                alt={title}
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-b from-[#141B2C]/75 via-[#00629D]/50 to-[#141B2C]/85 hover:from-[#00629D]/75 transition-colors duration-300" />
+                                        <div className="relative z-10 w-full h-full flex items-center justify-center p-2">
+                                            <span className="font-['Hanken_Grotesk'] font-bold text-[14px] lg:text-[22px] text-white drop-shadow-md whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180">
+                                                {title}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             );
                         })}

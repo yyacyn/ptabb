@@ -17,6 +17,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
     const [editingClient, setEditingClient] = useState(null);
     const [deletingClient, setDeletingClient] = useState(null);
     const [previewLogo, setPreviewLogo] = useState(null);
+    const [logoError, setLogoError] = useState(null);
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
@@ -67,7 +68,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
         currentPage * itemsPerPage
     );
 
-    const { data, setData, post, processing, reset } = useForm({
+    const { data, setData, post, processing, reset, errors = {} } = useForm({
         _method: 'POST',
         name: '',
         category: 'Domestic',
@@ -282,7 +283,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                                         </div>
 
                                         {/* Action Bar */}
-                                        <div className="pt-3 flex items-center justify-between text-xs font-semibold border-t border-[#E5E7EB] mt-4">
+                                        <div className="pt-3 flex items-center justify-between text-xs font-semibold  border-[#E5E7EB] mt-4">
                                             <button 
                                                 onClick={() => openModal(item)}
                                                 className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
@@ -354,7 +355,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
             {/* Add / Edit Client Partner Modal */}
             <Modal show={isModalOpen} onClose={closeModal} maxWidth="md">
                 <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
-                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
+                    <div className="flex items-center justify-between  border-[#E5E7EB] pb-4 mb-5">
                         <div className="flex items-center gap-2">
                             <Building2 className="w-5 h-5 text-[#00629D]" />
                             <h3 className="text-lg font-bold text-[#141B2C]">
@@ -366,15 +367,22 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Company Name *</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                Company Name <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) => setData('name', e.target.value.slice(0, 255))}
                                 placeholder="e.g. PT. Semen Padang"
+                                maxLength={255}
                                 required
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
+                            {(data.name || '').length >= 255 && (
+                                <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (255 chars).</p>
+                            )}
+                            {errors?.name && <p className="text-xs text-rose-500 mt-1">{errors.name}</p>}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -395,10 +403,14 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                                 <input
                                     type="text"
                                     value={data.country}
-                                    onChange={(e) => setData('country', e.target.value)}
+                                    onChange={(e) => setData('country', e.target.value.slice(0, 100))}
                                     placeholder="e.g. Indonesia / Singapore"
+                                    maxLength={100}
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
+                                {(data.country || '').length >= 100 && (
+                                    <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (100 chars).</p>
+                                )}
                             </div>
                         </div>
 
@@ -412,14 +424,28 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                                 accept="image/*"
                                 onChange={(e) => {
                                     const file = e.target.files[0];
-                                    if (file) {
-                                        setData('logo', file);
-                                        setPreviewLogo(URL.createObjectURL(file));
+                                    setLogoError(null);
+                                    if (!file) return;
+                                    const isImg = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|svg)$/i.test(file.name);
+                                    if (!isImg) {
+                                        setLogoError('The logo must be a valid image file (jpeg, png, jpg, webp, svg).');
+                                        setData('logo', null);
+                                        e.target.value = null;
+                                        return;
                                     }
+                                    if (file.size > 5 * 1024 * 1024) {
+                                        setLogoError('The logo file size must not exceed 5MB.');
+                                        setData('logo', null);
+                                        e.target.value = null;
+                                        return;
+                                    }
+                                    setData('logo', file);
+                                    setPreviewLogo(URL.createObjectURL(file));
                                 }}
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 bg-[#F5F5F5] file:mr-3 file:py-1 file:px-2.5 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
                             />
-                            <p className="text-[11px] text-slate-400 mt-1">Leave blank to keep existing logo</p>
+                            <p className="text-[11px] text-slate-400 mt-1">Leave blank to keep existing logo (PNG, JPG, SVG, WEBP max 5MB)</p>
+                            {(logoError || errors?.logo) && <p className="text-xs text-rose-500 mt-1 font-medium">{logoError || errors.logo}</p>}
 
                             {previewLogo && (
                                 <div className="mt-3 flex items-center gap-3 bg-[#F5F5F5] p-3 rounded-[6px] border border-[#E5E7EB]">
@@ -435,7 +461,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                             )}
                         </div>
 
-                        <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+                        <div className="pt-4  border-[#E5E7EB] flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={closeModal}
@@ -473,7 +499,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                         This action cannot be undone.
                     </p>
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E5E7EB]">
+                    <div className="flex items-center justify-end gap-3 pt-4  border-[#E5E7EB]">
                         <button
                             type="button"
                             onClick={() => setDeletingClient(null)}

@@ -1,10 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
-import { Users, Plus, Shield, Edit2, Trash2, AlertTriangle, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Plus, Shield, Edit2, Trash2, AlertTriangle, Eye, EyeOff, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 
 export default function UsersManagement({ users = [] }) {
+    const currentUser = usePage().props.auth.user;
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,9 +45,14 @@ export default function UsersManagement({ users = [] }) {
     };
 
     const confirmDelete = (user) => {
+        if (currentUser && (intId(currentUser.id) === intId(user.id))) {
+            return;
+        }
         setDeletingUser(user);
         setDeleteModalOpen(true);
     };
+
+    const intId = (val) => parseInt(val) || 0;
 
     const closeDeleteModal = () => {
         setDeletingUser(null);
@@ -171,12 +177,18 @@ export default function UsersManagement({ users = [] }) {
                                                 >
                                                     <Edit2 className="w-3.5 h-3.5" /> Edit
                                                 </button>
-                                                <button
-                                                    onClick={() => confirmDelete(u)}
-                                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-600 hover:text-white text-red-600 rounded-[6px] text-xs font-semibold transition-colors cursor-pointer"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" /> Delete
-                                                </button>
+                                                {currentUser && parseInt(currentUser.id) === parseInt(u.id) ? (
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-[6px] text-xs font-semibold cursor-not-allowed" title="Self-deletion blocked for active Super Admin account (BR-01)">
+                                                        <Lock className="w-3.5 h-3.5" /> Self
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => confirmDelete(u)}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-600 hover:text-white text-red-600 rounded-[6px] text-xs font-semibold transition-colors cursor-pointer"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -239,7 +251,7 @@ export default function UsersManagement({ users = [] }) {
             {/* Add / Edit User Modal */}
             <Modal show={isModalOpen} onClose={closeModal} maxWidth="md">
                 <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
-                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
+                    <div className="flex items-center justify-between  border-[#E5E7EB] pb-4 mb-5">
                         <div className="flex items-center gap-2">
                             <Users className="w-5 h-5 text-[#00629D]" />
                             <h3 className="text-lg font-bold text-[#141B2C]">
@@ -251,29 +263,41 @@ export default function UsersManagement({ users = [] }) {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Full Name *</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                Full Name <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) => setData('name', e.target.value.slice(0, 255))}
                                 placeholder="e.g. Jane Doe"
+                                maxLength={255}
                                 required
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
+                            {(data.name || '').length >= 255 && (
+                                <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (255 chars).</span>
+                            )}
                             {errors.name && <span className="text-red-500 text-[11px] mt-1 block">{errors.name}</span>}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-[#141B2C] mb-1">Username *</label>
+                                <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                    Username <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="text"
                                     value={data.username}
-                                    onChange={(e) => setData('username', e.target.value)}
+                                    onChange={(e) => setData('username', e.target.value.slice(0, 100))}
                                     placeholder="e.g. jane_admin"
+                                    maxLength={100}
                                     required
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
+                                {(data.username || '').length >= 100 && (
+                                    <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (100 chars).</span>
+                                )}
                                 {errors.username && <span className="text-red-500 text-[11px] mt-1 block">{errors.username}</span>}
                             </div>
 
@@ -294,28 +318,35 @@ export default function UsersManagement({ users = [] }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Email Address *</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                Email Address <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="email"
                                 value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
+                                onChange={(e) => setData('email', e.target.value.slice(0, 255))}
                                 placeholder="e.g. admin@ptabb.com"
+                                maxLength={255}
                                 required
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
+                            {(data.email || '').length >= 255 && (
+                                <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (255 chars).</span>
+                            )}
                             {errors.email && <span className="text-red-500 text-[11px] mt-1 block">{errors.email}</span>}
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-[#141B2C] mb-1">
-                                {editingUser ? 'Password (leave blank to keep unchanged)' : 'Password *'}
+                                {editingUser ? 'Password (leave blank to keep unchanged)' : <>Password <span className="text-red-500">*</span></>}
                             </label>
                             <div className="relative">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
+                                    onChange={(e) => setData('password', e.target.value.slice(0, 255))}
                                     placeholder="••••••••"
+                                    maxLength={255}
                                     required={!editingUser}
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 pr-10 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
@@ -331,10 +362,10 @@ export default function UsersManagement({ users = [] }) {
                                     )}
                                 </button>
                             </div>
-                            {errors.password && <span className="text-red-500 text-[11px] mt-1 block">{errors.password}</span>}
+                            {errors?.password && <span className="text-rose-500 text-[11px] font-medium mt-1 block">{errors.password}</span>}
                         </div>
 
-                        <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+                        <div className="pt-4  border-[#E5E7EB] flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={closeModal}

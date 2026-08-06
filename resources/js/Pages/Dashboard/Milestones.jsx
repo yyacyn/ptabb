@@ -56,7 +56,7 @@ export default function Milestones({ milestones = [] }) {
         currentPage * itemsPerPage
     );
 
-    const { data, setData, post, processing, reset } = useForm({
+    const { data, setData, post, processing, reset, errors = {} } = useForm({
         year: new Date().getFullYear().toString(),
         milestone: '',
         description: '',
@@ -233,7 +233,7 @@ export default function Milestones({ milestones = [] }) {
                                     </div>
 
                                     {/* Action Bar */}
-                                    <div className="pt-3 border-t border-[#E5E7EB] mt-4 flex items-center justify-between text-xs font-semibold">
+                                    <div className="pt-3  border-[#E5E7EB] mt-4 flex items-center justify-between text-xs font-semibold">
                                         <button 
                                             type="button"
                                             onClick={() => openModal(item)}
@@ -309,7 +309,7 @@ export default function Milestones({ milestones = [] }) {
             {/* Add / Edit Milestone Modal */}
             <Modal show={isModalOpen} onClose={closeModal} maxWidth="md">
                 <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
-                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
+                    <div className="flex items-center justify-between  border-[#E5E7EB] pb-4 mb-5">
                         <div className="flex items-center gap-2">
                             <Flag className="w-5 h-5 text-[#00629D]" />
                             <h3 className="text-lg font-bold text-[#141B2C]">
@@ -321,7 +321,9 @@ export default function Milestones({ milestones = [] }) {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Year *</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                Year <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="number"
                                 min="1900"
@@ -334,15 +336,22 @@ export default function Milestones({ milestones = [] }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#141B2C] mb-1">Milestone Headline / Title *</label>
+                            <label className="block text-xs font-bold text-[#141B2C] mb-1">
+                                Milestone Headline / Title <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={data.milestone}
-                                onChange={(e) => setData('milestone', e.target.value)}
+                                onChange={(e) => setData('milestone', e.target.value.slice(0, 255))}
+                                maxLength={255}
                                 placeholder="e.g. Company Incorporation / ISO 9001 Certification"
                                 required
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                             />
+                            {(data.milestone || '').length >= 255 && (
+                                <span className="text-amber-600 text-[11px] font-['JetBrains_Mono'] mt-1 block">Maximum limit reached (255 chars).</span>
+                            )}
+                            {errors?.milestone && <span className="text-rose-500 text-[11px] mt-1 block">{errors.milestone}</span>}
                         </div>
 
                         <div>
@@ -396,7 +405,7 @@ export default function Milestones({ milestones = [] }) {
                             )}
                         </div>
 
-                        <div className="pt-4 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+                        <div className="pt-4  border-[#E5E7EB] flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={closeModal}
@@ -434,7 +443,7 @@ export default function Milestones({ milestones = [] }) {
                         This action cannot be undone.
                     </p>
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E5E7EB]">
+                    <div className="flex items-center justify-end gap-3 pt-4  border-[#E5E7EB]">
                         <button
                             type="button"
                             onClick={() => setDeletingMilestone(null)}
