@@ -126,6 +126,17 @@ export default function Edit({ fleet = null, categories = [] }) {
         e.preventDefault();
         if (!newCatName.trim()) return;
 
+        if (newCatName.trim().length > 255) {
+            setCatError('The category name must not be greater than 255 characters.');
+            return;
+        }
+
+        const isDuplicate = categoriesList.some(c => (c.name || '').toLowerCase().trim() === newCatName.toLowerCase().trim());
+        if (isDuplicate) {
+            setCatError('A vessel category with this name already exists.');
+            return;
+        }
+
         setSubmittingCat(true);
         setCatError(null);
 
@@ -167,7 +178,7 @@ export default function Edit({ fleet = null, categories = [] }) {
             const errMsg = err.response?.data?.errors?.name?.[0]
                         || err.response?.data?.errors?.description?.[0]
                         || err.response?.data?.message 
-                        || 'Failed to add vessel category. Please try again.';
+                        || 'A category with this name already exists.';
             setCatError(errMsg);
         } finally {
             setSubmittingCat(false);
@@ -1038,20 +1049,30 @@ export default function Edit({ fleet = null, categories = [] }) {
                                 <input
                                     type="text"
                                     value={newCatName}
-                                    onChange={(e) => setNewCatName(e.target.value)}
+                                    onChange={(e) => setNewCatName(e.target.value.slice(0, 255))}
+                                    maxLength={255}
                                     placeholder="e.g. Chemical Tanker, Floating Crane, Offshore Tug"
                                     required
                                     className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 focus:border-[#00629D] focus:ring-[#00629D]"
                                 />
+                                {(newCatName || '').length >= 255 && (
+                                    <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (255 chars).</p>
+                                )}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
-                                    Category Description <span className="text-slate-400 font-normal">(Optional)</span>
-                                </label>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="text-xs font-bold text-[#141B2C]">
+                                        Category Description <span className="text-slate-400 font-normal">(Optional)</span>
+                                    </label>
+                                    <span className={`font-['JetBrains_Mono'] text-[11px] ${(newCatDesc || '').length >= 450 ? 'text-amber-600 font-bold' : 'text-[#8AAFC8]'}`}>
+                                        {(newCatDesc || '').length} / 500 chars
+                                    </span>
+                                </div>
                                 <textarea
                                     value={newCatDesc}
-                                    onChange={(e) => setNewCatDesc(e.target.value)}
+                                    onChange={(e) => setNewCatDesc(e.target.value.slice(0, 500))}
+                                    maxLength={500}
                                     rows={3}
                                     placeholder="Short description of this vessel category fleet..."
                                     className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 focus:border-[#00629D] focus:ring-[#00629D]"

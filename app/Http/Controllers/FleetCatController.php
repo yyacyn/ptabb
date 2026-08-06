@@ -26,7 +26,12 @@ class FleetCatController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:fleet_categories,name',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
+        ], [
+            'name.required' => 'The vessel category name is required.',
+            'name.max' => 'The category name must not be greater than 255 characters.',
+            'name.unique' => 'A vessel category with this name already exists.',
+            'description.max' => 'The category description must not be greater than 500 characters.',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -37,8 +42,12 @@ class FleetCatController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        if ($request->wantsJson()) {
-            return response()->json($category, 201);
+        if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
+            return response()->json([
+                'status' => 'success',
+                'category' => $category,
+                'categories' => FleetCategory::all(),
+            ], 201);
         }
 
         return back()->with('success', 'Fleet category created successfully.');
@@ -50,7 +59,12 @@ class FleetCatController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:fleet_categories,name,' . $id,
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
+        ], [
+            'name.required' => 'The vessel category name is required.',
+            'name.max' => 'The category name must not be greater than 255 characters.',
+            'name.unique' => 'A vessel category with this name already exists.',
+            'description.max' => 'The category description must not be greater than 500 characters.',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -61,8 +75,12 @@ class FleetCatController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        if ($request->wantsJson()) {
-            return response()->json($category);
+        if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
+            return response()->json([
+                'status' => 'success',
+                'category' => $category,
+                'categories' => FleetCategory::all(),
+            ]);
         }
 
         return back()->with('success', 'Fleet category updated successfully.');

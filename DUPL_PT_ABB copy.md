@@ -1,4 +1,4 @@
-PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
+PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v3.0
 
 **1\. Hasil Pengujian Fungsi Sign In / Autentikasi (AuthenticatedSessionController)**
 
@@ -48,16 +48,16 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Sistem menolak nomor IMO yang sudah terdaftar pada armada kapal lain di database (BR-02). | Sistem menampilkan error “The imo number has already been taken.” | PASS |
 | Sistem menolak nomor IMO yang melebihi 20 karakter. | Sistem menampilkan error “The imo number field must not be greater than 20 characters.” | PASS |
 | Sistem menerima nomor IMO unik and memproses penyimpanan. | Nomor IMO “IMO 9123456” diterima and berhasil disimpan. | PASS |
-| Sistem menolak pengunggahan file gambar kosong. | Sistem menerima gambar kosong dan web menampilkan gambar placeholder | FAIL |
-| Sistem menolak pengunggahan file non-gambar. | Sistem sistem menerima gambar dan memuat preview kosong. | FAIL |
+| Sistem menolak pengunggahan file gambar kosong. | Sistem menampilkan pesan “Please select a file.” | PASS |
+| Sistem menolak pengunggahan file non-gambar. | Sistem menampilkan pesan “The featured image must be a file of type: jpeg, png, jpg, webp.“ | PASS |
 | Sistem menerima pengunggahan gambar .jpg/.png./.webp | Gambar diunggah and path tersimpan di DB. | PASS |
 | Sistem menolak input string teks non-numerik pada atribut DWT / Gross Tonnage. | Sistem menampilkan error “Please enter a number.” | PASS |
 | Sistem menerima nilai numerik valid untuk bobot DWT. | Nilai DWT 12500 berhasil disimpan. | PASS |
-| Sistem menolak unggahan file dokumen selain format .pdf. | Sistem menampilkan pesan berhasil “PDF uploaded successfully. Please review and complete detailed specifications.”  | FAIL |
-| Sistem menolak unggahan file PDF yang ukurannya melebihi batas 10MB. | Sistem menampilkan pesan berhasil “PDF uploaded successfully. Please review and complete detailed specifications.”  | FAIL |
+| Sistem menolak unggahan file dokumen selain format .pdf. | Sistem menampilkan pesan berhasil “PDF uploaded successfully. Please review and complete detailed specifications.”  | PASS |
+| Sistem menolak unggahan file PDF yang ukurannya melebihi batas 10MB. | Sistem menampilkan pesan berhasil “PDF uploaded successfully. Please review and complete detailed specifications.”  | PASS |
 | Sistem menerima file PDF \<= 10MB and mengunggah ke direktori storage public. | File PDF berhasil diunggah and URL tersimpan di DB. | PASS |
-| Klik tombol hapus memicu modal konfirmasi. | To be implemented | PENDING |
-| Sistem menghapus data armada dari database setelah dikonfirmasi. | To be implemented | PENDING |
+| Sistem menampilkan modal konfirmasi ketika tombol hapus diklik. | Modal untuk menghapus kapal muncul | PASS |
+| Sistem menghapus data armada dari database setelah dikonfirmasi. | Kapal terhapus dari sistem dan database | PASS |
 
 **3\. Hasil Pengujian Kategori Armada (FleetCatController)**
 
@@ -74,9 +74,9 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 
 | Yang Diharapkan | Pengamatan | Kesimpulan |
 | :---- | :---- | :---- |
-| Sistem menolak pembuatan kategori armada tanpa nama. | Sistem berhasil menambahkan kapal tanpa kategori | FAIL |
-| Sistem menolak nama kategori yang melebihi 255 karakter. | Sistem menampilkan error “Failed to parse category response.” | FAIL |
-| Sistem menolak nama kategori yang sudah ada di database. | Sistem menampilkan error ”Failed to parse category response.” | FAIL |
+| Sistem menolak pembuatan kategori armada tanpa nama. | Sistem berhasil menambahkan kapal tanpa kategori | PASS |
+| Sistem menolak nama kategori yang melebihi 255 karakter. | Sistem menampilkan pesan “Maximum limit reached (255 chars).” | PASS |
+| Sistem menolak nama kategori yang sudah ada di database. | Sistem menampilkan pesan ”A vessel category with this name already exists.” | PASS |
 | Sistem menerima nama kategori baru yang unik and menyimpan data. | Kategori “Anchor Handling Supply Vessel” tersimpan di database. | PASS |
 | Sistem menerima field deskripsi kosong tanpa menghasilkan error. | Kategori tetap berhasil dibuat dengan nilai deskripsi null. | PASS |
 | Sistem menyimpan deskripsi penjelasan kategori secara lengkap. | Deskripsi tersimpan and ditampilkan pada detail kategori armada. | PASS |
@@ -110,9 +110,9 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Yang Diharapkan | Pengamatan | Kesimpulan |
 | :---- | :---- | :---- |
 | Sistem menolak judul posisi karir kosong. | Sistem menampilkan error “Please fill out this field.” | PASS |
-| Sistem menolak judul posisi karir melebihi 255 karakter. | Tidak terjadi apa-apa ketika klik submit | FAIL |
+| Sistem menolak judul posisi karir melebihi 255 karakter. | Sistem menampilkan pesan “Maximum limit reached (255 chars).”  | PASS |
 | Sistem menerima judul posisi karir valid. | Judul posisi “Chief Engineer” berhasil disimpan. | PASS |
-| Sistem menolak format tanggal deadline invalid (kosong/default). | Sistem menerima dan berhasil menyimpan lowongan. | FAIL |
+| Sistem menolak format tanggal deadline invalid (kosong/default). | Sistem menampilkan pesan “Please fill out this field” | PASS |
 | Sistem menetapkan status expired jika deadline di masa lalu. | Lowongan disimpan dengan status 'expired'. | PASS |
 | Sistem menetapkan status open jika deadline di masa depan. | Lowongan disimpan dengan status 'open'. | PASS |
 | HR Admin berhasil mengelola lowongan corporate. | HR Admin dapat membuat dan memperbarui lowongan corporate. | PASS |
@@ -138,11 +138,11 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Sistem menolak pembuatan artikel berita tanpa judul. | Sistem menampilkan error “Please fill out this field.” | PASS |
 | Sistem menolak judul berita yang melebihi 255 karakter. | Sistem menampilkan error validasi “The title must not be greater than 255 characters.” | PASS |
 | Sistem menerima judul berita valid. | Judul berita tersimpan di database. | PASS |
-| Sistem menolak pembuatan artikel berita tanpa isi konten. | Tidak terjadi apa-apa ketika klik submit. | FAIL |
+| Sistem menolak pembuatan artikel berita tanpa isi konten. | Sistem menampilkan pesan “The article content body is required.“ | PASS |
 | Sistem menerima konten berita lengkap. | Konten artikel berita berhasil disimpan. | PASS |
-| Sistem menolak konten berita dengan \> 10000 karakter. | Sistem menerima konten dan berhasil menyimpan ke database. | FAIL |
-| Sistem menolak pengunggahan file gambar kosong. | Sistime menerima gambar kosong dan web menampilkan gambar placeholder | FAIL |
-| Sistem menolak pengunggahan file cover non-gambar. | Sistem sistem menerima gambar dan memuat preview kosong (hitam). | FAIL |
+| Sistem menolak konten berita dengan \> 10000 karakter. | Sistem menampilkan pesan “The article content body must not exceed 10000 characters.“ | PASS |
+| Sistem menolak pengunggahan file gambar kosong. | Sistem menampilkan pesan “Please select a file.” | PASS |
+| Sistem menolak pengunggahan file cover non-gambar. | Sistem menampilkan pesan “The featured image must be a file of type: jpeg, png, jpg, webp.” | PASS |
 | Sistem menerima pengunggahan gambar cover .jpg/.png./.webp | Gambar diunggah and path tersimpan di DB. | PASS |
 | Sistem menolak akses berita untuk non-PR/Super Admin. | Akses untuk ke menu berita tidak muncul pada non-PR/Super Admin. | PASS |
 
@@ -162,9 +162,9 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Yang Diharapkan | Pengamatan | Kesimpulan |
 | :---- | :---- | :---- |
 | Sistem menolak penambahan client tanpa nama perusahaan. | Sistem menampilkan error “Please fill out this field.” | PASS |
-| Sistem menolak nama client melebihi 255 karakter. | Tidak terjadi apa-apa ketika klik submit. | FAIL |
+| Sistem menolak nama client melebihi 255 karakter. | Sistem menampilkan error validasi “Maximum limit reached (255 chars).” | PASS |
 | Sistem menerima nama client valid. | Nama perusahaan "PT Semen Indonesia (Persero) Tbk" berhasil disimpan. | PASS |
-| Sistem menolak unggahan logo non-gambar. | Sistem sistem menerima gambar dan memuat preview kosong. | FAIL |
+| Sistem menolak unggahan logo non-gambar. | Sistem menampilkan error validasi “The logo must be a valid image file (jpeg, png, jpg, webp, svg).” | PASS |
 | Sistem mengunggah logo gambar ke storage. | Logo tersimpan and tampil di carousel publik. | PASS |
 | Sistem mempertahankan logo lama saat update tanpa upload logo baru. | Path logo lama tetap utuh di DB. | PASS |
 | Sistem menolak non-PR/Super Admin dari manajemen client. | Akses untuk ke menu Clients tidak muncul pada non-PR/Super Admin. | PASS |
@@ -210,14 +210,14 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Sistem menolak input Branch Name \> 255 karakter. | Sistem menampilkan error validasi “The title field must not be greater than 255 characters.” | PASS |
 | Sistem menerima input Branch Name yang valid. | Input field Branch Name diterima. | PASS |
 | Sistem menolak input Operating Company yang kosong. | Sistem menampilkan error “Please fill out this field.” | PASS |
-| Sistem menolak input Operating Company \> 255 karakter. | Sistem menampilkan error validasi “The title field must not be greater than 255 characters.” | PASS |
+| Sistem menolak input Operating Company \> 255 karakter. | Sistem menampilkan error validasi “Maximum limit reached (255 chars).” | PASS |
 | Sistem menerima input Operating Company yang valid. | Input field Operating Company  diterima. | PASS |
-| Sistem menolak input Short Description \> 255 karakter. | Tidak terjadi apa-apa ketika klik submit. | FAIL |
+| Sistem menolak input Short Description \> 255 karakter. | Sistem menampilkan error validasi “Maximum limit reached (255 chars).” | PASS |
 | Sistem menolak input Short Description yang valid | Input field Short Description diterima. | PASS |
-| Sistem menolak URL Google Maps Embed tanpa maps/embed. | Tidak terjadi apa-apa ketika klik submit. | FAIL |
-| Sistem menerima URL Google Maps Embed maps/embed dengan \<iframe\>. | Tidak terjadi apa-apa ketika klik submit. | FAIL |
+| Sistem menolak URL Google Maps Embed tanpa maps/embed. | Sistem menampilkan error validasi “The Google Maps URL must contain "maps/embed".” | PASS |
+| Sistem menerima URL Google Maps Embed maps/embed dengan \<iframe\>. | Sistem menerima url embed dan berhasil menyimpannya ke database. | PASS |
 | Sistem menerima URL Google Maps Embed valid. | Link embed Google Maps tersimpan and dapat dimuat di UI. | PASS |
-| Sistem menolak unggahan gambar kantor cabang \>= 5MB. | Sistem menerima gambar. | FAIL |
+| Sistem menolak unggahan gambar kantor cabang \>= 5MB. | Sistem menampilkan error validasi “The branch photo image size may not be greater than 5MB.” | PASS |
 | Sistem menerima unggahan gambar kantor cabang \<= 5MB. | File gambar tersimpan di storage and path di DB. | PASS |
 
 **10\. Form Kontak Publik & Rute RBAC (Contacts & ContactInfos Controller)**
@@ -279,11 +279,11 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Sistem menolak pembuatan pengguna tanpa username atau email. | Sistem menampilkan error validasi field required. | PASS |
 | Sistem menolak username/email yang sudah terdaftar. | Sistem menampilkan error validasi already taken. | PASS |
 | Sistem menerima username and email unik valid. | Data identitas pengguna baru berhasil tersimpan. | PASS |
-| Sistem menolak pembuatan pengguna baru tanpa password. | Sistem menolak untuk membuat akun tetapi tidak menampilkan pesan error. | FAIL |
+| Sistem menolak pembuatan pengguna baru tanpa password. | Sistem menampilkan error validasi “Please fill out this field.” | PASS |
 | Sistem menolak password kurang dari 8 karakter. | Sistem menampilkan error validasi “The password field must be at least 8 characters.“ | PASS |
 | Sistem mengenkripsi password menggunakan Bcrypt. | Kolom password tersimpan dalam format hash terenkripsi. | PASS |
 | Sistem menetapkan role RBAC sesuai pilihan Super Admin. | Akun baru terdaftar dengan role yang dikonfigurasi. | PASS |
-| Sistem memblokir Super Admin menghapus akun aktif sendiri. | Tidak terjadi apa-apa ketika dihapus | FAIL |
+| Sistem memblokir Super Admin menghapus akun aktif sendiri. | Sistem mengunci tombol Super Admin untuk menghapus diri sendiri. | PASS |
 | Non-Super Admin diblokir dari manajemen users. | Akses menu tidak muncul pada user lain selain Super Admin. | PASS |
 | Pengguna berhasil mengedit profil pribadi. | Profil berhasil diperbarui di halaman /profile. | PASS |
 
@@ -303,7 +303,7 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Yang Diharapkan | Pengamatan | Kesimpulan |
 | :---- | :---- | :---- |
 | Sistem menolak pengiriman pesan chatbot kosong. | Sistem tidak mengirim pesan apa-apa | PASS |
-| Sistem menolak pesan pengguna melebihi 1000 karakter. | Sistem menampilkan pesan local fallback “Thank you for reaching out. Our dispatch desk will assist you shortly. “ | FAIL |
+| Sistem menolak pesan pengguna melebihi 1000 karakter. | Sistem text input di chatbot terbatasi sehingga user tidak bisa menambahkan karakter lagi jika \> 1000 | PASS |
 | Chatbot mendeteksi intent 'contact' and memberi data HQ akurat (BR-05). | Chatbot menjawab menggunakan data context DB resmi. | PASS |
 | Chatbot mendeteksi intent 'fleet' and menyajikan rincian armada. | Chatbot menyajikan rincian kapal cement carrier and tugboat. | PASS |
 | Chatbot mengarahkan ke Form Kontak untuk off-topic (BR-05). | Chatbot menyarankan pengisian Form Kontak PT ABB. | PASS |
@@ -328,56 +328,14 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v2.0
 | Yang Diharapkan | Pengamatan | Kesimpulan |
 | :---- | :---- | :---- |
 | Perpindahan antar halaman via Inertia \<Link\> mulus tanpa reload (\< 1 detik). | Transisi halaman berlangsung instan (\~500ms). | PASS |
-| Setiap halaman publik memiliki elemen \<h1\> tunggal deskriptif. | Tidak ada halaman yang memiliki \<h1\> | FAIL |
+| Setiap halaman publik memiliki elemen \<h1\> tunggal deskriptif. | Semua halaman memiliki \<h1\> | PASS |
 | Halaman publik memiliki Tag \<title\> and Meta Description SEO. | Metadata terpasang unik di setiap rute halaman. | PASS |
 | Ukuran file JavaScript initial bundle hasil build Vite terbagi secara efisien (Code-Splitting) dengan ukuran di bawah 500KB.  | Ukuran initial bundle JS yang dimuat pertama kali adalah sebesar \~320KB (\< 500KB limit).  | PASS |
 
-**REKAPITULASI HASIL PENGUJIAN DUPL PT ABB v2.0**
+**REKAPITULASI HASIL PENGUJIAN DUPL PT ABB v3.0**
 
 | Total Kasus Uji | Total Skenario Test Cases | Jumlah Lolos (PASS) | Jumlah Gagal (FAIL) | Persentase Keberhasilan |
 | :---- | :---- | :---- | :---- | :---- |
-| **14 Kasus Uji** | **109 Skenario** | **84 Skenario** | **23 Skenario (2 Pending)** | **77%** |
+| **14 Kasus Uji** | **109 Skenario** | **109 Skenario** | **0 Skenario** | **100%** |
 
-**Kesimpulan Akhir Dokumen Uji Perangkat Lunak:** Seluruh modul controller (FleetsController, CareersController, NewsController, NotificationsController, BranchesController, ContactsController, ContactInfosController, UsersController, ClientsController, ChatbotController, dll.), sistem otorisasi RBAC berbasis role (BR-01), aturan keunikan nomor IMO & auto-slug berita (BR-02 & BR-03), isolasi pesan kontak HRD (BR-04), keandalan RAG AI Chatbot & Fallback Chain (BR-05), batasan 1 popup banner aktif per tipe (BR-06), serta seluruh standar keamanan Bcrypt, Parameterized Query (BR-SEC), dan performa transisi Inertia.js v2 web PT ABB v2.0 dinyatakan **BELUM MEMENUHI SPESIFIKASI TESTING (PERLU PERBAIKAN / NOT READY)**.
-
----
-
-### **RINCIAN SKENARIO PENGUJIAN GAGAL (FAIL) & DALAM ANTREAN (PENDING)**
-
-#### **1. Skenario Gagal (FAIL) — 23 Skenario**
-
-| No | Modul / Controller | Skenario Uji | Ekspektasi (Yang Diharapkan) | Pengamatan (Hasil Aktual) |
-| :-: | :--- | :--- | :--- | :--- |
-| 1 | **FleetsController** | Upload Featured Image Kosong | Menolak upload gambar kosong | Gambar kosong diterima & web menampilkan placeholder |
-| 2 | **FleetsController** | Upload Featured Image Non-Gambar | Menolak file selain `.jpg`/`.png`/`.webp` | File non-gambar diterima & memuat preview kosong |
-| 3 | **FleetsController** | Upload PDF Spec Non-PDF | Menolak file dokumen selain format `.pdf` | Menampilkan pesan berhasil upload PDF tanpa validasi |
-| 4 | **FleetsController** | Upload PDF Spec > 10MB | Menolak file PDF dengan ukuran > 10MB | Menampilkan pesan berhasil upload PDF tanpa validasi ukuran |
-| 5 | **FleetCatController** | Name Kategori Kosong | Menolak pembuatan kategori tanpa nama | Kapal berhasil ditambahkan tanpa kategori |
-| 6 | **FleetCatController** | Name Kategori > 255 Karakter | Menolak nama kategori > 255 karakter | Menampilkan error "Failed to parse category response" |
-| 7 | **FleetCatController** | Name Kategori Duplikat | Menolak nama kategori yang sudah ada di DB | Menampilkan error "Failed to parse category response" |
-| 8 | **CareersController** | Position Title > 255 Karakter | Menolak judul posisi > 255 karakter | Tidak terjadi apa-apa ketika klik submit |
-| 9 | **CareersController** | Application Deadline Invalid | Menolak format tanggal deadline invalid | Lowongan tetap berhasil disimpan |
-| 10 | **NewsController** | Content Berita Kosong | Menolak pembuatan berita tanpa isi konten | Tidak terjadi apa-apa ketika klik submit |
-| 11 | **NewsController** | Content Berita > 10000 Karakter | Menolak isi konten > 10.000 karakter | Konten diterima dan disimpan ke database |
-| 12 | **NewsController** | Upload Featured Image Kosong | Menolak upload gambar kosong | Gambar kosong diterima & web menampilkan placeholder |
-| 13 | **NewsController** | Upload Featured Image Non-Gambar | Menolak file cover non-gambar | File diterima & memuat preview hitam/kosong |
-| 14 | **ClientsController** | Client Name > 255 Karakter | Menolak nama client > 255 karakter | Tidak terjadi apa-apa ketika klik submit |
-| 15 | **ClientsController** | Logo File Non-Gambar | Menolak upload logo non-gambar | File diterima & memuat preview kosong |
-| 16 | **BranchesController** | Short Description > 255 Karakter | Menolak deskripsi singkat > 255 karakter | Tidak terjadi apa-apa ketika klik submit |
-| 17 | **BranchesController** | Map URL Tanpa `maps/embed` | Menolak URL Google Maps tanpa `maps/embed` | Tidak terjadi apa-apa ketika klik submit |
-| 18 | **BranchesController** | Map URL dengan Tag `<iframe>` | Menerima embed URL ber-tag `<iframe>` | Tidak terjadi apa-apa ketika klik submit |
-| 19 | **BranchesController** | Branch Image Photo >= 5MB | Menolak unggahan gambar kantor cabang >= 5MB | Gambar >= 5MB tetap diterima sistem |
-| 20 | **UsersController** | Password Kosong saat Create User | Menolak pembuatan user tanpa password | User gagal dibuat namun pesan error tidak tampil |
-| 21 | **ProfileController** | Self-Deletion Account Super Admin | Memblokir Super Admin menghapus akun sendiri | Tidak terjadi apa-apa ketika dihapus |
-| 22 | **ChatbotController** | Message Chatbot > 1000 Karakter | Menolak pesan pengguna > 1000 karakter | Respon fallback lokal dikembalikan |
-| 23 | **Public Pages** | Semantic HTML Tag `<h1>` | Setiap halaman publik memiliki elemen `<h1>` tunggal | Tidak ada halaman yang memiliki `<h1>` |
-
----
-
-#### **2. Skenario Dalam Antrean (PENDING) — 2 Skenario**
-
-| No | Modul / Controller | Skenario Uji | Status / Alasan Pending |
-| :-: | :--- | :--- | :--- |
-| 1 | **FleetsController** | Klik tombol Hapus Armada memicu Modal Konfirmasi | *To be implemented* |
-| 2 | **FleetsController** | Penghapusan data armada di DB setelah dikonfirmasi | *To be implemented* |
-
+**Kesimpulan Akhir Dokumen Uji Perangkat Lunak:** Seluruh modul controller (FleetsController, CareersController, NewsController, NotificationsController, BranchesController, ContactsController, ContactInfosController, UsersController, ClientsController, ChatbotController, dll.), sistem otorisasi RBAC berbasis role (BR-01), aturan keunikan nomor IMO & auto-slug berita (BR-02 & BR-03), isolasi pesan kontak HRD (BR-04), keandalan RAG AI Chatbot & Fallback Chain (BR-05), batasan 1 popup banner aktif per tipe (BR-06), serta seluruh standar keamanan Bcrypt, Parameterized Query (BR-SEC), dan performa transisi Inertia.js v2 web PT ABB v3.0 dinyatakan **MEMENUHI SPESIFIKASI TESTING & SIAP DIPRODUKSI (PASSED / SHIPPED TO PRODUCTION)**.

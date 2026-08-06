@@ -114,3 +114,5 @@ Laravel needs permission to write logs and cache files.
 3. Since your public files are separated from core files, if you have file uploads stored in `storage/app/public`, you will need to create a symlink from `/public_html/storage` to `/home/username/ptabb-core/storage/app/public`.
    - If you have SSH access, run: `ln -s /home/username/ptabb-core/storage/app/public /home/username/public_html/storage`
    - If you don't have SSH access, you can run this command via a simple PHP script or cron job in cPanel, then delete it.
+
+### Step 8:

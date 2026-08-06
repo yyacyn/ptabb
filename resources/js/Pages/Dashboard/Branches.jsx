@@ -154,14 +154,14 @@ export default function Branches({ branches = [] }) {
                                         <td className="py-4 px-3">
                                             <div className="font-bold text-center text-[#141B2C] text-sm">{b.sort_order}</div>
                                         </td>
-                                        <td className="py-4 px-5">
-                                            <div className="font-bold text-[#141B2C] text-sm">{b.name}</div>
-                                            <div className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] mt-0.5">{b.short_desc || '-'}</div>
+                                        <td className="py-4 px-5 max-w-[260px]">
+                                            <div className="font-bold text-[#141B2C] text-sm truncate" title={b.name}>{b.name}</div>
+                                            <div className="text-xs text-[#8AAFC8] font-['JetBrains_Mono'] mt-0.5 truncate" title={b.short_desc || ''}>{b.short_desc || '-'}</div>
                                         </td>
                                         <td className="py-4 px-5">
                                             {getTypeBadge(b.type)}
                                         </td>
-                                        <td className="py-4 px-5 font-[#404750] font-medium">
+                                        <td className="py-4 px-5 font-[#404750] font-medium max-w-[200px] truncate" title={b.company_name}>
                                             {b.company_name}
                                         </td>
                                         <td className="py-4 px-5 font-['JetBrains_Mono'] text-slate-600">
