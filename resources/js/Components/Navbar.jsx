@@ -17,7 +17,7 @@ export default function Navbar({ onScrollToSection }) {
         <header>
             {/* DESKTOP NAVBAR (lg: 1024px and above) */}
             <nav className="hidden lg:flex items-center justify-start gap-[7px] lg:mb-[7px] w-full bg-[#F0F5FA] py-2 fixed top-0 z-50">
-                
+
                 {/* Logo Box */}
                 <Link
                     href="/"

@@ -87,7 +87,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
             })
             .then(res => res.json())
             .then(data => {
-                const greetingText = data?.reply || "Hello, I am Sarah Wijaya, Senior Logistics & Chartering Specialist at PT. ABB. Welcome to our live portal. How can I assist you with vessel positioning, cargo quotes, or fleet inquiries today?";
+                const greetingText = data?.reply || "Hello, I am Sarah Wijaya, Customer Service at PT. ABB. Welcome to our live portal. How can I assist you with vessel positioning, cargo quotes, or fleet inquiries today?";
                 setChatMessages([{
                     sender: 'bot',
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -98,7 +98,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                 setChatMessages([{
                     sender: 'bot',
                     time: 'Just now',
-                    text: "Hello, I am Sarah Wijaya, PT. ABB Expert. Welcome to our live portal. How can I assist you today?"
+                    text: "Hello, I am Sarah Wijaya, PT. ABB Customer Service. Welcome to our live portal. How can I assist you today?"
                 }]);
             })
             .finally(() => {
@@ -238,7 +238,7 @@ export default function GuestLayout({ children, onScrollToSection }) {
                                             Sarah Wijaya
                                         </div>
                                         <div className="text-[11px] font-['JetBrains_Mono'] text-white/80">
-                                            PT. ABB Expert
+                                            PT. ABB Customer Service
                                         </div>
                                     </div>
                                 </div>

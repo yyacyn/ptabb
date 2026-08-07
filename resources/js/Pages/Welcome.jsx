@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import TallyNumber from '@/Components/TallyNumber';
 import NotificationPopup from '@/Components/NotificationPopup';
+import CtaBanner from '@/Components/CtaBanner';
 import {
     MapPin,
     ArrowRight,
@@ -184,7 +185,7 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                         >
                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                                 <Link
-                                    href={route('contacts.index')}
+                                    href={route('public.contacts')}
                                     className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center justify-center gap-2"
                                 >
                                     Book Shipment
@@ -193,14 +194,13 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                             </motion.div>
 
                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                                <a
-                                    href="#fleet"
-                                    onClick={(e) => { e.preventDefault(); scrollToSection('fleet'); }}
+                                <Link
+                                    href={route('public.fleets')}
                                     className="group rounded-[4px] border border-[#404750] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] transition-[colors,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.2)] inline-flex items-center justify-center gap-2"
                                 >
                                     Explore Fleet
                                     <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-1 group-active:translate-x-0" />
-                                </a>
+                                </Link>
                             </motion.div>
                         </motion.div>
                     </div>
@@ -292,7 +292,7 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                 transition={{ duration: 0.5 }}
                 className="bg-white rounded-[8px] border border-[#E5E7EB] py-6 px-4 sm:px-8  overflow-hidden relative"
             >
-                <p className="text-[11px] sm:text-[12px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-[#404750] mb-6 text-start">
+                <p className="text-[11px] sm:text-[12px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider text-[#00629D] mb-6 text-start">
                     TRUSTED BY INDUSTRY LEADERS NATIONALLY &amp; INTERNATIONALLY
                 </p>
 
@@ -422,7 +422,7 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                 <div className="flex justify-center pt-2">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                         <Link
-                            href={route('contacts.index')}
+                            href={route('public.contacts')}
                             className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                         >
                             Book Shipment
@@ -536,7 +536,7 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                     <div className="shrink-0 pt-1">
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                             <Link
-                                href={route('contacts.index')}
+                                href={route('public.contacts')}
                                 className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                             >
                                 Book Shipment
@@ -747,7 +747,7 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                                         <div className="flex flex-wrap items-center gap-3 pt-3 mt-3 border-[#E5E7EB]">
                                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                                                 <Link
-                                                    href={route('contacts.index')}
+                                                    href={route('public.contacts')}
                                                     className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[opacity,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2"
                                                 >
                                                     Book Shipment
@@ -757,7 +757,7 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
 
                                             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                                                 <Link
-                                                    href={safeRoute('fleets.index', '/fleets')}
+                                                    href={currentVessel.id ? route('public.fleets.show', currentVessel.id) : route('public.fleets')}
                                                     className="group rounded-[4px] border border-[#404750] px-[24px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] hover:text-[#00629D] hover:border-[#00629D] transition-[colors,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.2)] inline-flex items-center gap-2"
                                                 >
                                                     View Full Specs
@@ -818,34 +818,12 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
             </motion.div>
 
             {/* 7. Call To Action Conversion Banner */}
-            <motion.div
-                id="cta"
-                initial={{ opacity: 0, scale: 0.97 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6 }}
-                className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white rounded-[8px] p-8 sm:p-12 text-center relative overflow-hidden"
-            >
-                <div className="max-w-[708px] mx-auto flex flex-col items-center gap-6 relative z-10">
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[36px] lg:text-[44px] leading-[1.05] text-white">
-                        Ready to Streamline Your Bulk Cargo Logistics?
-                    </h2>
-
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 leading-relaxed">
-                        Partner with PT. ABB for reliable vessel chartering, pneumatic bulk cement shipping, and dedicated maritime operations across regional &amp; global routes.
-                    </p>
-
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                        <Link
-                            href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[shadow,transform]"
-                        >
-                            Request Charter Proposal
-                            <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
-                        </Link>
-                    </motion.div>
-                </div>
-            </motion.div>
+            <CtaBanner
+                title="Ready to Streamline Your Bulk Cargo Logistics?"
+                description="Partner with PT. ABB for reliable vessel chartering, pneumatic bulk cement shipping, and dedicated maritime operations across regional & global routes."
+                buttonLabel="Request Charter Proposal"
+                buttonRoute="public.contacts"
+            />
         </GuestLayout>
     );
 }

@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
+import CtaBanner from '@/Components/CtaBanner';
 import {
     Ship,
     Globe,
@@ -177,7 +178,7 @@ export default function Services({ fleets = EMPTY_FLEETS, clients = EMPTY_CLIENT
                         <div className="flex flex-wrap items-center gap-3">
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <Link
-                                    href={route('contacts.index')}
+                                    href={route('public.contacts')}
                                     className="group inline-flex items-center justify-center bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] transition-[opacity,shadow] duration-200"
                                 >
                                     Book Shipment
@@ -187,6 +188,13 @@ export default function Services({ fleets = EMPTY_FLEETS, clients = EMPTY_CLIENT
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <a
                                     href="#charter-types"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const element = document.getElementById('charter-types');
+                                        if (element) {
+                                            element.scrollIntoView({ behavior: 'smooth' });
+                                        }
+                                    }}
                                     className="inline-flex items-center justify-center bg-white border border-[#404750] text-[#404750] hover:text-[#00629D] hover:border-[#00629D] font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] transition-[colors,shadow] duration-200 hover:shadow-[0_4px_14px_rgba(0,98,157,0.15)]"
                                 >
                                     Explore Charter Solutions
@@ -597,33 +605,12 @@ export default function Services({ fleets = EMPTY_FLEETS, clients = EMPTY_CLIENT
 
 
             {/* 5. CTA Banner Section */}
-            <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden "
-            >
-                <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[40px] tracking-tight mb-4 text-white">
-                        Need Custom Marine Logistics or Vessel Chartering?
-                    </h2>
-
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
-                        Whether you require a dedicated time charter, or an urgent voyage freight proposal, our operations team is ready to tailor a solution for your cargo needs.
-                    </p>
-
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                        <Link
-                            href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[shadow,transform]"
-                        >
-                            Request Charter Proposal
-                            <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
-                        </Link>
-                    </motion.div>
-                </div>
-            </motion.section>
+            <CtaBanner
+                title="Need Custom Marine Logistics or Vessel Chartering?"
+                description="Whether you require a dedicated time charter, or an urgent voyage freight proposal, our operations team is ready to tailor a solution for your cargo needs."
+                buttonLabel="Request Charter Proposal"
+                buttonRoute="public.contacts"
+            />
         </GuestLayout>
     );
 }

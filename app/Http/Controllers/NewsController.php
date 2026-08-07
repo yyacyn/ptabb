@@ -124,7 +124,7 @@ class NewsController extends Controller
             'title' => 'required|string|max:255',
             'category_name' => 'nullable|string|max:100',
             'category_id' => 'nullable',
-            'published_at' => 'nullable|date',
+            'publish_date' => 'nullable|date',
             'status' => 'nullable|in:published,draft',
             'author' => 'nullable|string|max:100',
             'excerpt' => 'nullable|string|max:500',
@@ -146,12 +146,12 @@ class NewsController extends Controller
             'excerpt' => $validated['excerpt'] ?? null,
             'author' => $validated['author'] ?? ($user->name ?? 'ABB Media Team'),
             'status' => $validated['status'] ?? 'published',
-            'publish_date' => $validated['published_at'] ?? now()->toDateString(),
+            'publish_date' => $validated['publish_date'] ?? now()->toDateString(),
             'slug' => Str::slug($validated['title']) . '-' . time(),
         ];
 
         if ($request->hasFile('featured_image')) {
-            $path = $request->file('featured_image')->store('news', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('featured_image'), 'news');
             $dataToSave['featured_image'] = '/storage/' . $path;
         }
 
@@ -180,7 +180,7 @@ class NewsController extends Controller
             'title' => 'required|string|max:255',
             'category_name' => 'nullable|string|max:100',
             'category_id' => 'nullable',
-            'published_at' => 'nullable|date',
+            'publish_date' => 'nullable|date',
             'status' => 'nullable|in:published,draft',
             'author' => 'nullable|string|max:100',
             'excerpt' => 'nullable|string|max:500',
@@ -201,11 +201,11 @@ class NewsController extends Controller
             'excerpt' => $validated['excerpt'] ?? null,
             'author' => $validated['author'] ?? ($user->name ?? 'ABB Media Team'),
             'status' => $validated['status'] ?? 'published',
-            'publish_date' => $validated['published_at'] ?? $news->publish_date ?? now()->toDateString(),
+            'publish_date' => $validated['publish_date'] ?? $news->publish_date ?? now()->toDateString(),
         ];
 
         if ($request->hasFile('featured_image')) {
-            $path = $request->file('featured_image')->store('news', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('featured_image'), 'news');
             $dataToSave['featured_image'] = '/storage/' . $path;
         }
 

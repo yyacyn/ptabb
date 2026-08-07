@@ -20,7 +20,7 @@ class News extends Model
         'youtube_url',
         'view_count',
         'status',
-        'published_at',
+        'publish_date',
         'meta_title',
         'meta_description',
         'author',

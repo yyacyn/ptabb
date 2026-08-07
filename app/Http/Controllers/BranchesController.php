@@ -74,7 +74,7 @@ class BranchesController extends Controller
         }
 
         if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('branches', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('image_file'), 'branches');
             $validated['image_url'] = '/storage/' . $path;
         }
 
@@ -134,7 +134,7 @@ class BranchesController extends Controller
         }
 
         if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('branches', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('image_file'), 'branches');
             $validated['image_url'] = '/storage/' . $path;
         }
 

@@ -1,5 +1,6 @@
 import { Head, Link, usePoll } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
+import CtaBanner from '@/Components/CtaBanner';
 import { ChevronLeft, Anchor, Weight, Gauge, File, ArrowRight, Ship, Navigation, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
@@ -318,7 +319,7 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                             {/* Book This Vessel Button */}
                             <div className="pt-4 mt-4">
                                 <Link
-                                    href={route('contacts.index')}
+                                    href={route('public.contacts')}
                                     className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] text-white text-[14px] font-['Hanken_Grotesk'] font-semibold px-5 py-2.5 rounded-[4px] inline-flex items-center justify-center gap-2 transition-[colors,shadow,opacity,transform] duration-200 cursor-pointer w-full"
                                 >
                                     Book This Vessel
@@ -372,34 +373,13 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                 </div>
             </div>
 
-            {/* BLOCK 5: CTA BANNER SECTION */}
-            <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden"
-            >
-                <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[40px] tracking-tight mb-4 text-white">
-                        Ready to Chart Your Next High-Tonnage Voyage?
-                    </h2>
-
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
-                        Whether you need bulk cement transportation, specialized vessel charters, or long-term marine logistics, our ISO-certified fleet is ready to deliver.
-                    </p>
-
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                        <Link
-                            href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[colors,shadow,opacity,transform] duration-200"
-                        >
-                            Request Charter Proposal
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 group-active:translate-x-0 transition-transform duration-150" />
-                        </Link>
-                    </motion.div>
-                </div>
-            </motion.section>
+            {/* CTA BANNER SECTION */}
+            <CtaBanner
+                title="Ready to Chart Your Next High-Tonnage Voyage?"
+                description="Whether you need bulk cement transportation, specialized vessel charters, or long-term marine logistics, our ISO-certified fleet is ready to deliver."
+                buttonLabel="Request Charter Proposal"
+                buttonRoute="public.contacts"
+            />
         </GuestLayout>
     );
 }

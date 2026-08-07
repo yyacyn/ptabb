@@ -57,16 +57,16 @@ export default function NewsShow({ article, relatedNews = [] }) {
             <Head title={`${article?.title || 'Article Detail'} — PT Pelayaran Pelangi Tunggal Ikan (ABB)`} />
 
             <div className="w-full max-w-[1440px] mx-auto font-['Hanken_Grotesk'] text-[#141B2C]">
-                
+
                 {/* 2-Column Split: Main Article (8 cols) + Side Related Articles (4 cols) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start ">
-                    
+
                     {/* LEFT / MAIN ARTICLE COLUMN (8 cols) */}
                     <motion.article
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="lg:col-span-8 bg-white rounded-[12px] p-6 sm:p-10 shadow-xs space-y-6 border border-[#E5E7EB]"
+                        className="lg:col-span-8 bg-white rounded-[12px] p-6 sm:p-10 shadow-xs space-y-6 border border-[#E5E7EB] min-w-0 overflow-hidden"
                     >
                         {/* Top Bar inside Container: Back Button + Category Tag & Meta Header */}
                         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -104,13 +104,13 @@ export default function NewsShow({ article, relatedNews = [] }) {
                         </div>
 
                         {/* Article Title */}
-                        <h1 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[40px] text-[#141B2C] leading-[1.18] tracking-tight">
+                        <h1 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[40px] text-[#141B2C] leading-[1.18] tracking-tight break-words">
                             {article.title}
                         </h1>
 
                         {/* Lead Excerpt Summary */}
                         {article.excerpt && (
-                            <p className="font-medium text-[16px] text-[#404750] leading-relaxed pl-4 py-2 bg-slate-50/90 rounded-[6px]">
+                            <p className="font-medium text-[16px] text-[#404750] leading-relaxed pl-4 py-2 bg-slate-50/90 rounded-[6px] break-words">
                                 {article.excerpt}
                             </p>
                         )}
@@ -128,10 +128,10 @@ export default function NewsShow({ article, relatedNews = [] }) {
                         </div>
 
                         {/* Rich Text Body Content */}
-                        <div className="pt-2 text-[#141B2C] font-['Hanken_Grotesk'] leading-relaxed text-[16px] sm:text-[17px] space-y-4">
+                        <div className="pt-2 text-[#141B2C] font-['Hanken_Grotesk'] leading-relaxed text-[16px] sm:text-[17px] space-y-4 break-words overflow-x-auto">
                             {article.content ? (
                                 <div
-                                    className="prose prose-slate max-w-none text-[#141B2C] font-['Hanken_Grotesk'] leading-relaxed"
+                                    className="prose prose-slate max-w-none text-[#141B2C] font-['Hanken_Grotesk'] leading-relaxed break-words [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto [&_pre]:overflow-x-auto [&_code]:break-all"
                                     dangerouslySetInnerHTML={{ __html: article.content }}
                                 />
                             ) : (

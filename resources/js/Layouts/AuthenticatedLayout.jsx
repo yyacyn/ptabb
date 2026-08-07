@@ -105,7 +105,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-[#F5F5F5] font-['Hanken_Grotesk'] flex text-[#141B2C]">
-            
+
             {/* Desktop Left Sidebar */}
             <aside className="w-64 bg-[#141B2C] text-white flex-col justify-between hidden md:flex shrink-0 min-h-screen border-r border-slate-800 fixed inset-y-0 left-0 z-30">
                 <div>
@@ -140,16 +140,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`flex items-center justify-between px-3 py-2.5 rounded-[8px] text-xs font-semibold transition-colors group ${
-                                        isActive
+                                    className={`flex items-center justify-between px-3 py-2.5 rounded-[8px] text-xs font-semibold transition-colors group ${isActive
                                             ? 'bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white shadow-md font-bold'
                                             : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                                            isActive ? 'text-white' : 'text-[#8AAFC8] group-hover:text-white'
-                                        }`} />
+                                        <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-[#8AAFC8] group-hover:text-white'
+                                            }`} />
                                         <span>{item.name}</span>
                                     </div>
                                     {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-80" />}
@@ -209,7 +207,7 @@ export default function AuthenticatedLayout({ header, children }) {
             {/* Mobile Navigation Drawer Overlay */}
             {isMobileMenuOpen && (
                 <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div 
+                    <div
                         className="w-64 bg-[#141B2C] text-white h-full flex flex-col justify-between p-4 shadow-xl"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -234,11 +232,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                             key={item.name}
                                             href={item.href}
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-xs font-semibold transition-all ${
-                                                isActive
+                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-xs font-semibold transition-all ${isActive
                                                     ? 'bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white font-bold'
                                                     : 'text-slate-300 hover:bg-slate-800'
-                                            }`}
+                                                }`}
                                         >
                                             <Icon className="w-4 h-4 text-[#8AAFC8]" />
                                             <span>{item.name}</span>
@@ -268,7 +265,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
             {/* Main Content Area Right Column */}
             <div className="flex-1 md:ml-64 flex flex-col min-w-0 min-h-screen">
-                
+
                 {/* Header Title Bar */}
                 {header && (
                     <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-20 shadow-xs mt-12 md:mt-0">

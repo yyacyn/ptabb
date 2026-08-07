@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
+import CtaBanner from '@/Components/CtaBanner';
 import {
     Ship,
     Globe,
@@ -493,33 +494,12 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
             </motion.section>
 
             {/* 5. CTA Banner Section */}
-            <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden "
-            >
-                <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[40px] tracking-tight mb-4 text-white">
-                        Ready to Chart Your Next High-Tonnage Voyage?
-                    </h2>
-
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
-                        Whether you need bulk cement transportation, specialized vessel charters, or long-term marine logistics, our ISO-certified fleet is ready to deliver.
-                    </p>
-
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                        <Link
-                            href={route('public.contacts')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
-                        >
-                            Request Charter Proposal
-                            <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
-                        </Link>
-                    </motion.div>
-                </div>
-            </motion.section>
+            <CtaBanner
+                title="Ready to Chart Your Next High-Tonnage Voyage?"
+                description="Whether you need bulk cement transportation, specialized vessel charters, or long-term marine logistics, our ISO-certified fleet is ready to deliver."
+                buttonLabel="Request Charter Proposal"
+                buttonRoute="public.contacts"
+            />
         </GuestLayout>
     );
 }

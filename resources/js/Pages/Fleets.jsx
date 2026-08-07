@@ -2,6 +2,7 @@ import { Head, Link, usePoll } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
+import CtaBanner from '@/Components/CtaBanner';
 import Modal from '@/Components/Modal';
 import {
     Ship,
@@ -315,7 +316,7 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 6;
+    const itemsPerPage = 8;
 
     // Reset pagination when search query or filter changes
     useEffect(() => {
@@ -767,7 +768,7 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {paginatedFleets.map((vessel, idx) => (
                         <motion.div
                             key={vessel.id || idx}
@@ -800,7 +801,7 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
                                         <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750]"> IMO: <span className="font-['JetBrains_Mono']"> {vessel.imo_number || 'Not Available'}</span>
                                         </div>
                                     </div>
-                                    <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750] mb-4">Type: <span> {vessel.vessel_type || vessel.category?.name || vessel.type || 'Not Available'}</span>
+                                    <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750] mb-4">Type: <span> {vessel.vessel_type || 'Not Available'}</span>
                                     </div>
 
                                     {/* Specs Box Grid */}
@@ -836,9 +837,9 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="text-[#00629D] block uppercase">VESSEL TYPE</span>
+                                            <span className="text-[#00629D] block uppercase">CLASS. SOCIETY</span>
                                             <span className="font-bold text-[#141B2C] text-[13px] truncate block" title={vessel.vessel_type || vessel.category?.name || vessel.type || 'Not Available'}>
-                                                {vessel.vessel_type || vessel.category?.name || vessel.type || 'Not Available'}
+                                                {vessel.classification_society || 'Not Available'}
                                             </span>
                                         </div>
                                     </div>
@@ -911,33 +912,12 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
             </motion.section>
 
             {/* 3. CTA BANNER SECTION */}
-            <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden"
-            >
-                <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[36px] lg:text-[40px] tracking-tight mb-4 text-white">
-                        Need Custom Tonnage or Dedicated Time Charter?
-                    </h2>
-
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[16px] sm:text-[17px] lg:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
-                        Our commercial desk is ready to evaluate your cargo schedule, destination ports, and volume requirements.
-                    </p>
-
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                        <Link
-                            href={route('contacts.index')}
-                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[colors,shadow,opacity,transform]"
-                        >
-                            Request Charter Proposal
-                            <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
-                        </Link>
-                    </motion.div>
-                </div>
-            </motion.section>
+            <CtaBanner
+                title="Need Custom Tonnage or Dedicated Time Charter?"
+                description="Our commercial desk is ready to evaluate your cargo schedule, destination ports, and volume requirements."
+                buttonLabel="Request Charter Proposal"
+                buttonRoute="public.contacts"
+            />
 
             {/* 4. VOYAGE ROUTE INSPECTION MODAL */}
             <Modal show={isMapModalOpen} onClose={closeMapModal} maxWidth="4xl">

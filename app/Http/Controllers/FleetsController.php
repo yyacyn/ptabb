@@ -240,7 +240,7 @@ class FleetsController extends Controller
         ]);
 
         if ($request->hasFile('featured_image')) {
-            $path = $request->file('featured_image')->store('fleets', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('featured_image'), 'fleets');
             $validated['featured_image'] = '/storage/' . $path;
         }
 
@@ -295,7 +295,7 @@ class FleetsController extends Controller
         ]);
 
         if ($request->hasFile('featured_image')) {
-            $path = $request->file('featured_image')->store('fleets', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('featured_image'), 'fleets');
             $validated['featured_image'] = '/storage/' . $path;
         }
 

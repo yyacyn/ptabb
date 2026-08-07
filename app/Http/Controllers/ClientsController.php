@@ -61,7 +61,7 @@ class ClientsController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('clients', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('logo'), 'clients');
             $validated['logo'] = '/storage/' . $path;
         }
 
@@ -99,7 +99,7 @@ class ClientsController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('clients', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('logo'), 'clients');
             $validated['logo'] = '/storage/' . $path;
         } else {
             // Retain existing logo untouched when no new image file is uploaded

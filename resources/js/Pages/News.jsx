@@ -111,13 +111,13 @@ export default function NewsPage({ news = EMPTY_NEWS, categories = EMPTY_CATEGOR
         })
         .sort((a, b) => {
             if (sortOrder === 'oldest') {
-                return new Date(a.published_at || a.created_at) - new Date(b.published_at || b.created_at);
+                return new Date(a.publish_date || a.created_at) - new Date(b.publish_date || b.created_at);
             }
             if (sortOrder === 'views') {
                 return (b.view_count || 0) - (a.view_count || 0);
             }
             // Default: latest first
-            return new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at);
+            return new Date(b.publish_date || b.created_at) - new Date(a.publish_date || a.created_at);
         });
 
     const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
@@ -212,7 +212,7 @@ export default function NewsPage({ news = EMPTY_NEWS, categories = EMPTY_CATEGOR
                                     </span>
                                     <span className="flex items-center gap-1.5 text-white/75">
                                         <Calendar className="w-3.5 h-3.5 text-[#3F96DD]" />
-                                        {formatDate(activeHeadline.published_at || activeHeadline.created_at)}
+                                        {formatDate(activeHeadline.publish_date || activeHeadline.created_at)}
                                     </span>
                                     {activeHeadline.author && (
                                         <span className="flex items-center gap-1.5 text-white/75">
@@ -501,7 +501,7 @@ export default function NewsPage({ news = EMPTY_NEWS, categories = EMPTY_CATEGOR
                                             <div className="flex flex-wrap items-center gap-3.5 text-[13px] text-[#404750] font-['Hanken_Grotesk'] font-medium mb-2.5">
                                                 <span className="flex items-center gap-1.5">
                                                     <Calendar className="w-4 h-4 text-[#404750] stroke-[2]" />
-                                                    {formatDate(article.published_at || article.created_at)}
+                                                    {formatDate(article.publish_date || article.created_at)}
                                                 </span>
                                                 <span className="flex items-center gap-1.5">
                                                     <Tag className="w-4 h-4 text-[#404750] stroke-[2]" />

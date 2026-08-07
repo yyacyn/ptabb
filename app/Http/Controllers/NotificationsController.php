@@ -53,7 +53,7 @@ class NotificationsController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('notifications', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('image'), 'notifications');
             $validated['image'] = '/storage/' . $path;
         }
 
@@ -88,7 +88,7 @@ class NotificationsController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('notifications', 'public');
+            $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('image'), 'notifications');
             $validated['image'] = '/storage/' . $path;
         } elseif (!empty($validated['image']) && is_string($validated['image'])) {
             // Keep existing image if string URL passed

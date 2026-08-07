@@ -30,7 +30,7 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
         meta_title: article?.meta_title || article?.title || '',
         category_id: article?.category_id || (categories[0]?.id || ''),
         category_name: article?.category?.name || article?.category || 'Company News',
-        published_at: article?.published_at || article?.publish_date || new Date().toISOString().split('T')[0],
+        publish_date: article?.publish_date || article?.publish_date || new Date().toISOString().split('T')[0],
         status: article?.status || 'published',
         author: article?.author || 'ABB Media Team',
         excerpt: article?.excerpt || '',
@@ -228,8 +228,8 @@ export default function Edit({ article = null, categories = [], authors = [] }) 
                                         <div className="relative">
                                             <input
                                                 type="date"
-                                                value={data.published_at}
-                                                onChange={(e) => setData('published_at', e.target.value)}
+                                                value={data.publish_date}
+                                                onChange={(e) => setData('publish_date', e.target.value)}
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D] font-['JetBrains_Mono']"
                                             />
                                         </div>

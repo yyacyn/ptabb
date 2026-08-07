@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
+import CtaBanner from '@/Components/CtaBanner';
 import {
     ArrowRight, Shield, TrendingUp, Anchor, Award,
     FileText, Search, Wrench, BriefcaseMedical,
@@ -468,26 +469,12 @@ export default function Careers({ careers = [] }) {
             </motion.section>
 
             {/* 5. CTA */}
-            <motion.section
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[8px] p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden"
-            >
-                <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="font-['Hanken_Grotesk'] font-bold text-[28px] sm:text-[40px] tracking-tight mb-4 text-white">
-                        Didn't Find a Role That Matches Your Qualifications?
-                    </h2>
-                    <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
-                        We are always looking for skilled seafarers, marine officers, and corporate logistics talent. Submit your CV to our talent database, and our HR team will reach out as soon as a suitable opportunity opens up.
-                    </p>
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                        <Link href={route('contacts.index')}
-                            className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
-                        >
-                            Send Us Your CV
-                        </Link>
-                    </motion.div>
-                </div>
-            </motion.section>
+            <CtaBanner
+                title="Didn't Find a Role That Matches Your Qualifications?"
+                description="We are always looking for skilled seafarers, marine officers, and corporate logistics talent. Submit your CV to our talent database, and our HR team will reach out as soon as a suitable opportunity opens up."
+                buttonLabel="Send Us Your CV"
+                buttonRoute="public.contacts"
+            />
         </GuestLayout>
     );
 }

@@ -57,13 +57,13 @@ export default function News({ news = [] }) {
         })
         .sort((a, b) => {
             if (sortBy === 'newest') {
-                const dateA = new Date(a.published_at || a.publish_date || a.created_at);
-                const dateB = new Date(b.published_at || b.publish_date || b.created_at);
+                const dateA = new Date(a.publish_date || a.publish_date || a.created_at);
+                const dateB = new Date(b.publish_date || b.publish_date || b.created_at);
                 return dateB - dateA;
             }
             if (sortBy === 'oldest') {
-                const dateA = new Date(a.published_at || a.publish_date || a.created_at);
-                const dateB = new Date(b.published_at || b.publish_date || b.created_at);
+                const dateA = new Date(a.publish_date || a.publish_date || a.created_at);
+                const dateB = new Date(b.publish_date || b.publish_date || b.created_at);
                 return dateA - dateB;
             }
             if (sortBy === 'title_asc') {
@@ -106,7 +106,7 @@ export default function News({ news = [] }) {
                 </div>
             }
         >
-            <Head title="News Management — PT. ABB" />
+            <Head title="News Management - PT. ABB" />
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">
@@ -184,7 +184,7 @@ export default function News({ news = [] }) {
                                                         e.currentTarget.src = '/images/news/top.jpg';
                                                     }}
                                                 />
-                                                <div className="absolute top-2 left-2 bg-[#141B2C]/80 backdrop-blur-sm text-white px-2.5 py-1 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider border border-white/10">
+                                                <div className="absolute top-2 left-2 bg-[#141B2C]/80 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase tracking-wider border border-white/10">
                                                     {categoryName}
                                                 </div>
                                                 {item.view_count !== undefined && (
@@ -196,7 +196,7 @@ export default function News({ news = [] }) {
 
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="font-['JetBrains_Mono'] text-[11px] text-[#8AAFC8] flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" /> {item.published_at || item.publish_date || '2026-04-01'}
+                                                    <Calendar className="w-3 h-3" /> {item.publish_date || item.publish_date || '2026-04-01'}
                                                 </span>
                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-['JetBrains_Mono'] font-bold uppercase ${item.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                                                     }`}>
@@ -221,14 +221,14 @@ export default function News({ news = [] }) {
                                                     href={route('news.edit', item.id)}
                                                     className="inline-flex items-center gap-1 text-[#00629D] hover:underline cursor-pointer"
                                                 >
-                                                    <Edit2 className="w-3.5 h-3.5" /> Edit
+                                                    <Edit2 className="w-3.5 h-3.5" />
                                                 </Link>
                                                 <button
                                                     type="button"
                                                     onClick={() => setDeletingArticle(item)}
                                                     className="inline-flex items-center gap-1 text-rose-600 hover:underline cursor-pointer"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                                                    <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
 

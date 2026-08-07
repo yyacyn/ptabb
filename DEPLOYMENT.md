@@ -1,118 +1,131 @@
-# Deploying Laravel + Inertia.js (React) to cPanel
+# Deployment Guide — PT. ABB Company Profile (cPanel / FTP)
 
-Deploying a Laravel application with a React (Inertia.js) frontend to cPanel can be challenging because of the thousands of files in `node_modules` and `vendor`. 
-
-> [!WARNING]
-> **Never upload your project file-by-file via FTP/File Manager.**
-> Uploading thousands of individual files is extremely slow, prone to timeouts, and can easily hit cPanel's maximum connection/inode limits. Instead, always build your assets locally, compress the project into a single `.zip` file, upload it, and extract it on cPanel.
+This guide outlines the step-by-step deployment workflow for releasing **PT. ABB Company Profile** to a live cPanel hosting environment using FTP (WinSCP / FileZilla) and web-based execution endpoints.
 
 ---
 
-## Deployment Architecture: The Secure Structure (Recommended)
+## 🚀 Standard Deployment Steps
 
-For security, your core Laravel files (including `.env`, database configuration, routes, and views) should **never** be accessible to the public. Only the contents of the `public/` directory should be exposed to the web root.
-
-Here is how you should structure the files in cPanel:
-
-```
-/home/username/
-├── ptabb-core/                 <-- All Laravel backend files go here
-│   ├── app/
-│   ├── bootstrap/
-│   ├── config/
-│   ├── database/
-│   ├── routes/
-│   ├── vendor/
-│   ├── .env                    <-- Production .env file
-│   └── ... (other files)
-│
-└── public_html/                <-- Your public web root (subdomain or main domain)
-    ├── build/                  <-- Compiled CSS/JS assets (Vite)
-    ├── index.php               <-- Modified to point to ptabb-core
-    ├── .htaccess               <-- URL rewriting
-    └── ... (other public assets)
-```
-
----
-
-## Step-by-Step Deployment Guide
-
-### Step 1: Package Your Project for cPanel
-We will compile the React assets and compress the required project files (excluding `node_modules`, git folders, local `.env`, and database backup files) into a single zip.
-
-We have created an automated PowerShell script `package-deployment.ps1` in your project root.
-1. Open PowerShell in your project root.
-2. Run the script:
-   ```powershell
-   .\package-deployment.ps1
+### Step 1: Build Frontend Assets Locally
+Before uploading your project, compile the Inertia React frontend into optimized production bundles:
+1. Open PowerShell or Terminal in your project root directory.
+2. Execute the production build command:
+   ```bash
+   npm run build
    ```
-3. This will generate a file named `ptabb_deploy.zip` in your project folder.
+   *or if using Bun:*
+   ```bash
+   bun run build
+   ```
+3. Verify that the `public/build/` directory has been generated containing the compiled JavaScript and CSS bundle assets.
 
-### Step 2: Upload to cPanel
-1. Log in to your **cPanel** account.
-2. Open the **File Manager**.
-3. Navigate to your Home directory (`/home/username/`).
-4. Create a new folder named `ptabb-core` (this is where the backend files will live).
-5. Open the `ptabb-core` folder, click **Upload**, and upload your `ptabb_deploy.zip` file.
-6. Once uploaded, right-click `ptabb_deploy.zip` in File Manager and select **Extract**. Extract it into `/home/username/ptabb-core/`.
+### Step 2: Connect to Server via FTP / SFTP
+1. Open your FTP client (such as **WinSCP**, **FileZilla**, or **Cyberduck**).
+2. Log in using your cPanel FTP credentials (**Host / Server IP**, **Username**, **Password**, and Port `21` for FTP or `22` for SFTP).
 
-### Step 3: Move the Public Assets to the Web Root
-Now we need to expose the public assets (the JS/CSS build files, images, `index.php`, `.htaccess`) to the web.
-1. Navigate into `/home/username/ptabb-core/public/`.
-2. Select **all files and folders** inside this `public` folder.
-3. Click **Move** in the cPanel top menu.
-4. Move them to your domain's web root directory (usually `/public_html` or `/public_html/subfolder` for a subdomain).
-5. Once moved, you can safely delete the empty `/home/username/ptabb-core/public/` folder.
+### Step 3: Upload Project Files to Domain Folder
+1. Navigate to your target domain root folder on cPanel (e.g., `public_html` or `/ptabb.com/`).
+2. Drag and drop all required project files and folders from your local workspace to the domain folder.
+   > **Note:** Ensure the newly compiled assets inside `public/build/` are included in the upload.
 
-### Step 4: Configure `index.php` to Link the Core
-Since the core files and `index.php` are now separated, we must update the paths in `index.php` so the application boots correctly.
-1. Navigate to your web root (e.g., `/public_html/`).
-2. Right-click `index.php` and click **Edit**.
-3. Find the lines that load `autoload.php` and `app.php`. Modify the paths to point to your `ptabb-core` folder:
-
-```php
-// Find and replace these paths in public_html/index.php:
-
-require __DIR__.'/../ptabb-core/vendor/autoload.php';
-
-if (file_exists($maintenance = __DIR__.'/../ptabb-core/storage/framework/maintenance.php')) {
-    require $maintenance;
-}
-
-$app = require_once __DIR__.'/../ptabb-core/bootstrap/app.php';
-```
-4. Save the changes.
-
-### Step 5: Configure the Production `.env`
-1. Navigate to `/home/username/ptabb-core/`.
-2. Find the `.env.example` file, right-click it, select **Rename**, and change it to `.env`.
-3. Edit the `.env` file and set your production values:
+### Step 4: Configure Production `.env` Environment
+1. On the server, locate `.env.example` in your domain root folder, rename it to `.env` (or create a new `.env` file).
+2. Open `.env` and set your live production environment values:
    ```ini
+   APP_NAME="PT. Pelayaran Andalas Bahtera Baruna"
    APP_ENV=production
+   APP_KEY=base64:... # Ensure APP_KEY is set
    APP_DEBUG=false
-   APP_URL=https://yourdomain.com # Change to your live URL
+   APP_URL=https://ptabb.com
 
-   # Database settings (created in cPanel MySQL Database Wizard)
+   # Production MySQL Database Credentials (from cPanel MySQL Databases)
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
    DB_PORT=3306
    DB_DATABASE=yourusername_ptabb
    DB_USERNAME=yourusername_dbuser
-   DB_PASSWORD=your_secure_password
+   DB_PASSWORD=your_secure_database_password
    ```
 
-### Step 6: Create and Migrate the Database
-1. In cPanel, open the **MySQL Database Wizard**.
-2. Create a new database, create a new user, and assign the user to the database with **All Privileges**.
-3. Note these credentials and save them in the `.env` file (Step 5).
-4. Go to **phpMyAdmin** in cPanel, select your database, and import your SQL dump (e.g., `abbrnptabb_ptabb.sql`) if you have existing seed data, OR run migrations if you have terminal/SSH access.
+### Step 5: Remove Storage Folder inside `public/`
+1. On the server, open the `public/` directory inside your domain folder.
+2. If a `storage` folder or shortcut already exists inside `public/`, **delete it**.
+   *This ensures a clean slate before generating the official storage link.*
 
-### Step 7: Check Storage Permissions & Link
-Laravel needs permission to write logs and cache files.
-1. In File Manager, navigate to `/home/username/ptabb-core/`.
-2. Ensure that the `storage` and `bootstrap/cache` folders have permissions set to `755` (or `775` if needed by the server).
-3. Since your public files are separated from core files, if you have file uploads stored in `storage/app/public`, you will need to create a symlink from `/public_html/storage` to `/home/username/ptabb-core/storage/app/public`.
-   - If you have SSH access, run: `ln -s /home/username/ptabb-core/storage/app/public /home/username/public_html/storage`
-   - If you don't have SSH access, you can run this command via a simple PHP script or cron job in cPanel, then delete it.
+### Step 6: Re-Link Storage via Web Endpoint
+Open your web browser and visit the storage linking endpoint to connect `public/storage` to `storage/app/public`:
+```http
+https://ptabb.com/setup-storage-link
+```
+> **Expected Output:** `Storage link complete!`
 
-### Step 8:
+### Step 7: Run Database Migrations & Seeders
+Execute database table creation and seed default data by visiting the following web endpoints in order:
+
+1. **Run Migrations:**
+   ```http
+   https://ptabb.com/run-migrate
+   ```
+   > **Expected Output:** `Migration complete!`
+
+2. **Run Seeders:**
+   ```http
+   https://ptabb.com/run-seed
+   ```
+   > **Expected Output:** `Seeding complete!`
+
+### Step 8: Optimize & Cache Warmup
+Cache the route definitions, configuration settings, and Blade views for optimal production performance:
+
+1. **Run Optimization:**
+   ```http
+   https://ptabb.com/run-optimize
+   ```
+   > **Expected Output:** `Optimization complete!`
+
+2. **Clear & Refresh Cache:**
+   ```http
+   https://ptabb.com/clear-cache
+   ```
+   > **Expected Output:** `Cache clear complete!`
+
+---
+
+## 🛠️ Troubleshooting & Error Recovery Guide
+
+If you encounter a `500 Internal Server Error`, broken image links, or stale page views after uploading, follow these troubleshooting steps in cPanel:
+
+### 1. Remove Cached Route File
+1. In cPanel **File Manager**, navigate to `bootstrap/cache/`.
+2. Delete the file named `routes-v7.php` (or any cached `routes-*.php` / `config.php` files in this directory).
+   *This forces Laravel to reload fresh route definitions.*
+
+### 2. Reset & Re-link Public Storage
+1. Navigate to your domain's `public/` directory.
+2. Check for and remove the existing `storage` folder/shortcut.
+3. Open your browser and re-trigger the storage link endpoint:
+   ```http
+   https://ptabb.com/setup-storage-link
+   ```
+
+### 3. Remove Vite `hot` File
+1. In your domain's `public/` directory, check if a file named `hot` or `hot.php` exists.
+2. If found, **delete `hot` / `hot.php`**.
+   *This prevents Laravel from attempting to connect to a local Vite development server.*
+
+### 4. Re-run Cache Clear & Optimization Endpoints
+After performing the steps above, visit these endpoints sequentially in your browser to finalize recovery:
+1. `https://ptabb.com/clear-cache`
+2. `https://ptabb.com/run-optimize`
+
+---
+
+## 📋 Web Endpoints Quick Reference (`routes/web.php`)
+
+| Endpoint Action | Browser URL | Artisan Command Executed |
+| :--- | :--- | :--- |
+| **Storage Link** | `GET /setup-storage-link` | `storage:link --force` |
+| **Run Migration** | `GET /run-migrate` | `migrate --force` |
+| **Run Seeder** | `GET /run-seed` | `db:seed --force` |
+| **Optimize System** | `GET /run-optimize` | `config:cache`, `route:cache`, `view:cache` |
+| **Clear All Cache** | `GET /clear-cache` | `optimize:clear`, `cache:clear`, `config:clear`, `route:clear`, `view:clear` |
