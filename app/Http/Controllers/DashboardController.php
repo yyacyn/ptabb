@@ -28,9 +28,9 @@ class DashboardController extends Controller
         // 1. Filter Unread Messages based on RBAC & BR-04 (HRD-routed messages hidden from Crew/PR admin)
         $contactsQuery = Contact::query();
         if ($userRole === 'hr_admin') {
-            $contactsQuery->where('department', 'hrd');
+            $contactsQuery->whereIn('department', ['hrd', 'general']);
         } elseif ($userRole === 'crew_admin') {
-            $contactsQuery->where('department', 'crew');
+            $contactsQuery->whereIn('department', ['crew', 'general']);
         } elseif ($userRole === 'pr_admin') {
             $contactsQuery->where(function ($q) {
                 $q->whereNull('department')

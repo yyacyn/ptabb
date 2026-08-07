@@ -298,19 +298,20 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v3.0
 | **Kondisi Awal** | Widget AI Chatbot pada pojok kanan bawah halaman publik dalam posisi aktif. |
 | **Tanggal Pengujian** | 06 Agustus 2026 |
 | **Penguji** | Tim Penguji QA PT ABB |
-| **Skenario** | **Metode : Equivalent Partitioning** Langkah-langkah prosedur uji untuk kasus uji \[DUPL-ABB-013\]: **Field “Message”** \- Input : Kosong / "" (Invalid) \- Input : Teks pesan melebihi 1000 karakter (Invalid) \- Input : Pertanyaan seputar Alamat & Telepon HQ PT ABB (Valid Intent 'contact') \- Input : Pertanyaan seputar spesifikasi armada kapal (Valid Intent 'fleet') \- Input : Pertanyaan di luar konteks bisnis PT ABB "Berapa harga tiket pesawat ke bulan?" (Off-Topic / Low Confidence) **Eksekusi Chain Fallback Model** \- Kondisi 1 : Primary Groq API aktif & merespons \- Kondisi 2 : Primary Groq API offline / rate limited \-\> Sistem otomatis ke OpenRouter API \- Kondisi 3 : Semua API LLM offline / tanpa koneksi internet \-\> Sistem otomatis ke Local Substring Matcher **Waktu Respon API (NFR-P)** \- Pengukuran latensi waktu sampai indikasi balasan / typing indicator pertama muncul di UI |
+| **Skenario** | **Metode : Equivalent Partitioning** Langkah-langkah prosedur uji untuk kasus uji \[DUPL-ABB-013\]: **Field “Message”** \- Input : Kosong / "" (Invalid) \- Input : Teks pesan melebihi 1000 karakter (Invalid) \- Input : Pertanyaan seputar Alamat & Telepon HQ PT ABB (Valid Intent 'contact') \- Input : Pertanyaan seputar spesifikasi armada kapal (Valid Intent 'fleet') \- Input : Pertanyaan di luar konteks bisnis PT ABB "Berapa harga tiket pesawat ke bulan?" (Off-Topic / Low Confidence) **Eksekusi Chain Fallback Model** \- Kondisi 1 : Primary Groq API aktif & merespons \- Kondisi 2 : Primary Groq API offline / rate limited \-\> Sistem otomatis ke OpenRouter API \- Kondisi 3 : Semua API LLM offline / tanpa koneksi internet \-\> Sistem otomatis ke Local Substring Matcher **Waktu Respon API & Proteksi Flood Rate Limit (NFR-P & Security)** \- Pengukuran latensi waktu sampai indikasi balasan / typing indicator pertama muncul di UI \- Pengiriman lebih dari 4 pertanyaan dalam rentang 30 detik (Rate Limit & Cooldown Trigger Test) |
 
 | Yang Diharapkan | Pengamatan | Kesimpulan |
 | :---- | :---- | :---- |
 | Sistem menolak pengiriman pesan chatbot kosong. | Sistem tidak mengirim pesan apa-apa | PASS |
-| Sistem menolak pesan pengguna melebihi 1000 karakter. | Sistem text input di chatbot terbatasi sehingga user tidak bisa menambahkan karakter lagi jika \> 1000 | PASS |
+| Sistem menolak pesan pengguna melebihi 1000 karakter. | Sistem text input di chatbot terbatasi sehingga user tidak bisa menambahkan karakter lagi jika > 1000 | PASS |
 | Chatbot mendeteksi intent 'contact' and memberi data HQ akurat (BR-05). | Chatbot menjawab menggunakan data context DB resmi. | PASS |
 | Chatbot mendeteksi intent 'fleet' and menyajikan rincian armada. | Chatbot menyajikan rincian kapal cement carrier and tugboat. | PASS |
 | Chatbot mengarahkan ke Form Kontak untuk off-topic (BR-05). | Chatbot menyarankan pengisian Form Kontak PT ABB. | PASS |
 | Chatbot menggunakan Groq API saat primary aktif. | Response JSON mengembalikan model: "groq". | PASS |
 | Chatbot otomatis ke OpenRouter API saat Groq kendala. | Response JSON mengembalikan model: "openrouter". | PASS |
-| Chatbot ke Local Substring Matcher saat semua LLM offline. | Chatbot tetap memberi jawaban statistik (model: "local\_fallback"). | PASS |
-| Chatbot memberi typing indicator di UI \< 2 detik (NFR-P). | Waktu respon pertama berada di kisaran \~0.7s \- 1.3s. | PASS |
+| Chatbot ke Local Substring Matcher saat semua LLM offline. | Chatbot tetap memberi jawaban statistik (model: "local_fallback"). | PASS |
+| Chatbot memberi typing indicator di UI < 2 detik (NFR-P). | Waktu respon pertama berada di kisaran ~0.7s - 1.3s. | PASS |
+| Sistem memicu pesan peringatan rate limit dan mengunci form chat (cooldown 30s) ketika pengunjung mengirim > 4 pertanyaan dalam 30 detik. | Chatbot menampilkan peringatan "Rate Limit Triggered", mengunci input box, dan menghitung mundur waktu cooldown 30 detik. | PASS |
 
 **14\. Hasil Pengujian Halaman Profil Publik & Transisi Inertia (AboutUs, Services, Milestones, Home, Dashboard)**
 
@@ -364,6 +365,6 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v3.0
 
 | Total Kasus Uji | Total Skenario Test Cases | Jumlah Lolos (PASS) | Jumlah Gagal (FAIL) | Persentase Keberhasilan |
 | :---- | :---- | :---- | :---- | :---- |
-| **15 Kasus Uji** | **120 Skenario** | **120 Skenario** | **0 Skenario** | **100%** |
+| **15 Kasus Uji** | **121 Skenario** | **121 Skenario** | **0 Skenario** | **100%** |
 
 **Kesimpulan Akhir Dokumen Uji Perangkat Lunak:** Seluruh modul controller (FleetsController, CareersController, NewsController, NotificationsController, BranchesController, ContactsController, ContactInfosController, UsersController, ClientsController, ChatbotController, JobApplyModal Component, dll.), sistem otorisasi RBAC berbasis role (BR-01), aturan keunikan nomor IMO & auto-slug berita (BR-02 & BR-03), isolasi pesan kontak HRD (BR-04), keandalan RAG AI Chatbot & Fallback Chain (BR-05), batasan 1 popup banner aktif per tipe (BR-06), serta seluruh standar keamanan Bcrypt, Parameterized Query (BR-SEC), dan performa transisi Inertia.js v2 web PT ABB v3.0 dinyatakan **MEMENUHI SPESIFIKASI TESTING & SIAP DIPRODUKSI (PASSED / SHIPPED TO PRODUCTION)**.

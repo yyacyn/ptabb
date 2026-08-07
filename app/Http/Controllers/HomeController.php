@@ -22,6 +22,8 @@ class HomeController extends Controller
             // 'phpVersion' => PHP_VERSION,
             'clients' => Client::all(),
             'fleets' => Fleet::latest()->take(3)->get(),
+            'totalFleets' => Fleet::count(),
+            'totalClients' => Client::count(),
             'news' => News::where('status', 'published')->latest()->take(6)->get(),
             'notifications' => Notification::where('status', 'active')->get(),
             'careers' => Career::where('status', 'open')->get(),

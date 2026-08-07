@@ -34,9 +34,9 @@ export default function JobApplyModal({ career = null, onClose = () => { }, onSu
                 company: 'Job Candidate',
                 email: '',
                 phone: '',
-                subject: `Job Application: ${career.position || ''}`,
+                subject: career.isGeneric ? 'General Job Application / Spontaneous Candidate' : `Job Application: ${career.position || ''}`,
                 message: '',
-                department: getDepartment(career),
+                department: (career.isGeneric || !career.id) ? 'general' : getDepartment(career),
                 resume: null
             });
         }
@@ -58,8 +58,7 @@ export default function JobApplyModal({ career = null, onClose = () => { }, onSu
         };
     }, [career]);
 
-    if (!career) return null;
-
+    // Format phone number to Indonesian format (+62 8XX XXXX XXXX)
     const formatPhone = (val) => {
         const hasPlus = val.startsWith('+');
         let digits = val.replace(/\D/g, '');
@@ -149,13 +148,7 @@ export default function JobApplyModal({ career = null, onClose = () => { }, onSu
         }
 
         const phoneRegex = /^[+]?[0-9\s\-()]{7,20}$/;
-        const cleanPhoneDigits = (data.phone || '').replace(/[^0-9]/g, '');
-
-        if (!data.phone || !data.phone.trim()) {
-            setError('phone', 'The phone / WhatsApp number field is required.');
-            return;
-        } else if (!phoneRegex.test(data.phone.trim()) || cleanPhoneDigits.length < 7) {
-            setError('phone', 'Please enter a valid phone or WhatsApp number (e.g. +62 812 3456 7890).');
+        if (validatePhone(data.phone)) {
             return;
         }
 
@@ -164,10 +157,12 @@ export default function JobApplyModal({ career = null, onClose = () => { }, onSu
             return;
         }
 
-        const relativeUrl = career?.id ? route('public.careers.show', career.id) : '';
+        const relativeUrl = career?.id ? route('public.careers.show', career.id) : route('public.careers');
         const jobUrl = relativeUrl.startsWith('http') ? relativeUrl : (window.location.origin + relativeUrl);
         const userMsg = data.message && data.message.trim() ? data.message : 'No additional candidate notes provided.';
-        const fullMessage = `Job Position Link: ${jobUrl}\n\nCover Letter:\n${userMsg}`;
+        const fullMessage = career?.id
+            ? `Job Position Link: ${jobUrl}\n\nCover Letter:\n${userMsg}`
+            : `Spontaneous Candidate Pool Submission\nCareers Portal Link: ${jobUrl}\nTarget Stream: ${data.department.toUpperCase()}\n\nCover Letter / Qualifications Overview:\n${userMsg}`;
 
         const formData = new FormData();
         formData.append('name', data.name);
@@ -196,26 +191,33 @@ export default function JobApplyModal({ career = null, onClose = () => { }, onSu
 
     return (
         <AnimatePresence>
-            <div
-                onClick={onClose}
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs font-['Hanken_Grotesk']"
-            >
+            {career && (
                 <motion.div
-                    onClick={(e) => e.stopPropagation()}
-                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                    key="job-apply-modal-backdrop"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+                    onClick={onClose}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs font-['Hanken_Grotesk']"
                 >
+                    <motion.div
+                        key="job-apply-modal-card"
+                        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        onClick={e => e.stopPropagation()}
+                        className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden text-left"
+                    >
                     {/* Modal Header */}
                     <div className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white p-5 sm:p-6 flex items-start justify-between shrink-0">
                         <div>
                             <h3 className="text-[20px] sm:text-[22px] font-bold text-white leading-tight mt-0.5">
-                                Apply for {career.position}
+                                {career.isGeneric ? 'Submit Your CV to Talent Pool' : `Apply for ${career.position}`}
                             </h3>
                             <p className="text-[13px] text-slate-300 mt-1">
-                                {career.department || 'Operations'} • {career.location || 'Indonesia'}
+                                {career.isGeneric ? 'PT. ABB Spontaneous Candidate Database' : `${career.department || 'Operations'} • ${career.location || 'Indonesia'}`}
                             </p>
                         </div>
                         <button
@@ -229,6 +231,7 @@ export default function JobApplyModal({ career = null, onClose = () => { }, onSu
 
                     {/* Modal Form Body */}
                     <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 text-[#141B2C]">
+
                         <div>
                             <label className="block text-[13px] font-bold text-[#141B2C] mb-1">
                                 Full Name <span className="text-red-500">*</span>
@@ -349,7 +352,8 @@ export default function JobApplyModal({ career = null, onClose = () => { }, onSu
                         </div>
                     </form>
                 </motion.div>
-            </div>
+            </motion.div>
+            )}
         </AnimatePresence>
     );
 }

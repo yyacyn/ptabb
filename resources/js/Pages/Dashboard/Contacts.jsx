@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Search, Filter, ArrowUpDown, Trash2, Eye, CheckCircle2, MessageSquare, Clock, User, Building2, Phone, Shield, X, RefreshCw, FileText, Download } from 'lucide-react';
 import axios from 'axios';
 
@@ -446,15 +447,26 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
             </div>
 
             {/* MESSAGE DETAIL READER MODAL */}
-            {selectedMessage && (
-                <div
-                    onClick={() => setSelectedMessage(null)}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200 cursor-pointer"
-                >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl w-full max-w-[1000px] p-6 space-y-4 max-h-[85vh] overflow-y-auto cursor-default"
+            <AnimatePresence>
+                {selectedMessage && (
+                    <motion.div
+                        key="reader-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={() => setSelectedMessage(null)}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] cursor-pointer"
                     >
+                        <motion.div
+                            key="reader-card"
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl w-full max-w-[1000px] p-6 space-y-4 max-h-[85vh] overflow-y-auto cursor-default text-left"
+                        >
                         <div className="flex items-start justify-between  gap-4">
                             <div className="min-w-0 flex-1">
                                 <div className="font-['JetBrains_Mono'] text-sm text-[#00629D] font-bold uppercase tracking-wider mb-1.5">
@@ -625,20 +637,32 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
 
                         </div>
 
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* DELETE CONFIRMATION MODAL */}
-            {messageToDelete && (
-                <div
-                    onClick={() => setMessageToDelete(null)}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200 cursor-pointer"
-                >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center cursor-default"
+            <AnimatePresence>
+                {messageToDelete && (
+                    <motion.div
+                        key="delete-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={() => setMessageToDelete(null)}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] cursor-pointer"
                     >
+                        <motion.div
+                            key="delete-card"
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center cursor-default"
+                        >
                         <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
                             <Trash2 className="w-6 h-6" />
                         </div>
@@ -665,20 +689,32 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
                                 {isDeleting ? 'Deleting...' : 'Delete'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* MARK AS REPLIED CONFIRMATION MODAL */}
-            {showConfirmReplied && selectedMessage && (
-                <div
-                    onClick={() => setShowConfirmReplied(false)}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200 cursor-pointer"
-                >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center cursor-default"
+            <AnimatePresence>
+                {showConfirmReplied && selectedMessage && (
+                    <motion.div
+                        key="replied-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={() => setShowConfirmReplied(false)}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] cursor-pointer"
                     >
+                        <motion.div
+                            key="replied-card"
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center cursor-default"
+                        >
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
                             <CheckCircle2 className="w-6 h-6" />
                         </div>
@@ -708,9 +744,10 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
                                 {isUpdatingStatus ? 'Updating...' : 'Confirm'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                </motion.div>
+                )}
+            </AnimatePresence>
 
         </AuthenticatedLayout>
     );

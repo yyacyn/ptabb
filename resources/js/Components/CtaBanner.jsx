@@ -12,6 +12,7 @@ export default function CtaBanner({
     buttonLabel = "Request Charter Proposal",
     buttonRoute = "public.contacts",
     buttonHref = null,
+    onClick = null,
     className = ""
 }) {
     let targetHref = buttonHref;
@@ -47,13 +48,24 @@ export default function CtaBanner({
                 )}
 
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                    <Link
-                        href={targetHref}
-                        className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[shadow,transform]"
-                    >
-                        {buttonLabel}
-                        <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
-                    </Link>
+                    {onClick ? (
+                        <button
+                            type="button"
+                            onClick={onClick}
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[shadow,transform] cursor-pointer"
+                        >
+                            {buttonLabel}
+                            <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
+                        </button>
+                    ) : (
+                        <Link
+                            href={targetHref}
+                            className="group bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-[shadow,transform]"
+                        >
+                            {buttonLabel}
+                            <ArrowRight className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" />
+                        </Link>
+                    )}
                 </motion.div>
             </div>
         </motion.div>

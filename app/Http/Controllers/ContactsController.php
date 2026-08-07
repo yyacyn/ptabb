@@ -18,9 +18,9 @@ class ContactsController extends Controller
         if (auth()->check()) {
             $user = auth()->user();
             if ($user->role === 'hr_admin') {
-                $query->where('department', 'hrd');
+                $query->whereIn('department', ['hrd', 'general']);
             } elseif ($user->role === 'crew_admin') {
-                $query->where('department', 'crew');
+                $query->whereIn('department', ['crew', 'general']);
             } elseif ($user->role === 'pr_admin') {
                 // BR-04: HRD and Crew contact messages hidden from PR admin at query level
                 $query->where(function ($q) {

@@ -24,7 +24,14 @@ const EMPTY_CLIENTS = [];
 const EMPTY_FLEETS = [];
 const EMPTY_NOTIFICATIONS = [];
 
-export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS, fleets: initialFleets = EMPTY_FLEETS, notifications: initialNotifications = EMPTY_NOTIFICATIONS }) {
+export default function Welcome({
+    auth,
+    clients: initialClients = EMPTY_CLIENTS,
+    fleets: initialFleets = EMPTY_FLEETS,
+    notifications: initialNotifications = EMPTY_NOTIFICATIONS,
+    totalFleets = 0,
+    totalClients = 0
+}) {
     const [activeFleetTab, setActiveFleetTab] = useState(0);
     const [heroVesselIndex, setHeroVesselIndex] = useState(0);
     const [activeRegion, setActiveRegion] = useState('indonesia');
@@ -478,12 +485,22 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                 <div className="max-w-full mx-auto bg-[#0D1322] rounded-[8px] border border-white/10 p-1 mt-10 text-left">
                     {/* Layer 3: 4 Stat Cards (Navy) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
-                        {[
-                            { stat: "25+", label: "Years of Maritime Excellence" },
-                            { stat: "15+", label: "Specialized Fleet Vessels" },
-                            { stat: "30+", label: "Domestic & Global Clients" },
-                            { stat: "100%", label: "MARPOL / ISM Compliance" }
-                        ].map((item, idx) => (
+                        {(() => {
+                            const roundBy5 = (val) => {
+                                const n = Number(val) || 0;
+                                if (n < 5) return n;
+                                return Math.floor(n / 5) * 5;
+                            };
+                            const countFleet = totalFleets ;
+                            const countClient = totalClients || clientsList?.length ;
+
+                            return [
+                                { stat: "25+", label: "Years of Maritime Excellence" },
+                                { stat: `${roundBy5(countFleet)}+`, label: "Specialized Fleet Vessels" },
+                                { stat: `${roundBy5(countClient)}+`, label: "Domestic & Global Clients" },
+                                { stat: "100%", label: "MARPOL / ISM Compliance" }
+                            ];
+                        })().map((item, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, scale: 0.95, y: 15 }}

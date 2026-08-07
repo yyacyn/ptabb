@@ -133,13 +133,26 @@ export default function Careers({ careers = [] }) {
                             initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }}
                             className="flex flex-wrap items-center gap-[10px] pt-2"
                         >
-                            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                                <a href="#positions" className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[colors,shadow,opacity,transform] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2">
-                                    Explore Careers <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                                <a
+                                    href="#positions"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const el = document.getElementById('positions');
+                                        if (el) {
+                                            el.scrollIntoView({ behavior: 'smooth' });
+                                        }
+                                    }}
+                                    className="group bg-gradient-to-r from-[#00629D] to-[#3F96DD] rounded-[4px] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-white hover:opacity-95 transition-[colors,shadow,opacity,transform] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] inline-flex items-center gap-2 cursor-pointer"
+                                >
+                                    Explore Careers <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
                                 </a>
                             </motion.div>
-                            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                                <Link href={route('contacts.index')} className="rounded-[4px] border border-[#404750] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] transition-all inline-flex items-center gap-2">
+                            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                                <Link
+                                    href={route('public.contacts')}
+                                    className="rounded-[4px] border border-[#404750] hover:border-[#00629D] hover:text-[#00629D] px-[28px] py-[10px] font-['Hanken_Grotesk'] font-medium text-[15px] text-[#404750] transition-all inline-flex items-center gap-2 cursor-pointer"
+                                >
                                     Contact Us
                                 </Link>
                             </motion.div>
@@ -503,7 +516,13 @@ export default function Careers({ careers = [] }) {
                 title="Didn't Find a Role That Matches Your Qualifications?"
                 description="We are always looking for skilled seafarers, marine officers, and corporate logistics talent. Submit your CV to our talent database, and our HR team will reach out as soon as a suitable opportunity opens up."
                 buttonLabel="Send Us Your CV"
-                buttonRoute="public.contacts"
+                onClick={() => setApplyingCareer({
+                    id: null,
+                    position: 'Spontaneous Application / Candidate Pool',
+                    department: 'General Candidate Database',
+                    location: 'Indonesia / Global',
+                    isGeneric: true
+                })}
             />
 
             {/* 6. JOB APPLICATION MODAL */}

@@ -18,7 +18,24 @@ export default function GuestLayout({ children, onScrollToSection }) {
         return [];
     });
     const [chatInput, setChatInput] = useState('');
+    const [cooldownSeconds, setCooldownSeconds] = useState(0);
+    const [msgTimestamps, setMsgTimestamps] = useState([]);
     const chatScrollRef = useRef(null);
+
+    // Cooldown countdown timer effect
+    useEffect(() => {
+        if (cooldownSeconds <= 0) return;
+        const timer = setInterval(() => {
+            setCooldownSeconds(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [cooldownSeconds]);
 
     // Format Markdown text (bold, lists, line breaks) inside chat bubbles
     const renderFormattedText = (text) => {
@@ -118,8 +135,34 @@ export default function GuestLayout({ children, onScrollToSection }) {
 
     const handleSendMessage = async (e, textOverride = null) => {
         if (e) e.preventDefault();
+        if (cooldownSeconds > 0) return;
+
         const userMsg = textOverride || chatInput;
         if (!userMsg.trim() || isTyping) return;
+
+        const now = Date.now();
+        // Rolling 30-second window
+        const recentTimestamps = msgTimestamps.filter(t => now - t < 30000);
+
+        if (recentTimestamps.length >= 10) {
+            // Trigger 30-second rate limit cooldown (max 4 questions in 30 seconds)
+            setCooldownSeconds(30);
+            setMsgTimestamps([]);
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            setChatMessages(prev => [
+                ...prev,
+                { sender: 'user', time: timeStr, text: userMsg },
+                {
+                    sender: 'bot',
+                    time: timeStr,
+                    text: '⚠️ **Rate Limit Triggered**: You are sending messages too rapidly. Please wait 30 seconds before asking another question, or submit your inquiry directly on our Contact page.'
+                }
+            ]);
+            if (!textOverride) setChatInput('');
+            return;
+        }
+
+        setMsgTimestamps([...recentTimestamps, now]);
 
         const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const newHistory = [...chatMessages, { sender: 'user', time: timeStr, text: userMsg }];
@@ -324,22 +367,32 @@ export default function GuestLayout({ children, onScrollToSection }) {
                             </div>
 
                             {/* Input Form */}
-                            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#E5E7EB] bg-white flex items-center gap-2 shrink-0">
-                                <input
-                                    type="text"
-                                    value={chatInput}
-                                    onChange={(e) => setChatInput(e.target.value.slice(0, 1000))}
-                                    maxLength={1000}
-                                    placeholder="Ask Sarah a question..."
-                                    className="flex-1 text-[13px] font-['Hanken_Grotesk'] px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-full focus:outline-none focus:border-[#00629D] focus:bg-white transition-color placeholder-[#9CA3AF]"
-                                />
-                                <button
-                                    type="submit"
-                                    className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white w-9 h-9 rounded-full flex items-center justify-center hover:shadow-md active:scale-95 transition-all shrink-0"
-                                    title="Send Message"
-                                >
-                                    <Send className="w-4 h-4 text-white translate-x-[-0.5px]" />
-                                </button>
+                            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#E5E7EB] bg-white flex flex-col gap-2 shrink-0">
+                                {cooldownSeconds > 0 && (
+                                    <div className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-md text-[11px] text-amber-800 flex items-center justify-between font-medium animate-pulse">
+                                        <span>You are asking too many questions in short time. Try talking later.</span>
+                                        <span className="font-['JetBrains_Mono'] font-bold text-amber-900">{cooldownSeconds}s</span>
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={chatInput}
+                                        onChange={(e) => setChatInput(e.target.value.slice(0, 1000))}
+                                        maxLength={1000}
+                                        disabled={isTyping || cooldownSeconds > 0}
+                                        placeholder={cooldownSeconds > 0 ? `Cooldown active (${cooldownSeconds}s left)...` : "Ask Sarah a question..."}
+                                        className="flex-1 text-[13px] font-['Hanken_Grotesk'] px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-full focus:outline-none focus:border-[#00629D] focus:bg-white transition-color placeholder-[#9CA3AF] disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isTyping || cooldownSeconds > 0 || !chatInput.trim()}
+                                        className="bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white w-9 h-9 rounded-full flex items-center justify-center hover:shadow-md active:scale-95 transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                                        title="Send Message"
+                                    >
+                                        <Send className="w-4 h-4 text-white translate-x-[-0.5px]" />
+                                    </button>
+                                </div>
                             </form>
                         </motion.div>
                     )}
