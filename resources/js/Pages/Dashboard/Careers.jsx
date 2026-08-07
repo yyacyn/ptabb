@@ -46,11 +46,13 @@ export default function Careers({ careers = EMPTY_CAREERS }) {
     const filteredCareers = (careers || []).filter(c => {
         const cat = (c.category || '').toLowerCase();
 
-        // Strict role boundary enforcement
-        if (userRole === 'hr_admin' && cat !== 'corporate') return false;
-        if (userRole === 'crew_admin' && cat !== 'crew' && !cat.includes('deck') && !cat.includes('crew')) return false;
+        // Strict role boundary enforcement (HR Admin = Corporate/Office, Crew Admin = Seafaring/Crew)
+        if (userRole === 'hr_admin' && cat !== 'corporate' && cat !== 'office') return false;
+        if (userRole === 'crew_admin' && cat !== 'crew' && cat !== 'seafaring' && !cat.includes('deck') && !cat.includes('engine') && !cat.includes('crew')) return false;
 
-        const matchesCategory = activeTab === 'all' || cat === activeTab || (activeTab === 'crew' && (cat.includes('deck') || cat.includes('crew')));
+        const isCrewCat = cat === 'crew' || cat === 'seafaring' || cat.includes('deck') || cat.includes('engine') || cat.includes('crew');
+        const isCorpCat = cat === 'corporate' || cat === 'office';
+        const matchesCategory = activeTab === 'all' || (activeTab === 'crew' && isCrewCat) || (activeTab === 'corporate' && isCorpCat);
         const matchesSearch = (c.position || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             (c.department || '').toLowerCase().includes(searchTerm.toLowerCase());
         return matchesCategory && matchesSearch;

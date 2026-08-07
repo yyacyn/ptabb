@@ -1,13 +1,18 @@
 import { Head, Link } from '@inertiajs/react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
+import JobApplyModal from '@/Components/JobApplyModal';
 import {
     ChevronLeft, Briefcase, MapPin, Clock, Calendar,
-    ArrowRight, CheckCircle, ListChecks
+    ArrowRight, CheckCircle, ListChecks, CheckCircle2, X
 } from 'lucide-react';
 
 export default function CareerShow({ career }) {
     if (!career) return null;
+
+    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+    const [showSuccessToast, setShowSuccessToast] = useState(false);
 
     const categoryColor = (cat) => {
         const l = (cat || '').toLowerCase();
@@ -180,13 +185,14 @@ export default function CareerShow({ career }) {
                         </div>
 
                         {/* Apply Button */}
-                        <Link
-                            href={route('contacts.index')}
+                        <button
+                            type="button"
+                            onClick={() => setIsApplyModalOpen(true)}
                             className={`group w-full bg-gradient-to-r ${applyBtnClass(career.category)} text-white font-['Hanken_Grotesk'] font-semibold text-[15px] py-3 px-6 rounded-[6px] inline-flex items-center justify-center gap-2 transition-all active:scale-[0.97] cursor-pointer`}
                         >
                             Apply Now
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-150" />
-                        </Link>
+                        </button>
                     </div>
                 </motion.div>
 
@@ -203,20 +209,61 @@ export default function CareerShow({ career }) {
                             Ready to Join PT. ABB?
                         </h2>
                         <p className="font-['Hanken_Grotesk'] font-medium text-[17px] sm:text-[18px] text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
-                            Submit your application through our contact form and our HR team will get back to you within 3–5 business days.
+                            Submit your application through our interactive portal and our HR team will review your CV within 3–5 business days.
                         </p>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                            <Link
-                                href={route('contacts.index')}
-                                className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all"
+                            <button
+                                type="button"
+                                onClick={() => setIsApplyModalOpen(true)}
+                                className="bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white rounded-[8px] px-[36px] py-[14px] font-['Hanken_Grotesk'] font-semibold text-[16px] hover:shadow-[0_4px_14px_rgba(217,58,43,0.35)] active:scale-[0.97] inline-flex items-center gap-2.5 mt-2 transition-all cursor-pointer"
                             >
                                 Apply Now
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                            </button>
                         </motion.div>
                     </div>
                 </motion.section>
             </div>
+
+            {/* Reusable Job Application Modal */}
+            <JobApplyModal
+                career={isApplyModalOpen ? career : null}
+                onClose={() => setIsApplyModalOpen(false)}
+                onSuccess={() => {
+                    setShowSuccessToast(true);
+                    setTimeout(() => setShowSuccessToast(false), 5000);
+                }}
+            />
+
+            {/* Success Toast Notification */}
+            <AnimatePresence>
+                {showSuccessToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ duration: 0.25 }}
+                        className="fixed bottom-6 right-6 z-50 bg-[#141B2C] text-white p-4 rounded-[8px] shadow-2xl border border-emerald-500/30 flex items-center gap-3 max-w-md font-['Hanken_Grotesk']"
+                    >
+                        <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-[15px] text-white leading-tight">Application Submitted!</h4>
+                            <p className="text-[13px] text-slate-300 mt-0.5 leading-snug">
+                                Thank you for applying. Our HR team will review your qualifications and reach out soon.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowSuccessToast(false)}
+                            className="text-slate-400 hover:text-white p-1 rounded-md transition-colors shrink-0 cursor-pointer"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </GuestLayout>
     );
 }

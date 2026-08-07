@@ -101,6 +101,10 @@ export default function Index({
                 return 'bg-emerald-500';
             case 'amber':
                 return 'bg-amber-500';
+            case 'blue':
+                return 'bg-blue-600';
+            case 'indigo':
+                return 'bg-indigo-500';
             default:
                 return 'bg-[#00629D]';
         }

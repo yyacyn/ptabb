@@ -95,6 +95,20 @@ export default function Edit({ fleet = null, categories = [] }) {
         setData('operational_area', updated.join(', '));
     };
 
+    const handleIntInput = (field, maxLen = 15) => (e) => {
+        const val = e.target.value.replace(/\D/g, '').slice(0, maxLen);
+        setData(field, val);
+    };
+
+    const handleDecInput = (field, maxLen = 15) => (e) => {
+        let val = e.target.value.replace(/[^0-9.]/g, '');
+        const parts = val.split('.');
+        if (parts.length > 2) {
+            val = `${parts[0]}.${parts.slice(1).join('')}`;
+        }
+        setData(field, val.slice(0, maxLen));
+    };
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -502,7 +516,16 @@ export default function Edit({ fleet = null, categories = [] }) {
                                             <input
                                                 type="text"
                                                 value={data.imo_number}
-                                                onChange={(e) => setData('imo_number', e.target.value.slice(0, 11))}
+                                                onChange={(e) => {
+                                                    let val = e.target.value;
+                                                    if (/^imo/i.test(val)) {
+                                                        const digits = val.replace(/\D/g, '').slice(0, 7);
+                                                        setData('imo_number', digits ? `IMO ${digits}` : 'IMO ');
+                                                    } else {
+                                                        const digits = val.replace(/\D/g, '').slice(0, 7);
+                                                        setData('imo_number', digits);
+                                                    }
+                                                }}
                                                 placeholder="e.g. 9123456 or IMO 9123456"
                                                 pattern="(IMO\s*)?[0-9]{7}"
                                                 title="IMO number must be 7 digits (e.g. 9123456 or IMO 9123456)"
@@ -764,9 +787,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Build Year</label>
                                             <input
-                                                type="number"
+                                                type="text"
+                                                inputMode="numeric"
                                                 value={data.build_year}
-                                                onChange={(e) => setData('build_year', e.target.value)}
+                                                onChange={handleIntInput('build_year', 4)}
                                                 placeholder="e.g. 1989"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -775,10 +799,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Deadweight (DWT - t)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.dwt}
-                                                onChange={(e) => setData('dwt', e.target.value)}
+                                                onChange={handleDecInput('dwt', 12)}
                                                 placeholder="e.g. 4235.00"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -787,10 +811,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Hold / Cargo Capacity (M3 / MT)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.capacity}
-                                                onChange={(e) => setData('capacity', e.target.value)}
+                                                onChange={handleDecInput('capacity', 12)}
                                                 placeholder="e.g. 3577.14"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -802,10 +826,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Gross Tonnage (GT)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.gross_tonnage}
-                                                onChange={(e) => setData('gross_tonnage', e.target.value)}
+                                                onChange={handleDecInput('gross_tonnage', 12)}
                                                 placeholder="e.g. 2264"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -814,10 +838,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Net Tonnage (NT)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.net_tonnage}
-                                                onChange={(e) => setData('net_tonnage', e.target.value)}
+                                                onChange={handleDecInput('net_tonnage', 12)}
                                                 placeholder="e.g. 680"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -826,10 +850,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Light Ship (t)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.light_ship}
-                                                onChange={(e) => setData('light_ship', e.target.value)}
+                                                onChange={handleDecInput('light_ship', 12)}
                                                 placeholder="e.g. 1197"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -838,10 +862,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Avg Ship Speed (Knots)</label>
                                             <input
-                                                type="number"
-                                                step="0.1"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.speed}
-                                                onChange={(e) => setData('speed', e.target.value)}
+                                                onChange={handleDecInput('speed', 6)}
                                                 placeholder="e.g. 10.0"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -901,8 +925,9 @@ export default function Edit({ fleet = null, categories = [] }) {
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">MMSI Number</label>
                                             <input
                                                 type="text"
+                                                inputMode="numeric"
                                                 value={data.mmsi}
-                                                onChange={(e) => setData('mmsi', e.target.value)}
+                                                onChange={handleIntInput('mmsi', 9)}
                                                 placeholder="e.g. 525012357"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -922,10 +947,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Summer Draft (m)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.summer_draft}
-                                                onChange={(e) => setData('summer_draft', e.target.value)}
+                                                onChange={handleDecInput('summer_draft', 6)}
                                                 placeholder="e.g. 5.95"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -937,10 +962,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">LOA (m)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.loa}
-                                                onChange={(e) => setData('loa', e.target.value)}
+                                                onChange={handleDecInput('loa', 8)}
                                                 placeholder="e.g. 91.00"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -949,10 +974,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">LBP (m)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.lbp}
-                                                onChange={(e) => setData('lbp', e.target.value)}
+                                                onChange={handleDecInput('lbp', 8)}
                                                 placeholder="e.g. 85.00"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -961,10 +986,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Breadth (m)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.breadth}
-                                                onChange={(e) => setData('breadth', e.target.value)}
+                                                onChange={handleDecInput('breadth', 8)}
                                                 placeholder="e.g. 14.50"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
@@ -973,10 +998,10 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">Depth (m)</label>
                                             <input
-                                                type="number"
-                                                step="0.01"
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={data.depth}
-                                                onChange={(e) => setData('depth', e.target.value)}
+                                                onChange={handleDecInput('depth', 8)}
                                                 placeholder="e.g. 7.20"
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />

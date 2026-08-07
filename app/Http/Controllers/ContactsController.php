@@ -17,11 +17,15 @@ class ContactsController extends Controller
 
         if (auth()->check()) {
             $user = auth()->user();
-            // BR-04: HRD-routed contact messages filtered out from Crew/PR admins at query level
-            if (in_array($user->role, ['crew_admin', 'pr_admin'])) {
-                $query->where(function($q) {
+            if ($user->role === 'hr_admin') {
+                $query->where('department', 'hrd');
+            } elseif ($user->role === 'crew_admin') {
+                $query->where('department', 'crew');
+            } elseif ($user->role === 'pr_admin') {
+                // BR-04: HRD and Crew contact messages hidden from PR admin at query level
+                $query->where(function ($q) {
                     $q->whereNull('department')
-                      ->orWhere('department', '!=', 'hrd');
+                      ->orWhereNotIn('department', ['hrd', 'crew']);
                 });
             }
         }
@@ -69,11 +73,17 @@ class ContactsController extends Controller
             'phone' => 'nullable|string|max:20',
             'company' => 'nullable|string|max:255',
             'subject' => 'required|string|max:255',
-            'department' => 'nullable|string|in:commercial,operation,hrd,general',
+            'department' => 'nullable|string|in:commercial,operation,hrd,crew,general',
             'message' => 'required|string|max:2000',
+            'resume' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
             'ip_address' => 'nullable|string|max:45',
             'status' => 'nullable|string|in:new,read,replied',
         ]);
+
+        if ($request->hasFile('resume')) {
+            $path = $request->file('resume')->store('resumes', 'public');
+            $validated['resume_path'] = '/storage/' . $path;
+        }
 
         if (empty($validated['ip_address'])) {
             $validated['ip_address'] = $request->ip();
@@ -135,6 +145,30 @@ class ContactsController extends Controller
         }
 
         return redirect()->back()->with('success', 'Message status updated.');
+    }
+
+    /**
+     * Serve the resume/CV file inline so the browser previews it instead of downloading.
+     */
+    public function previewResume(string $id)
+    {
+        $contact = Contact::findOrFail($id);
+
+        abort_if(!$contact->resume_path, 404, 'No resume attached.');
+
+        // Convert stored path (/storage/resumes/xxx.pdf) → absolute disk path
+        $relativePath = str_replace('/storage/', '', $contact->resume_path);
+        $absolutePath = storage_path('app/public/' . $relativePath);
+
+        abort_if(!file_exists($absolutePath), 404, 'Resume file not found.');
+
+        $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
+        $filename  = basename($absolutePath);
+
+        return response()->file($absolutePath, [
+            'Content-Type'        => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
     }
 
     /**

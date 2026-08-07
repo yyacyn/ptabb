@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
-import { Mail, Search, Filter, ArrowUpDown, Trash2, Eye, CheckCircle2, MessageSquare, Clock, User, Building2, Phone, Shield, X, RefreshCw } from 'lucide-react';
+import { Mail, Search, Filter, ArrowUpDown, Trash2, Eye, CheckCircle2, MessageSquare, Clock, User, Building2, Phone, Shield, X, RefreshCw, FileText, Download } from 'lucide-react';
 import axios from 'axios';
 
 const EMPTY_CONTACTS = [];
@@ -34,6 +34,35 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
     // Mark as Replied Confirmation Modal State
     const [showConfirmReplied, setShowConfirmReplied] = useState(false);
 
+    // Close Modals on ESC Key Press or Body Scroll Lock
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                if (showConfirmReplied) {
+                    setShowConfirmReplied(false);
+                } else if (messageToDelete) {
+                    setMessageToDelete(null);
+                } else if (selectedMessage) {
+                    setSelectedMessage(null);
+                }
+            }
+        };
+
+        const isAnyModalOpen = selectedMessage || messageToDelete || showConfirmReplied;
+
+        if (isAnyModalOpen) {
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [selectedMessage, messageToDelete, showConfirmReplied]);
+
     // Department Badge Color Map
     const getDepartmentBadge = (dept) => {
         switch ((dept || '').toLowerCase()) {
@@ -44,6 +73,8 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
                 return { label: 'Operations', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
             case 'hrd':
                 return { label: 'HRD / Careers', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+            case 'crew':
+                return { label: 'Crewing / Seafaring', bg: 'bg-amber-50 text-amber-800 border-amber-200' };
             default:
                 return { label: 'General Inquiry', bg: 'bg-slate-100 text-slate-700 border-slate-200' };
         }
@@ -206,6 +237,34 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
                                 <Filter className="w-3.5 h-3.5 text-[#00629D]" />
                                 <span className="font-bold">Filter:</span>
                             </div>
+
+                            {/* Department Filter (Role-scoped options) */}
+                            {userRole === 'super_admin' && (
+                                <select
+                                    value={selectedDepartment}
+                                    onChange={(e) => { setSelectedDepartment(e.target.value); setCurrentPage(1); }}
+                                    className="border border-[#E5E7EB] rounded-[8px] text-sm py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
+                                >
+                                    <option value="ALL">All Departments</option>
+                                    <option value="hrd">HRD / Careers</option>
+                                    <option value="crew">Crewing / Seafaring</option>
+                                    <option value="commercial">Commercial & Charter</option>
+                                    <option value="operation">Operations</option>
+                                    <option value="general">General Inquiry</option>
+                                </select>
+                            )}
+                            {userRole === 'pr_admin' && (
+                                <select
+                                    value={selectedDepartment}
+                                    onChange={(e) => { setSelectedDepartment(e.target.value); setCurrentPage(1); }}
+                                    className="border border-[#E5E7EB] rounded-[8px] text-sm py-2 px-3 pr-7 focus:border-[#00629D] focus:ring-[#00629D] bg-white cursor-pointer"
+                                >
+                                    <option value="ALL">All PR Departments</option>
+                                    <option value="commercial">Commercial & Charter</option>
+                                    <option value="operation">Operations</option>
+                                    <option value="general">General Inquiry</option>
+                                </select>
+                            )}
 
                             {/* Status Filter */}
                             <select
@@ -388,8 +447,14 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
 
             {/* MESSAGE DETAIL READER MODAL */}
             {selectedMessage && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl w-full max-w-[1000px] p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+                <div
+                    onClick={() => setSelectedMessage(null)}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200 cursor-pointer"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl w-full max-w-[1000px] p-6 space-y-4 max-h-[85vh] overflow-y-auto cursor-default"
+                    >
                         <div className="flex items-start justify-between  gap-4">
                             <div className="min-w-0 flex-1">
                                 <div className="font-['JetBrains_Mono'] text-sm text-[#00629D] font-bold uppercase tracking-wider mb-1.5">
@@ -470,6 +535,21 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
                                         </span>
                                     </div>
 
+                                    {selectedMessage.resume_path && (
+                                        <div>
+                                            <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">Attached Resume / CV</span>
+                                            <a
+                                                href={route('contacts.resume.preview', selectedMessage.id)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="mt-1.5 inline-flex items-center gap-2 bg-[#F0F4F8] hover:bg-[#E2E8F0] border border-[#CBD5E1] text-[#00629D] font-semibold text-[13px] px-3 py-1.5 rounded-[6px] transition-colors"
+                                            >
+                                                <FileText className="w-4 h-4 text-[#00629D]" />
+                                                Preview Resume
+                                            </a>
+                                        </div>
+                                    )}
+
                                     {selectedMessage.ip_address && (
                                         <div>
                                             <span className="text-[11px] text-[#8AAFC8] block font-['JetBrains_Mono'] uppercase font-bold">IP Address</span>
@@ -519,7 +599,27 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
                                 </label>
 
                                 <div className="bg-white border border-[#E5E7EB] rounded-[10px] p-5 text-[14px] leading-relaxed text-[#141B2C] whitespace-pre-wrap font-normal min-h-[260px] max-h-[420px] overflow-y-auto">
-                                    {selectedMessage.message}
+                                    {(() => {
+                                        const text = selectedMessage.message || '';
+                                        const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                        const parts = text.split(urlRegex);
+                                        return parts.map((part, index) => {
+                                            if (part.match(urlRegex)) {
+                                                return (
+                                                    <a
+                                                        key={index}
+                                                        href={part}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-[#00629D] font-bold underline hover:text-[#3F96DD] break-all inline-flex items-center gap-1"
+                                                    >
+                                                        {part}
+                                                    </a>
+                                                );
+                                            }
+                                            return part;
+                                        });
+                                    })()}
                                 </div>
                             </div>
 
@@ -531,8 +631,14 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
 
             {/* DELETE CONFIRMATION MODAL */}
             {messageToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center">
+                <div
+                    onClick={() => setMessageToDelete(null)}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200 cursor-pointer"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center cursor-default"
+                    >
                         <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
                             <Trash2 className="w-6 h-6" />
                         </div>
@@ -565,8 +671,14 @@ export default function Contacts({ contacts = EMPTY_CONTACTS }) {
 
             {/* MARK AS REPLIED CONFIRMATION MODAL */}
             {showConfirmReplied && selectedMessage && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center">
+                <div
+                    onClick={() => setShowConfirmReplied(false)}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-['Hanken_Grotesk'] animate-in fade-in duration-200 cursor-pointer"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-2xl max-w-sm w-full p-6 space-y-4 text-center cursor-default"
+                    >
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
                             <CheckCircle2 className="w-6 h-6" />
                         </div>

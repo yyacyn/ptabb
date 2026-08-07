@@ -332,10 +332,38 @@ PT. PELAYARAN ANDALAS BAHTERA BARUNA (PT ABB) WEB SYSTEM v3.0
 | Halaman publik memiliki Tag \<title\> and Meta Description SEO. | Metadata terpasang unik di setiap rute halaman. | PASS |
 | Ukuran file JavaScript initial bundle hasil build Vite terbagi secara efisien (Code-Splitting) dengan ukuran di bawah 500KB.  | Ukuran initial bundle JS yang dimuat pertama kali adalah sebesar \~320KB (\< 500KB limit).  | PASS |
 
+**15\. Hasil Pengujian Modal Lamaran Lowongan Kerja Publik (JobApplyModal Component)**
+
+*Tabel 15\. Hasil Pengujian Component Modal Lamaran Pekerjaan (Validation, Auto-Formatter, File Check & RBAC Routing)*
+
+| Identifikasi | \[DUPL-ABB-015\] |
+| :---- | :---- |
+| **Nama Kasus Uji** | Component Modal Lamaran Pekerjaan & Form Pengiriman CV (JobApplyModal.jsx) |
+| **Deskripsi Kasus** | Pengujian interaksi modal lamaran karir publik mencakup penutupan modal (backdrop click & ESC key), penguncian scroll body, validasi client-side & server-side (Nama Lengkap required, Email format Regex `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`, Phone/WhatsApp format Regex `/^[+]?[0-9\s\-()]{7,20}$/` + real-time input sanitizer & auto-formatter `+62 8XX XXXX XXXX`, Cover Letter optional), validasi upload file Resume/CV (.pdf/.doc/.docx max 10MB), serta penentuan rute otomatis departemen RBAC (`hrd` untuk corporate/office, `crew` untuk seafaring/crew). |
+| **Kondisi Awal** | Pengguna publik berada di Halaman Karir (/careers) atau Detail Karir (/careers/{id}) dan mengklik tombol "Apply Now". |
+| **Tanggal Pengujian** | 07 Agustus 2026 |
+| **Penguji** | Tim Penguji QA PT ABB |
+| **Skenario** | **Metode : Equivalent Partitioning** Langkah-langkah prosedur uji untuk kasus uji \[DUPL-ABB-015\]: **Interaksi Modal & Aksesibilitas** \- Klik area luar modal (backdrop click) untuk menutup modal \- Tekan tombol Escape pada keyboard untuk menutup modal \- Verifikasi body scroll lock (overflow: hidden) saat modal terbuka **Field “Full Name”** \- Input : Kosong / "" (Invalid) \- Input : Nama valid "Budi Santoso" (Valid) **Field “Email Address”** \- Input : Kosong / "" (Invalid) \- Input : Format email tidak valid "budi@com" atau "retardedemail" (Invalid) \- Input : Email valid "budi.santoso@example.com" (Valid) **Field “Phone / WhatsApp” (Auto-Formatter & Real-time Sanitizer)** \- Input : Kosong / "" (Invalid) \- Input : Karakter non-numerik / huruf / simbol acak "abc!@#" (Real-time Sanitizer memblokir) \- Input : Angka kurang dari 7 digit "12345" (Invalid) \- Input : Nomor telepon valid "081234567890" / "6281234567890" (Valid \- Terformat otomatis menjadi +62 812 3456 7890) **Field “Upload Resume / CV”** \- Input : Tanpa memilih file CV (Invalid) \- Input : File non-dokumen .exe / .jpg / .mp4 (Invalid) \- Input : File PDF berukuran \> 10MB (Invalid) \- Input : File dokumen valid .pdf / .doc / .docx \<= 10MB (Valid) **Field “Cover Letter / Experience Notes”** \- Input : Kosong / null (Valid \- Optional, disisipkan prefilled text standar) \- Input : Teks surat lamaran (Valid) **Routing Departemen RBAC** \- Pengiriman lamaran posisi corporate / office \-\> Rute departemen 'hrd' (HR Admin access) \- Pengiriman lamaran posisi seafaring / crew \-\> Rute departemen 'crew' (Crew Admin access) |
+
+| Yang Diharapkan | Pengamatan | Kesimpulan |
+| :---- | :---- | :---- |
+| Sistem menolak pengiriman lamaran tanpa Nama Lengkap dan menampilkan pesan error validasi. | Sistem menampilkan error validasi “The full name field is required.” | PASS |
+| Sistem menolak alamat email yang formatnya tidak valid (Regex test). | Sistem menampilkan error validasi “Please enter a valid email address (e.g. name@example.com).” | PASS |
+| Memblokir pengetikan karakter non-numerik pada field Phone / WhatsApp secara real-time. | Karakter huruf/simbol tidak dapat diketikkan ke dalam input box. | PASS |
+| Sistem memformat nomor telepon Indonesia secara otomatis saat diketik (081234567890 -> +62 812 3456 7890). | Nomor telepon terformat otomatis menjadi +62 812 3456 7890 per segmen. | PASS |
+| Sistem menolak nomor telepon yang jumlah digit angkanya kurang dari 7 digit. | Sistem menampilkan error validasi “Please enter a valid phone or WhatsApp number (e.g. +62 812 3456 7890).” | PASS |
+| Sistem menolak pengiriman lamaran tanpa melampirkan file CV/Resume. | Sistem menampilkan error validasi “Please select a valid Resume / CV file (.pdf, .doc, .docx max 10MB).” | PASS |
+| Sistem menolak pengunggahan file resume dengan ekstensi bukan dokumen (.exe, .jpg, .mp4). | Sistem menampilkan error validasi “The resume file must be a document of type: pdf, doc, docx.” | PASS |
+| Sistem menolak file resume yang ukurannya melebihi batas maksimal 10MB. | Sistem menampilkan error validasi “The resume file size may not be greater than 10MB.” | PASS |
+| Sistem menerima Cover Letter yang dikosongkan dan menyertakan prefilled job link tanpa melempar error backend. | Data lamaran terkirim sukses dengan tautan posisi pekerjaan dan catatan default. | PASS |
+| Sistem menutup modal saat pengguna mengklik area luar modal (backdrop click) atau menekan tombol ESC. | Modal lamaran tertutup mulus dan scroll halaman utama aktif kembali. | PASS |
+| Sistem mengarahkan pesan lamaran posisi corporate/office ke departemen 'hrd' (akses HR Admin). | Rekor tersimpan di database dengan department='hrd'. | PASS |
+| Sistem mengarahkan pesan lamaran posisi seafaring/crew ke departemen 'crew' (akses Crew Admin). | Rekor tersimpan di database dengan department='crew'. | PASS |
+
 **REKAPITULASI HASIL PENGUJIAN DUPL PT ABB v3.0**
 
 | Total Kasus Uji | Total Skenario Test Cases | Jumlah Lolos (PASS) | Jumlah Gagal (FAIL) | Persentase Keberhasilan |
 | :---- | :---- | :---- | :---- | :---- |
-| **14 Kasus Uji** | **109 Skenario** | **109 Skenario** | **0 Skenario** | **100%** |
+| **15 Kasus Uji** | **120 Skenario** | **120 Skenario** | **0 Skenario** | **100%** |
 
-**Kesimpulan Akhir Dokumen Uji Perangkat Lunak:** Seluruh modul controller (FleetsController, CareersController, NewsController, NotificationsController, BranchesController, ContactsController, ContactInfosController, UsersController, ClientsController, ChatbotController, dll.), sistem otorisasi RBAC berbasis role (BR-01), aturan keunikan nomor IMO & auto-slug berita (BR-02 & BR-03), isolasi pesan kontak HRD (BR-04), keandalan RAG AI Chatbot & Fallback Chain (BR-05), batasan 1 popup banner aktif per tipe (BR-06), serta seluruh standar keamanan Bcrypt, Parameterized Query (BR-SEC), dan performa transisi Inertia.js v2 web PT ABB v3.0 dinyatakan **MEMENUHI SPESIFIKASI TESTING & SIAP DIPRODUKSI (PASSED / SHIPPED TO PRODUCTION)**.
+**Kesimpulan Akhir Dokumen Uji Perangkat Lunak:** Seluruh modul controller (FleetsController, CareersController, NewsController, NotificationsController, BranchesController, ContactsController, ContactInfosController, UsersController, ClientsController, ChatbotController, JobApplyModal Component, dll.), sistem otorisasi RBAC berbasis role (BR-01), aturan keunikan nomor IMO & auto-slug berita (BR-02 & BR-03), isolasi pesan kontak HRD (BR-04), keandalan RAG AI Chatbot & Fallback Chain (BR-05), batasan 1 popup banner aktif per tipe (BR-06), serta seluruh standar keamanan Bcrypt, Parameterized Query (BR-SEC), dan performa transisi Inertia.js v2 web PT ABB v3.0 dinyatakan **MEMENUHI SPESIFIKASI TESTING & SIAP DIPRODUKSI (PASSED / SHIPPED TO PRODUCTION)**.

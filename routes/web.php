@@ -135,6 +135,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
 
     // Contacts Admin Management
     Route::get('/contacts', [ContactsController::class, 'index'])->name('contacts.index');
+    Route::get('/contacts/{id}/resume', [ContactsController::class, 'previewResume'])->name('contacts.resume.preview');
     Route::put('/contacts/{id}', [ContactsController::class, 'update'])->name('contacts.update');
     Route::delete('/contacts/{id}', [ContactsController::class, 'destroy'])->name('contacts.destroy');
 

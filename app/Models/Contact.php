@@ -21,5 +21,6 @@ class Contact extends Model
         'ip_address',
         'status',
         'message',
+        'resume_path',
     ];
 }

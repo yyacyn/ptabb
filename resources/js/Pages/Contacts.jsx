@@ -18,8 +18,60 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
         department: 'general',
     });
 
+    const formatPhone = (val) => {
+        const hasPlus = val.startsWith('+');
+        let digits = val.replace(/\D/g, '');
+
+        digits = digits.slice(0, 13);
+
+        if (digits.startsWith('0')) digits = '62' + digits.slice(1);
+
+        if (digits.startsWith('62')) {
+            const rest = digits.slice(2);
+            let parts = ['+62'];
+            if (rest.length > 0) parts.push(rest.slice(0, 3));
+            if (rest.length > 3) parts.push(rest.slice(3, 7));
+            if (rest.length > 7) parts.push(rest.slice(7, 11));
+            return parts.join(' ');
+        }
+
+        if (hasPlus && digits.length > 0) {
+            let parts = ['+' + digits.slice(0, 2)];
+            if (digits.length > 2) parts.push(digits.slice(2, 5));
+            if (digits.length > 5) parts.push(digits.slice(5, 9));
+            if (digits.length > 9) parts.push(digits.slice(9, 13));
+            return parts.join(' ');
+        }
+
+        let parts = [];
+        if (digits.length > 0) parts.push(digits.slice(0, 3));
+        if (digits.length > 3) parts.push(digits.slice(3, 7));
+        if (digits.length > 7) parts.push(digits.slice(7, 11));
+        if (digits.length > 11) parts.push(digits.slice(11, 13));
+        return parts.join(' ');
+    };
+
+    const handlePhoneChange = (e) => {
+        setData('phone', formatPhone(e.target.value));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!data.email || !emailRegex.test(data.email.trim())) {
+            setError('email', 'Please enter a valid email address (e.g. name@example.com).');
+            return;
+        }
+
+        if (data.phone && data.phone.trim()) {
+            const phoneRegex = /^[+]?[0-9\s\-()]{7,20}$/;
+            const cleanPhoneDigits = data.phone.trim().replace(/[^0-9]/g, '');
+            if (!phoneRegex.test(data.phone.trim()) || cleanPhoneDigits.length < 7) {
+                setError('phone', 'Please enter a valid phone or WhatsApp number (e.g. +62 812 3456 7890).');
+                return;
+            }
+        }
+
         post(route('contacts.store'), {
             preserveScroll: true,
             preserveState: true,
@@ -186,12 +238,16 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                     </label>
                                     <input
                                         type="text"
+                                        maxLength={255}
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
                                         placeholder="Jane Doe"
                                         className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors"
                                         required
                                     />
+                                    {(data.name || '').length >= 255 && (
+                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
+                                    )}
                                     {errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
                                 </div>
 
@@ -202,12 +258,16 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                     </label>
                                     <input
                                         type="email"
+                                        maxLength={255}
                                         value={data.email}
                                         onChange={(e) => setData('email', e.target.value)}
                                         placeholder="jane@company.com"
                                         className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
                                         required
                                     />
+                                    {(data.email || '').length >= 255 && (
+                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
+                                    )}
                                     {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
                                 </div>
 
@@ -218,12 +278,35 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                     </label>
                                     <input
                                         type="text"
+                                        maxLength={255}
                                         value={data.company}
                                         onChange={(e) => setData('company', e.target.value)}
                                         placeholder="Acme Logistics Corp."
                                         className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
                                     />
+                                    {(data.company || '').length >= 255 && (
+                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
+                                    )}
                                     {errors.company && <div className="text-red-500 text-xs mt-1">{errors.company}</div>}
+                                </div>
+
+                                {/* Phone / WhatsApp Field (Optional) */}
+                                <div>
+                                    <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
+                                        Phone / WhatsApp <span className="text-[#A0AEC0] font-normal text-[13px]">(Optional)</span>
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        maxLength={20}
+                                        value={data.phone || ''}
+                                        onChange={handlePhoneChange}
+                                        placeholder="+62 812 3456 7890"
+                                        className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
+                                    />
+                                    {(data.phone || '').length >= 20 && (
+                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (20 chars).</p>
+                                    )}
+                                    {errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
                                 </div>
 
                                 {/* Subject Field */}
@@ -233,12 +316,16 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                     </label>
                                     <input
                                         type="text"
+                                        maxLength={255}
                                         value={data.subject}
                                         onChange={(e) => setData('subject', e.target.value)}
                                         placeholder="Chartering Inquiry"
                                         className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors"
                                         required
                                     />
+                                    {(data.subject || '').length >= 255 && (
+                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
+                                    )}
                                     {errors.subject && <div className="text-red-500 text-xs mt-1">{errors.subject}</div>}
                                 </div>
 
@@ -249,12 +336,16 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                     </label>
                                     <textarea
                                         rows={4}
+                                        maxLength={2000}
                                         value={data.message}
                                         onChange={(e) => setData('message', e.target.value)}
                                         placeholder="How can we assist you?"
                                         className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors resize-none"
                                         required
                                     />
+                                    {(data.message || '').length >= 2000 && (
+                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (2000 chars).</p>
+                                    )}
                                     {errors.message && <div className="text-red-500 text-xs mt-1">{errors.message}</div>}
                                 </div>
 

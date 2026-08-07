@@ -1,25 +1,38 @@
 import { Head, Link } from '@inertiajs/react';
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import CtaBanner from '@/Components/CtaBanner';
+import JobApplyModal from '@/Components/JobApplyModal';
 import {
     ArrowRight, Shield, TrendingUp, Anchor, Award,
     FileText, Search, Wrench, BriefcaseMedical,
     Filter, ChevronLeft, ChevronRight,
-    X, Briefcase, MapPin, Clock
+    Briefcase, MapPin, Clock, CheckCircle2, X
 } from 'lucide-react';
 
 export default function Careers({ careers = [] }) {
 
-    const [searchQuery, setSearchQuery]           = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [selectedType, setSelectedType]         = useState('');
-    const [sortOrder, setSortOrder]               = useState('latest');
-    const [isFilterOpen, setIsFilterOpen]         = useState(false);
+    const [selectedType, setSelectedType] = useState('');
+    const [sortOrder, setSortOrder] = useState('latest');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1);
     const PER_PAGE = 6;
+
+    // Apply Modal State
+    const [applyingCareer, setApplyingCareer] = useState(null);
+    const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+    const openApplyModal = (career) => {
+        setApplyingCareer(career);
+    };
+
+    const closeApplyModal = () => {
+        setApplyingCareer(null);
+    };
 
     useEffect(() => {
         const handler = (e) => {
@@ -29,19 +42,35 @@ export default function Careers({ careers = [] }) {
         return () => document.removeEventListener('mousedown', handler);
     }, [isFilterOpen]);
 
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') closeApplyModal();
+        };
+        if (applyingCareer) {
+            document.body.style.overflow = 'hidden';
+            document.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [applyingCareer]);
+
     useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedType, sortOrder]);
 
     const categories = [...new Set(careers.map(c => c.category).filter(Boolean))];
-    const types      = [...new Set(careers.map(c => c.employment_type).filter(Boolean))];
+    const types = [...new Set(careers.map(c => c.employment_type).filter(Boolean))];
     const activeFiltersCount = (selectedCategory ? 1 : 0) + (selectedType ? 1 : 0) + (sortOrder !== 'latest' ? 1 : 0);
 
     const filtered = careers
         .filter(c => {
             const q = searchQuery.toLowerCase().trim();
             const matchQ = !q ||
-                (c.position    || '').toLowerCase().includes(q) ||
-                (c.department  || '').toLowerCase().includes(q) ||
-                (c.location    || '').toLowerCase().includes(q) ||
+                (c.position || '').toLowerCase().includes(q) ||
+                (c.department || '').toLowerCase().includes(q) ||
+                (c.location || '').toLowerCase().includes(q) ||
                 (c.description || '').toLowerCase().includes(q);
             return matchQ && (!selectedCategory || c.category === selectedCategory) && (!selectedType || c.employment_type === selectedType);
         })
@@ -50,14 +79,14 @@ export default function Careers({ careers = [] }) {
             : new Date(b.created_at) - new Date(a.created_at));
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-    const paginated  = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+    const paginated = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
     const resetFilters = () => { setSearchQuery(''); setSelectedCategory(''); setSelectedType(''); setSortOrder('latest'); };
 
     const categoryColor = (cat) => {
         const l = (cat || '').toLowerCase();
         if (l === 'corporate' || l === 'office') return 'bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white';
-        if (l === 'seafaring' || l === 'crew')   return 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white';
+        if (l === 'seafaring' || l === 'crew') return 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white';
         return 'bg-[#404750] text-white';
     };
 
@@ -149,10 +178,10 @@ export default function Careers({ careers = [] }) {
                     <div className="bg-[#F5F5F5] rounded-[8px] border border-[#E5E7EB] p-1">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-left">
                             {[
-                                { icon: Shield,     title: 'Safety Culture',    description: 'Uncompromising commitment to operational safety and crew wellbeing.' },
+                                { icon: Shield, title: 'Safety Culture', description: 'Uncompromising commitment to operational safety and crew wellbeing.' },
                                 { icon: TrendingUp, title: 'Structured Growth', description: 'Clear pathways supported by continuous technical training.' },
-                                { icon: Anchor,     title: 'Long-Term Career',  description: 'Stable opportunities supported by a reliable, modern fleet.' },
-                                { icon: Award,      title: 'Top Benefits',      description: 'Comprehensive compensation aligned with global industry standards.' },
+                                { icon: Anchor, title: 'Long-Term Career', description: 'Stable opportunities supported by a reliable, modern fleet.' },
+                                { icon: Award, title: 'Top Benefits', description: 'Comprehensive compensation aligned with global industry standards.' },
                             ].map((item, idx) => {
                                 const IconComponent = item.icon;
                                 return (
@@ -189,9 +218,9 @@ export default function Careers({ careers = [] }) {
                 {/* Desktop view (horizontal step flow) */}
                 <div className="hidden md:flex w-full flex-row items-start justify-between pt-6">
                     {[
-                        { icon: FileText,         title: 'Application & Document Submission' },
-                        { icon: Search,           title: 'Screening & Verification' },
-                        { icon: Wrench,           title: 'Technical & Competency Interview' },
+                        { icon: FileText, title: 'Application & Document Submission' },
+                        { icon: Search, title: 'Screening & Verification' },
+                        { icon: Wrench, title: 'Technical & Competency Interview' },
                         { icon: BriefcaseMedical, title: 'Medical Check-Up' },
                     ].map((step, idx, arr) => {
                         const Icon = step.icon;
@@ -224,10 +253,10 @@ export default function Careers({ careers = [] }) {
                 {/* Mobile view (grid / step list layout) */}
                 <div className="grid grid-cols-2 gap-4 md:hidden pt-4">
                     {[
-                        { icon: FileText,         title: 'Application & Document Submission', stepNum: '01' },
-                        { icon: Search,           title: 'Screening & Verification',          stepNum: '02' },
-                        { icon: Wrench,           title: 'Technical & Competency Interview',  stepNum: '03' },
-                        { icon: BriefcaseMedical, title: 'Medical Check-Up',                  stepNum: '04' },
+                        { icon: FileText, title: 'Application & Document Submission', stepNum: '01' },
+                        { icon: Search, title: 'Screening & Verification', stepNum: '02' },
+                        { icon: Wrench, title: 'Technical & Competency Interview', stepNum: '03' },
+                        { icon: BriefcaseMedical, title: 'Medical Check-Up', stepNum: '04' },
                     ].map((step, idx) => {
                         const Icon = step.icon;
                         return (
@@ -311,7 +340,7 @@ export default function Careers({ careers = [] }) {
                             </button>
                             {isFilterOpen && (
                                 <div className="absolute right-0 mt-2 w-72 bg-white border border-[#E5E7EB] rounded-[8px] shadow-xl z-30 p-4 space-y-4">
-                                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                                    <div className="flex items-center justify-between border-[#E5E7EB] pb-2.5">
                                         <span className="text-[12px] font-['JetBrains_Mono'] font-bold text-[#141B2C] uppercase tracking-wider">Filter Positions</span>
                                         {activeFiltersCount > 0 && (
                                             <button type="button" onClick={resetFilters} className="text-[11px] font-['JetBrains_Mono'] text-[#D93A2B] hover:underline font-semibold cursor-pointer">
@@ -424,11 +453,13 @@ export default function Careers({ careers = [] }) {
                                     >
                                         Review Position
                                     </Link>
-                                    <Link href={route('careers.index', career.id)}
+                                    <button
+                                        type="button"
+                                        onClick={() => openApplyModal(career)}
                                         className={`w-full text-center py-2 px-4 rounded-[4px] font-['Hanken_Grotesk'] font-semibold lg:text-[15px] text-[13px] text-white transition-[colors,shadow,opacity,transform] cursor-pointer ${applyBtnClass(career.category)}`}
                                     >
                                         Apply Securely
-                                    </Link>
+                                    </button>
                                 </div>
                             </motion.div>
                         ))}
@@ -450,11 +481,10 @@ export default function Careers({ careers = [] }) {
                             </button>
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                 <button key={page} type="button" onClick={() => setCurrentPage(page)}
-                                    className={`w-9 h-9 rounded-[6px] text-[14px] font-bold flex items-center justify-center transition-[colors,shadow,opacity,transform] cursor-pointer ${
-                                        currentPage === page
-                                            ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white border border-transparent'
-                                            : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
-                                    }`}
+                                    className={`w-9 h-9 rounded-[6px] text-[14px] font-bold flex items-center justify-center transition-[colors,shadow,opacity,transform] cursor-pointer ${currentPage === page
+                                        ? 'bg-gradient-to-r from-[#D93A2B] to-[#FF5542] text-white border border-transparent'
+                                        : 'bg-white hover:bg-slate-50 text-[#141B2C] border border-[#E5E7EB]'
+                                        }`}
                                 >
                                     {page}
                                 </button>
@@ -475,6 +505,46 @@ export default function Careers({ careers = [] }) {
                 buttonLabel="Send Us Your CV"
                 buttonRoute="public.contacts"
             />
+
+            {/* 6. JOB APPLICATION MODAL */}
+            <JobApplyModal
+                career={applyingCareer}
+                onClose={() => setApplyingCareer(null)}
+                onSuccess={() => {
+                    setShowSuccessToast(true);
+                    setTimeout(() => setShowSuccessToast(false), 5000);
+                }}
+            />
+
+            {/* Success Toast Notification */}
+            <AnimatePresence>
+                {showSuccessToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ duration: 0.25 }}
+                        className="fixed bottom-6 right-6 z-50 bg-[#141B2C] text-white p-4 rounded-[8px] shadow-2xl border border-emerald-500/30 flex items-center gap-3 max-w-md font-['Hanken_Grotesk']"
+                    >
+                        <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-[15px] text-white leading-tight">Application Submitted!</h4>
+                            <p className="text-[13px] text-slate-300 mt-0.5 leading-snug">
+                                Thank you for applying. Our team will review your qualifications and reach out soon.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowSuccessToast(false)}
+                            className="text-slate-400 hover:text-white p-1 rounded-md transition-colors shrink-0 cursor-pointer"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </GuestLayout>
     );
 }

@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
 use App\Models\Career;
 use App\Models\Client;
 use App\Models\Contact;
+use App\Models\ContactInfo;
 use App\Models\Fleet;
+use App\Models\FleetCategory;
 use App\Models\News;
+use App\Models\NewsCategory;
 use App\Models\Notification;
 use App\Models\PageView;
+use App\Models\User;
+use App\Models\VoyageWaypoint;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -21,10 +27,14 @@ class DashboardController extends Controller
 
         // 1. Filter Unread Messages based on RBAC & BR-04 (HRD-routed messages hidden from Crew/PR admin)
         $contactsQuery = Contact::query();
-        if (in_array($userRole, ['crew_admin', 'pr_admin'])) {
+        if ($userRole === 'hr_admin') {
+            $contactsQuery->where('department', 'hrd');
+        } elseif ($userRole === 'crew_admin') {
+            $contactsQuery->where('department', 'crew');
+        } elseif ($userRole === 'pr_admin') {
             $contactsQuery->where(function ($q) {
                 $q->whereNull('department')
-                  ->orWhere('department', '!=', 'hrd');
+                  ->orWhereNotIn('department', ['hrd', 'crew']);
             });
         }
 
@@ -92,19 +102,17 @@ class DashboardController extends Controller
         // 5. Dynamic activity stream compiled from DB records according to user role permissions
         $activities = collect();
 
-        // Contacts Activity (HRD messages filtered out for Crew Admin per BR-04, PR Admin restricted)
-        if (in_array($userRole, ['super_admin', 'hr_admin', 'crew_admin'])) {
-            (clone $contactsQuery)->latest()->take(3)->get()->each(function ($contact) use (&$activities) {
-                $activities->push([
-                    'id' => 'contact-' . $contact->id,
-                    'color' => 'rose',
-                    'title' => 'New contact message from ' . ($contact->company ?: $contact->name) . ' — ' . ($contact->subject ?: 'Inquiry'),
-                    'time' => $contact->created_at ? $contact->created_at->diffForHumans() : 'Recently',
-                    'department' => $contact->department ?: 'Customer Support',
-                    'timestamp' => $contact->created_at ? $contact->created_at->timestamp : 0,
-                ]);
-            });
-        }
+        // Contacts Activity (Filtered strictly by role per RBAC & BR-04)
+        (clone $contactsQuery)->latest()->take(3)->get()->each(function ($contact) use (&$activities) {
+            $activities->push([
+                'id' => 'contact-' . $contact->id,
+                'color' => 'rose',
+                'title' => 'New contact message from ' . ($contact->company ?: $contact->name) . ' — ' . ($contact->subject ?: 'Inquiry'),
+                'time' => $contact->created_at ? $contact->created_at->diffForHumans() : 'Recently',
+                'department' => ucfirst($contact->department ?: 'General'),
+                'timestamp' => $contact->created_at ? $contact->created_at->timestamp : 0,
+            ]);
+        });
 
         // News Activity (Visible to Super Admin & PR Admin)
         if (in_array($userRole, ['super_admin', 'pr_admin'])) {
@@ -141,6 +149,109 @@ class DashboardController extends Controller
                     'time' => $career->created_at ? $career->created_at->diffForHumans() : 'Recently',
                     'department' => $career->department ?: 'Human Resources',
                     'timestamp' => $career->created_at ? $career->created_at->timestamp : 0,
+                ]);
+            });
+        }
+
+        // Fleet Activity (Visible to Super Admin)
+        if ($userRole === 'super_admin') {
+            Fleet::latest()->take(3)->get()->each(function ($vessel) use (&$activities) {
+                $activities->push([
+                    'id' => 'fleet-' . $vessel->id,
+                    'color' => 'blue',
+                    'title' => 'Vessel "' . $vessel->name . '" (' . ($vessel->vessel_type ?: 'Ship') . ') updated in fleet records',
+                    'time' => $vessel->updated_at ? $vessel->updated_at->diffForHumans() : ($vessel->created_at ? $vessel->created_at->diffForHumans() : 'Recently'),
+                    'department' => 'Fleet Operations',
+                    'timestamp' => $vessel->updated_at ? $vessel->updated_at->timestamp : ($vessel->created_at ? $vessel->created_at->timestamp : 0),
+                ]);
+            });
+        }
+
+        // Notification & Pop-up Banner Activity (Visible to Super Admin & HR Admin)
+        if (in_array($userRole, ['super_admin', 'hr_admin'])) {
+            Notification::latest()->take(2)->get()->each(function ($notif) use (&$activities) {
+                $activities->push([
+                    'id' => 'notif-' . $notif->id,
+                    'color' => 'amber',
+                    'title' => 'Pop-up alert banner "' . $notif->title . '" (' . ucfirst($notif->type ?: 'home') . ') is ' . ($notif->status ?: 'active'),
+                    'time' => $notif->updated_at ? $notif->updated_at->diffForHumans() : ($notif->created_at ? $notif->created_at->diffForHumans() : 'Recently'),
+                    'department' => 'Site Notifications',
+                    'timestamp' => $notif->updated_at ? $notif->updated_at->timestamp : ($notif->created_at ? $notif->created_at->timestamp : 0),
+                ]);
+            });
+        }
+
+        // User Account Activity (Visible to Super Admin)
+        if ($userRole === 'super_admin') {
+            User::latest()->take(2)->get()->each(function ($u) use (&$activities) {
+                $activities->push([
+                    'id' => 'user-' . $u->id,
+                    'color' => 'indigo',
+                    'title' => 'Admin account for ' . $u->name . ' (' . str_replace('_', ' ', strtoupper($u->role ?: 'admin')) . ') updated',
+                    'time' => $u->updated_at ? $u->updated_at->diffForHumans() : ($u->created_at ? $u->created_at->diffForHumans() : 'Recently'),
+                    'department' => 'System Administration',
+                    'timestamp' => $u->updated_at ? $u->updated_at->timestamp : ($u->created_at ? $u->created_at->timestamp : 0),
+                ]);
+            });
+
+            // Voyage Waypoints / Telemetry Activity
+            VoyageWaypoint::latest()->take(2)->get()->each(function ($wp) use (&$activities) {
+                $activities->push([
+                    'id' => 'voyage-' . $wp->id,
+                    'color' => 'blue',
+                    'title' => 'Voyage telemetry waypoint logged for vessel ID #' . $wp->fleet_id,
+                    'time' => $wp->created_at ? $wp->created_at->diffForHumans() : 'Recently',
+                    'department' => 'Fleet Operations',
+                    'timestamp' => $wp->created_at ? $wp->created_at->timestamp : 0,
+                ]);
+            });
+
+            // Fleet Category Activity
+            FleetCategory::latest()->take(2)->get()->each(function ($cat) use (&$activities) {
+                $activities->push([
+                    'id' => 'fleetcat-' . $cat->id,
+                    'color' => 'blue',
+                    'title' => 'Fleet category "' . $cat->name . '" updated',
+                    'time' => $cat->updated_at ? $cat->updated_at->diffForHumans() : ($cat->created_at ? $cat->created_at->diffForHumans() : 'Recently'),
+                    'department' => 'Fleet Operations',
+                    'timestamp' => $cat->updated_at ? $cat->updated_at->timestamp : ($cat->created_at ? $cat->created_at->timestamp : 0),
+                ]);
+            });
+
+            // HQ Contact Info Activity
+            ContactInfo::latest()->take(2)->get()->each(function ($ci) use (&$activities) {
+                $activities->push([
+                    'id' => 'contactinfo-' . $ci->id,
+                    'color' => 'indigo',
+                    'title' => 'HQ contact info record (' . ($ci->label ?: $ci->type) . ') updated',
+                    'time' => $ci->updated_at ? $ci->updated_at->diffForHumans() : ($ci->created_at ? $ci->created_at->diffForHumans() : 'Recently'),
+                    'department' => 'HQ Information',
+                    'timestamp' => $ci->updated_at ? $ci->updated_at->timestamp : ($ci->created_at ? $ci->created_at->timestamp : 0),
+                ]);
+            });
+        }
+
+        // Branch Office Activity (Visible to Super Admin & PR Admin)
+        if (in_array($userRole, ['super_admin', 'pr_admin'])) {
+            Branch::latest()->take(2)->get()->each(function ($b) use (&$activities) {
+                $activities->push([
+                    'id' => 'branch-' . $b->id,
+                    'color' => 'emerald',
+                    'title' => 'Operational branch office in ' . ($b->city ?: $b->name) . ' updated',
+                    'time' => $b->updated_at ? $b->updated_at->diffForHumans() : ($b->created_at ? $b->created_at->diffForHumans() : 'Recently'),
+                    'department' => 'Branch Network',
+                    'timestamp' => $b->updated_at ? $b->updated_at->timestamp : ($b->created_at ? $b->created_at->timestamp : 0),
+                ]);
+            });
+
+            NewsCategory::latest()->take(2)->get()->each(function ($ncat) use (&$activities) {
+                $activities->push([
+                    'id' => 'newscat-' . $ncat->id,
+                    'color' => 'emerald',
+                    'title' => 'News category "' . $ncat->name . '" updated',
+                    'time' => $ncat->updated_at ? $ncat->updated_at->diffForHumans() : ($ncat->created_at ? $ncat->created_at->diffForHumans() : 'Recently'),
+                    'department' => 'Public Relations',
+                    'timestamp' => $ncat->updated_at ? $ncat->updated_at->timestamp : ($ncat->created_at ? $ncat->created_at->timestamp : 0),
                 ]);
             });
         }
@@ -183,7 +294,7 @@ class DashboardController extends Controller
             ->take(10)
             ->get(['id', 'title', 'slug', 'view_count', 'created_at']);
 
-        $recentActivities = $activities->sortByDesc('timestamp')->values()->take(6);
+        $recentActivities = $activities->sortByDesc('timestamp')->values()->take(10);
 
         return Inertia::render('Dashboard/Index', [
             'fleetsCount' => Fleet::count(),
