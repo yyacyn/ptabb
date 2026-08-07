@@ -121,7 +121,7 @@ export default function Clients({ clients = [] }) {
                                 <div className="flex flex-wrap items-center gap-3">
                                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                         <Link
-                                            href={route('contacts.index')}
+                                            href={route('public.contacts')}
                                             className="group inline-flex items-center justify-center bg-gradient-to-r from-[#00629D] to-[#3F96DD] text-white font-['Hanken_Grotesk'] font-medium text-[15px] rounded-[4px] px-[28px] py-[10px] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] active:scale-[0.97] transition-[colors,shadow,opacity,transform] duration-200"
                                         >
                                             Become a Partner
@@ -144,26 +144,43 @@ export default function Clients({ clients = [] }) {
                                     />
                                 </div>
 
-                                {/* 2 Stat Cards Strip (Side by Side) */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow,opacity,transform] duration-200 shadow-xs">
-                                        <span className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-[#141B2C] leading-none tracking-tight mb-2">
-                                            15+
-                                        </span>
-                                        <span className="font-['Hanken_Grotesk'] font-medium text-[14px] sm:text-[15px] text-[#404750] leading-snug">
-                                            Domestic Partners
-                                        </span>
-                                    </div>
+                                 {/* 2 Stat Cards Strip (Side by Side) */}
+                                 {(() => {
+                                     const rawDomestic = activeClients.filter(
+                                         c => (c.category || '').toLowerCase() === 'domestic' || (c.country || '').toLowerCase() === 'indonesia'
+                                     ).length;
+                                     const rawInternational = activeClients.filter(
+                                         c => (c.category || '').toLowerCase() === 'international' || ((c.country || '').toLowerCase() !== 'indonesia' && (c.category || '').toLowerCase() !== 'domestic')
+                                     ).length;
 
-                                    <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow,opacity,transform] duration-200 shadow-xs">
-                                        <span className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-[#141B2C] leading-none tracking-tight mb-2">
-                                            15+
-                                        </span>
-                                        <span className="font-['Hanken_Grotesk'] font-medium text-[14px] sm:text-[15px] text-[#404750] leading-snug">
-                                            International Partners
-                                        </span>
-                                    </div>
-                                </div>
+                                     const roundedDomestic = Math.floor(rawDomestic / 5) * 5;
+                                     const roundedInternational = Math.floor(rawInternational / 5) * 5;
+
+                                     const displayDomestic = roundedDomestic > 0 ? `${roundedDomestic}+` : `${rawDomestic}`;
+                                     const displayInternational = roundedInternational > 0 ? `${roundedInternational}+` : `${rawInternational}`;
+
+                                     return (
+                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                                             <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow,opacity,transform] duration-200 shadow-xs">
+                                                 <span className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-[#141B2C] leading-none tracking-tight mb-2">
+                                                     {displayDomestic}
+                                                 </span>
+                                                 <span className="font-['Hanken_Grotesk'] font-medium text-[14px] sm:text-[15px] text-[#404750] leading-snug">
+                                                     Domestic Partners
+                                                 </span>
+                                             </div>
+
+                                             <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between hover:border-[#00629D] transition-[colors,shadow,opacity,transform] duration-200 shadow-xs">
+                                                 <span className="font-['Hanken_Grotesk'] font-bold text-[32px] sm:text-[40px] text-[#141B2C] leading-none tracking-tight mb-2">
+                                                     {displayInternational}
+                                                 </span>
+                                                 <span className="font-['Hanken_Grotesk'] font-medium text-[14px] sm:text-[15px] text-[#404750] leading-snug">
+                                                     International Partners
+                                                 </span>
+                                             </div>
+                                         </div>
+                                     );
+                                 })()}
                             </div>
 
                         </div>

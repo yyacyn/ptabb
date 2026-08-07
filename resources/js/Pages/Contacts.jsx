@@ -298,70 +298,41 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                     <div
                         className="bg-[#F5F5F5] rounded-[12px] border border-[#E5E7EB] p-1 flex flex-col lg:flex-row gap-1 h-auto lg:h-[480px] w-full items-stretch text-left"
                     >
-                        {(branches && branches.length > 0 ? branches : [
-                            {
-                                id: 'pontianak',
-                                title: 'Pontianak, West Kalimantan',
-                                type: 'Branch Office',
-                                company: 'PT. Pelayaran Andalas Bahtera Baruna Pontianak',
-                                shortDesc: 'Branch Office Indonesia',
-                                mapUrl: null,
-                                image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80'
-                            },
-                            {
-                                id: 'tuban',
-                                title: 'Tuban, East Java',
-                                type: 'Branch Office',
-                                company: 'PT. Pelayaran Andalas Bahtera Baruna Tuban',
-                                shortDesc: 'Branch Office Indonesia',
-                                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.7026954380094!2d111.9392790113708!3d-6.805974293163146!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e77a787f7ac8185%3A0xa63f277caab38294!2sPT.%20PELAYARAN%20ANDALAS%20BAHTERA%20BARUNA!5e0!3m2!1sen!2sid!4v1785750531242!5m2!1sen!2sid',
-                                image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80'
-                            },
-                            {
-                                id: 'padang',
-                                title: 'Padang, West Sumatra',
-                                type: 'Branch Office',
-                                company: 'PT. Pelayaran Andalas Bahtera Baruna Padang',
-                                shortDesc: 'Branch Office Indonesia',
-                                mapUrl: null,
-                                image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=1200&q=80'
-                            },
-                            {
-                                id: 'banyuwangi',
-                                title: 'Banyuwangi, East Java',
-                                type: 'Branch Office',
-                                company: 'PT. Pelayaran Andalas Bahtera Baruna Banyuwangi',
-                                shortDesc: 'Branch Office Indonesia',
-                                mapUrl: null,
-                                image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80'
-                            },
-                            {
-                                id: 'singapore',
-                                title: 'Singapore',
-                                type: 'Representative Office',
-                                company: 'Duta Buana Marine & Machinery Pte. Ltd.',
-                                shortDesc: 'Representative Office',
-                                mapUrl: null,
-                                image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=1200&q=80'
-                            },
-                            {
-                                id: 'batam',
-                                title: 'Batam, Riau Islands',
-                                type: 'Shipyard',
-                                company: 'PT. Sumber Marine Shipyard',
-                                shortDesc: 'Vessel Building & Repair Facility',
-                                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.1334440620126!2d103.91407751134618!3d1.0616303989236995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d9f2d3684f3d7f%3A0x57c21d1c7f3fa731!2sPT.%20Sumber%20Marine%20Shipyard!5e0!3m2!1sen!2sid!4v1785750320902!5m2!1sen!2sid',
-                                image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=1200&q=80'
-                            }
-                        ]).map((b) => {
+                        {(branches || []).map((b, idx) => {
                             const regionId = b.slug || b.id;
                             const isActive = activeRegion === regionId;
                             const title = b.name || b.title;
-                            const type = b.type;
+                            const type = b.type || 'Branch Office';
                             const company = b.company_name || b.company;
                             const shortDesc = b.short_desc || b.shortDesc;
                             const mapUrl = b.map_url || b.mapUrl;
-                            const imageUrl = b.image_url || b.image;
+
+                            // Smart accordion image selection based on Branch Type when DB image_url is not set
+                            const getAccordionFallbackImage = (branchType, index) => {
+                                const lowerType = (branchType || '').toLowerCase();
+                                if (lowerType.includes('shipyard') || lowerType.includes('port') || lowerType.includes('facility')) {
+                                    const shipyardImages = [
+                                        '/images/accordions/port-de-barcelona-night.webp',
+                                        '/images/accordions/cargo-ship-miami-harbor-with-crane-blue-sky-sea.webp',
+                                        '/images/accordions/2392.webp',
+                                        '/images/accordions/6175.webp'
+                                    ];
+                                    return shipyardImages[index % shipyardImages.length];
+                                }
+                                if (lowerType.includes('representative')) {
+                                    return '/images/accordions/checking-data-laptop.webp';
+                                }
+                                // Default Branch Office images
+                                const officeImages = [
+                                    '/images/accordions/3d-rendering-business-meeting-working-room-office-building.webp',
+                                    '/images/accordions/modern-office-space-interior.webp',
+                                    '/images/accordions/empty-office-workplace-with-table-chair-computer.webp',
+                                    '/images/accordions/204.webp'
+                                ];
+                                return officeImages[index % officeImages.length];
+                            };
+
+                            const imageUrl = b.image_url || b.image || getAccordionFallbackImage(type, idx);
 
                             return (
                                 <div
@@ -381,10 +352,10 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                         <div className="font-['Hanken_Grotesk'] font-bold text-[#00629D] text-[14px] lg:text-[17px] mb-0.5">
                                             {title}
                                         </div>
-                                        <div className="font-['Hanken_Grotesk'] font-medium text-[#404750] text-[12px] lg:text-[14px]">
+                                        <div className="font-['Hanken_Grotesk'] font-medium text-[#404750] text-[12px] lg:text-[14px] truncate">
                                             {company}
                                         </div>
-                                        <p className="text-[12px] lg:text-[14px] text-[#404750] mt-2 font-['Hanken_Grotesk']">
+                                        <p className="text-[12px] lg:text-[14px] text-[#404750] mt-2 font-['Hanken_Grotesk'] truncate">
                                             {shortDesc}
                                         </p>
                                     </div>
@@ -415,16 +386,18 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
 
                                     {/* Collapsed Vertical/Horizontal Photo Strip Panel */}
                                     <div className={`absolute inset-0 transition-opacity duration-300 ${!isActive ? 'block' : 'hidden'}`}>
-                                        {imageUrl && (
-                                            <img
-                                                src={imageUrl}
-                                                alt={title}
-                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none';
-                                                }}
-                                            />
-                                        )}
+                                        <img
+                                            src={imageUrl || '/images/office.png'}
+                                            alt={title}
+                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                            onError={(e) => {
+                                                // If specified image file is missing or deleted, fallback to static core image
+                                                if (!e.currentTarget.dataset.fallbackTried) {
+                                                    e.currentTarget.dataset.fallbackTried = 'true';
+                                                    e.currentTarget.src = '/images/office.png';
+                                                }
+                                            }}
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-b from-[#141B2C]/75 via-[#00629D]/50 to-[#141B2C]/85 hover:from-[#00629D]/75 transition-colors duration-300" />
                                         <div className="relative z-10 w-full h-full flex items-center justify-center p-2">
                                             <span className="font-['Hanken_Grotesk'] font-bold text-[14px] lg:text-[22px] text-white drop-shadow-md whitespace-nowrap lg:[writing-mode:vertical-lr] lg:rotate-180">

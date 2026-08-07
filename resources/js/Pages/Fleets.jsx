@@ -354,27 +354,27 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
         const query = searchQuery.toLowerCase().trim();
 
         // Search matches Name, Type, IMO Number, Area, or Flag
-        const matchesQuery = !query || 
-            name.includes(query) || 
-            type.includes(query) || 
-            imo.includes(query) || 
-            areaStr.toLowerCase().includes(query) || 
+        const matchesQuery = !query ||
+            name.includes(query) ||
+            type.includes(query) ||
+            imo.includes(query) ||
+            areaStr.toLowerCase().includes(query) ||
             flag.includes(query);
 
         // 1. Vessel Type Checkboxes
-        const matchesCategory = selectedCategories.length === 0 || 
+        const matchesCategory = selectedCategories.length === 0 ||
             selectedCategories.includes(vessel.vessel_type || vessel.type || 'Pneumatic Bulk Carrier');
 
         // 2. Operational Area Checkboxes
-        const matchesArea = selectedAreas.length === 0 || 
-            selectedAreas.some(selectedArea => 
+        const matchesArea = selectedAreas.length === 0 ||
+            selectedAreas.some(selectedArea =>
                 vesselAreas.includes(selectedArea.toLowerCase()) || areaStr === selectedArea
             );
 
         // 3. Vessel Status Checkboxes
-        const matchesStatus = selectedStatuses.length === 0 || 
-            selectedStatuses.some(selectedStatus => 
-                vessel.status === selectedStatus || 
+        const matchesStatus = selectedStatuses.length === 0 ||
+            selectedStatuses.some(selectedStatus =>
+                vessel.status === selectedStatus ||
                 status === selectedStatus.toLowerCase() ||
                 formatStatusName(vessel.status).toLowerCase() === selectedStatus.toLowerCase()
             );
@@ -575,8 +575,8 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
                                                 className="w-full flex items-center justify-between border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] bg-white text-[#141B2C] hover:border-[#00629D] transition-colors cursor-pointer"
                                             >
                                                 <span className="truncate font-medium text-left">
-                                                    {selectedCategories.length === 0 
-                                                        ? "All Vessel Types" 
+                                                    {selectedCategories.length === 0
+                                                        ? "All Vessel Types"
                                                         : `${selectedCategories.length} Selected`}
                                                 </span>
                                                 <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openSubDropdown === 'category' ? 'rotate-180' : ''}`} />
@@ -633,8 +633,8 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
                                                 className="w-full flex items-center justify-between border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] bg-white text-[#141B2C] hover:border-[#00629D] transition-colors cursor-pointer"
                                             >
                                                 <span className="truncate font-medium text-left">
-                                                    {selectedAreas.length === 0 
-                                                        ? "All Operating Areas" 
+                                                    {selectedAreas.length === 0
+                                                        ? "All Operating Areas"
                                                         : `${selectedAreas.length} Selected`}
                                                 </span>
                                                 <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openSubDropdown === 'area' ? 'rotate-180' : ''}`} />
@@ -691,8 +691,8 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
                                                 className="w-full flex items-center justify-between border border-[#E5E7EB] rounded-[4px] px-3 py-2 text-[13px] bg-white text-[#141B2C] hover:border-[#00629D] transition-colors cursor-pointer"
                                             >
                                                 <span className="truncate font-medium text-left">
-                                                    {selectedStatuses.length === 0 
-                                                        ? "All Vessel Statuses" 
+                                                    {selectedStatuses.length === 0
+                                                        ? "All Vessel Statuses"
                                                         : `${selectedStatuses.length} Selected`}
                                                 </span>
                                                 <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openSubDropdown === 'status' ? 'rotate-180' : ''}`} />
@@ -770,98 +770,98 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {paginatedFleets.map((vessel, idx) => (
-                        <motion.div
-                            key={vessel.id || idx}
-                            whileHover={{ y: -4 }}
-                            transition={{ duration: 0.2 }}
-                            className="group bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-[colors,shadow,opacity,transform] duration-300 overflow-hidden flex flex-col justify-between"
-                        >
-                            <div>
-                                {/* Vessel Image Container with Neutral Background behind */}
-                                <div className="relative h-52 bg-slate-100 overflow-hidden">
-                                    <img
-                                        src={resolveFleetImage(vessel)}
-                                        alt={vessel.ship_name || vessel.name || 'Vessel'}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        onError={(e) => {
-                                            e.currentTarget.src = '/images/card_bulk_vessel.png';
-                                        }}
-                                    />
-                                    <div className="absolute top-3 left-3 bg-[#141B2C]/80 backdrop-blur-md px-2.5 py-1 rounded-[4px] font-['JetBrains_Mono'] text-[11px] text-white font-bold uppercase tracking-wider">
-                                        {vessel.status ? vessel.status.replace(/_/g, ' ').toUpperCase() : 'Not Available'}
+                            <motion.div
+                                key={vessel.id || idx}
+                                whileHover={{ y: -4 }}
+                                transition={{ duration: 0.2 }}
+                                className="group bg-white rounded-[8px] border border-[#E5E7EB] hover:border-[#00629D] hover:shadow-[0_6px_20px_rgba(0,98,157,0.15)] transition-[colors,shadow,opacity,transform] duration-300 overflow-hidden flex flex-col justify-between"
+                            >
+                                <div>
+                                    {/* Vessel Image Container with Neutral Background behind */}
+                                    <div className="relative h-52 bg-slate-100 overflow-hidden">
+                                        <img
+                                            src={resolveFleetImage(vessel)}
+                                            alt={vessel.ship_name || vessel.name || 'Vessel'}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            onError={(e) => {
+                                                e.currentTarget.src = '/images/card_bulk_vessel.png';
+                                            }}
+                                        />
+                                        <div className="absolute top-3 left-3 bg-[#141B2C]/80 backdrop-blur-md px-2.5 py-1 rounded-[4px] font-['JetBrains_Mono'] text-[11px] text-white font-bold uppercase tracking-wider">
+                                            {vessel.status ? vessel.status.replace(/_/g, ' ').toUpperCase() : 'Status N/A'}
+                                        </div>
+                                    </div>
+
+                                    {/* Spec Content */}
+                                    <div className="p-6">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="font-['Hanken_Grotesk'] font-bold text-[20px] text-[#141B2C] mb-1">
+                                                {vessel.ship_name || vessel.name || 'Vessel Name N/A'}
+                                            </h3>
+                                            <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750]"> IMO: <span className="font-['JetBrains_Mono']"> {vessel.imo_number || 'IMO No. N/A'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750] mb-4">Type: <span> {vessel.vessel_type || 'Vessel Type N/A'}</span>
+                                        </div>
+
+                                        {/* Specs Box Grid */}
+                                        <div className="grid grid-cols-2 gap-2 text-[12px] font-['JetBrains_Mono'] mb-4">
+                                            <div>
+                                                <span className="text-[#00629D] block uppercase">DEADWEIGHT</span>
+                                                <span className="font-bold text-[#141B2C] text-[13px]">
+                                                    {(() => {
+                                                        const dwtVal = Number(vessel.dwt || vessel.deadweight || 0);
+                                                        return dwtVal > 0 ? `${dwtVal.toLocaleString()} DWT` : 'Deadweight N/A';
+                                                    })()}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-[#00629D] block uppercase">BUILD YEAR</span>
+                                                <span className="font-bold text-[#141B2C] text-[13px]">
+                                                    {vessel.build_year || vessel.year || 'Build Year N/A'}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-[#00629D] block uppercase">CAPACITY</span>
+                                                <span className="font-bold text-[#141B2C] text-[13px]">
+                                                    {(() => {
+                                                        if (!vessel.capacity) return 'Capacity N/A';
+                                                        const strCap = String(vessel.capacity).trim();
+                                                        if (!strCap || strCap === '0') return 'Capacity N/A';
+                                                        const unitMatch = strCap.match(/(M3|M³|MT|CBM|Tons)/i);
+                                                        const unit = unitMatch ? unitMatch[0].toUpperCase() : 'MT';
+                                                        const numPart = parseFloat(strCap.replace(/[^0-9.]/g, ''));
+                                                        if (isNaN(numPart) || numPart <= 0) return 'Capacity N/A';
+                                                        return `${numPart.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${unit}`;
+                                                    })()}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-[#00629D] block uppercase">CLASS. SOCIETY</span>
+                                                <span className="font-bold text-[#141B2C] text-[13px] truncate block" title={vessel.vessel_type || vessel.category?.name || vessel.type || 'N/A'}>
+                                                    {vessel.classification_society || 'Class N/A'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <p className="font-['Hanken_Grotesk'] text-[14px] text-[#404750] leading-relaxed line-clamp-3">
+                                            {vessel.description || 'Description N/A'}
+                                        </p>
                                     </div>
                                 </div>
 
-                                {/* Spec Content */}
-                                <div className="p-6">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="font-['Hanken_Grotesk'] font-bold text-[20px] text-[#141B2C] mb-1">
-                                            {vessel.ship_name || vessel.name || 'Not Available'}
-                                        </h3>
-                                        <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750]"> IMO: <span className="font-['JetBrains_Mono']"> {vessel.imo_number || 'Not Available'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="font-['Hanken_Grotesk'] font-medium text-[14px] text-[#404750] mb-4">Type: <span> {vessel.vessel_type || 'Not Available'}</span>
-                                    </div>
-
-                                    {/* Specs Box Grid */}
-                                    <div className="grid grid-cols-2 gap-2 text-[12px] font-['JetBrains_Mono'] mb-4">
-                                        <div>
-                                            <span className="text-[#00629D] block uppercase">DEADWEIGHT</span>
-                                            <span className="font-bold text-[#141B2C] text-[13px]">
-                                                {(() => {
-                                                    const dwtVal = Number(vessel.dwt || vessel.deadweight || 0);
-                                                    return dwtVal > 0 ? `${dwtVal.toLocaleString()} DWT` : 'Not Available';
-                                                })()}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="text-[#00629D] block uppercase">BUILD YEAR</span>
-                                            <span className="font-bold text-[#141B2C] text-[13px]">
-                                                {vessel.build_year || vessel.year || 'Not Available'}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="text-[#00629D] block uppercase">CAPACITY</span>
-                                            <span className="font-bold text-[#141B2C] text-[13px]">
-                                                {(() => {
-                                                    if (!vessel.capacity) return 'Not Available';
-                                                    const strCap = String(vessel.capacity).trim();
-                                                    if (!strCap || strCap === '0') return 'Not Available';
-                                                    const unitMatch = strCap.match(/(M3|M³|MT|CBM|Tons)/i);
-                                                    const unit = unitMatch ? unitMatch[0].toUpperCase() : 'MT';
-                                                    const numPart = parseFloat(strCap.replace(/[^0-9.]/g, ''));
-                                                    if (isNaN(numPart) || numPart <= 0) return 'Not Available';
-                                                    return `${numPart.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${unit}`;
-                                                })()}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="text-[#00629D] block uppercase">CLASS. SOCIETY</span>
-                                            <span className="font-bold text-[#141B2C] text-[13px] truncate block" title={vessel.vessel_type || vessel.category?.name || vessel.type || 'Not Available'}>
-                                                {vessel.classification_society || 'Not Available'}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <p className="font-['Hanken_Grotesk'] text-[14px] text-[#404750] leading-relaxed line-clamp-3">
-                                        {vessel.description || 'Not Available'}
-                                    </p>
+                                <div className="p-6 pt-0">
+                                    <Link
+                                        href={`/fleets/${vessel.id || 1}`}
+                                        className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] text-white transition-colors duration-200 rounded-[4px] py-2.5 font-['Hanken_Grotesk'] font-semibold text-[17px] "
+                                    >
+                                        See Vessel Detail
+                                        <ArrowRight className="w-4 h-4" />
+                                    </Link>
                                 </div>
-                            </div>
-
-                            <div className="p-6 pt-0">
-                                <Link
-                                    href={`/fleets/${vessel.id || 1}`}
-                                    className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#00629D] to-[#3F96DD] hover:shadow-[0_4px_14px_rgba(0,98,157,0.35)] text-white transition-colors duration-200 rounded-[4px] py-2.5 font-['Hanken_Grotesk'] font-semibold text-[17px] "
-                                >
-                                    See Vessel Detail
-                                    <ArrowRight className="w-4 h-4" />
-                                </Link>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 )}
 
                 {/* Pagination Controls Matching Welcome.jsx Featured Fleet */}

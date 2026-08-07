@@ -230,7 +230,8 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                         const heroStatus = heroVessel?.status
                             ? (heroVessel.status.includes('service') || heroVessel.status === 'Active' ? 'Active - In Service' : heroVessel.status.replace('_', ' '))
                             : "Active Vessel";
-                        const heroImo = heroVessel?.imo_number ? `IMO: ${heroVessel.imo_number}` : "IMO: 9812345";
+                        const heroImoRaw = (heroVessel?.imo_number || "9812345").toString();
+                        const heroImo = heroImoRaw.replace(/\D/g, '') || heroImoRaw;
                         const heroType = heroVessel?.vessel_type || heroVessel?.type || "Pneumatic Bulk Cement";
 
                         return (
@@ -255,7 +256,7 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
 
                                     <div className="absolute bottom-6 sm:bottom-10 left-6 sm:left-[51px] flex flex-col gap-[5px] text-white z-10">
                                         <div className="font-['JetBrains_Mono'] font-bold text-[11px] sm:text-[12px] text-white uppercase tracking-wide flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
                                             {heroStatus}
                                         </div>
 
@@ -266,13 +267,13 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                                         <div className="flex flex-wrap items-center gap-2 font-['Hanken_Grotesk'] font-bold text-[12px] text-white">
                                             <span className="font-['JetBrains_Mono'] font-medium text-white/80">Type</span>
                                             <span>{heroType}</span>
-                                            <span className="font-['JetBrains_Mono'] font-medium text-white/80 ml-2">Area</span>
-                                            <span>{heroArea}</span>
+                                            <span className="font-['JetBrains_Mono'] font-medium text-white/80 ml-2">IMO</span>
+                                            <span>{heroImo}</span>
                                         </div>
 
                                         <div className="flex items-center gap-2 font-['JetBrains_Mono'] font-medium text-[12px] text-white/70">
                                             <MapPin className="w-3.5 h-3.5 text-white/70" />
-                                            <span>{heroImo}</span>
+                                            <span>{heroArea}</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -555,25 +556,25 @@ export default function Welcome({ auth, clients: initialClients = EMPTY_CLIENTS,
                             id: 'indonesia',
                             title: 'Indonesia',
                             shortDesc: 'Our foundation. Supporting national distribution networks across the archipelago.',
-                            image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80'
+                            image: '/images/accordions/boats-ocean-surrounded-by-mountains-cloudy-sky.webp'
                         },
                         {
                             id: 'southeast-asia',
                             title: 'Southeast Asia',
                             shortDesc: 'Key regional routes connecting Singapore, Malaysia, Vietnam, and Thailand bulk terminals.',
-                            image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80'
+                            image: '/images/accordions/nha-trang-vietnam-march-2024.webp'
                         },
                         {
                             id: 'asia-far-east',
                             title: 'Asia & Far East',
                             shortDesc: 'Deep-sea trade corridors servicing Japan, China, and South Korea industrial ports.',
-                            image: 'https://images.unsplash.com/photo-1516837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80'
+                            image: '/images/accordions/beautiful-landscape-mountain-fuji-with-maple-leaf-tree-around-lake.webp'
                         },
                         {
                             id: 'global',
                             title: 'Global',
                             shortDesc: 'Worldwide chartering, transshipment, and cross-border maritime bulk logistics.',
-                            image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80'
+                            image: '/images/accordions/cargo-ship-miami-harbor-with-crane-blue-sky-sea.webp'
                         }
                     ].map((region) => {
                         const isActive = activeRegion === region.id;
