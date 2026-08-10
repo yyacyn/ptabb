@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import CtaBanner from '@/Components/CtaBanner';
@@ -15,11 +15,10 @@ import {
 } from 'lucide-react';
 
 export default function AboutUs({ milestones: initialMilestones = [] }) {
-    const [activeYear, setActiveYear] = useState('1999');
-
-    // Format and sort milestones chronologically (oldest -> newest)
-    const milestones = initialMilestones && initialMilestones.length > 0
-        ? [...initialMilestones]
+    // Format and sort all milestones chronologically (oldest -> newest)
+    const milestones = useMemo(() => {
+        if (!initialMilestones || initialMilestones.length === 0) return [];
+        return [...initialMilestones]
             .sort((a, b) => (parseInt(a.year) || 0) - (parseInt(b.year) || 0))
             .map((m, idx) => ({
                 id: `m-${m.year}-${idx}`,
@@ -27,11 +26,71 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                 title: m.milestone || m.title || 'Company Milestone',
                 description: m.description || '',
                 image: m.image || (idx % 2 === 0 ? '/images/card_bulk_vessel.png' : '/images/asuwa1.jpg')
-            }))
-        : [];
+            }));
+    }, [initialMilestones]);
+
+    const [activeYear, setActiveYear] = useState(() => milestones[0]?.year || '1999');
+    const [spineVisible, setSpineVisible] = useState(true);
+
+    // Calculate 5-year sliding window for sticky central year spine
+    const activeIndex = useMemo(() => {
+        const idx = milestones.findIndex(m => m.year === activeYear);
+        return idx >= 0 ? idx : 0;
+    }, [milestones, activeYear]);
+
+    const spineWindow = useMemo(() => {
+        const total = milestones.length;
+        if (total === 0) return { items: [], hasEarlier: false, hasLater: false };
+        if (total <= 5) return { items: milestones.map((m, idx) => ({ ...m, origIndex: idx })), hasEarlier: false, hasLater: false };
+
+        let start = activeIndex - 2;
+        let end = activeIndex + 2;
+
+        if (start < 0) {
+            start = 0;
+            end = 4;
+        } else if (end >= total) {
+            end = total - 1;
+            start = total - 5;
+        }
+
+        const items = milestones.slice(start, end + 1).map((m, relativeIdx) => {
+            const origIndex = start + relativeIdx;
+            return {
+                ...m,
+                origIndex,
+            };
+        });
+
+        return {
+            items,
+            hasEarlier: start > 0,
+            hasLater: end < total - 1
+        };
+    }, [milestones, activeIndex]);
 
     // Track scroll position to highlight active year
     const milestoneRefs = useRef({});
+    const desktopStreamRef = useRef(null);
+    const [spineHeight, setSpineHeight] = useState(null);
+
+    // Match spine container height to last milestone card so sticky spine scrolls away with cards
+    useEffect(() => {
+        const el = desktopStreamRef.current;
+        if (!el) return;
+        const ro = new ResizeObserver(() => {
+            const cards = el.querySelectorAll('[data-year]');
+            if (cards.length === 0) return;
+            let maxBottom = 0;
+            cards.forEach(card => {
+                const bottom = card.offsetTop + card.offsetHeight;
+                if (bottom > maxBottom) maxBottom = bottom;
+            });
+            setSpineHeight(maxBottom);
+        });
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -54,6 +113,23 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
             if (closestYear) {
                 setActiveYear(closestYear);
             }
+
+            // Boundary visibility: hide spine when above first card or below last card
+            const firstYear = milestones[0]?.year;
+            const lastYear = milestones[milestones.length - 1]?.year;
+            const firstEl = firstYear ? milestoneRefs.current[firstYear] : null;
+            const lastEl = lastYear ? milestoneRefs.current[lastYear] : null;
+
+            let visible = true;
+            if (firstEl) {
+                const firstRect = firstEl.getBoundingClientRect();
+                if (firstRect.top > window.innerHeight * 0.7) visible = false;
+            }
+            if (lastEl) {
+                const lastRect = lastEl.getBoundingClientRect();
+                if (lastRect.bottom < window.innerHeight * 0.3) visible = false;
+            }
+            setSpineVisible(visible);
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -298,39 +374,70 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                 {/* Timeline Relative Container */}
                 <div className="relative max-w-[1360px] mx-auto min-h-[700px]">
 
-                    {/* Sticky Center Year Spine (JetBrains Mono, Sticky at exact middle 50vh) */}
-                    <div className="hidden lg:flex flex-col items-center absolute left-1/2 -translate-x-1/2 top-24 bottom-0 z-20 pointer-events-none w-32">
-                        <div className="sticky top-1/2 -translate-y-1/2 pointer-events-auto flex flex-col items-center gap-3 py-4 transition-[colors,shadow,opacity,transform] duration-300">
-                            {milestones.map((m, idx) => {
-                                const isActive = activeYear === m.year;
-                                const nextMilestone = milestones[idx + 1];
-                                const hasYearGap = nextMilestone && (parseInt(nextMilestone.year) - parseInt(m.year) > 1);
+                    {/* Sticky Center Year Spine — 5-Item Sliding Window (Pure Year Numbers with Top/Bottom Ellipsis) */}
+                    <div
+                        className={`hidden lg:flex flex-col items-center absolute left-1/2 -translate-x-1/2 top-24 z-20 pointer-events-none w-32 transition-opacity duration-300 ${spineVisible ? 'opacity-100' : 'opacity-0'}`}
+                        style={spineHeight ? { height: Math.max(0, spineHeight - 96) } : { bottom: 0 }}
+                    >
+                        <div className="sticky top-1/2 -translate-y-1/2 pointer-events-auto flex flex-col items-center gap-2 py-2 transition-all duration-300">
+                            {/* Top Ellipsis for earlier years */}
+                            {spineWindow.hasEarlier && (
+                                <span className="font-['JetBrains_Mono'] text-[#8AAFC8] font-bold text-[13px] opacity-40 select-none -mb-1 tracking-widest">
+                                    . . .
+                                </span>
+                            )}
+
+                            {spineWindow.items.map((item, idx) => {
+                                const distance = Math.abs(item.origIndex - activeIndex);
+                                const isCurrent = item.year === activeYear;
+
+                                const nextMilestone = milestones[item.origIndex + 1];
+                                const hasYearGap = nextMilestone && (parseInt(nextMilestone.year) - parseInt(item.year) > 1);
+
+                                // Opacity & scale index styling:
+                                // 1st = slightly transparent (35% opacity)
+                                // 2nd = a little more apparent (70% opacity)
+                                // 3rd (current) = apparent (100% opacity, 32px bold blue)
+                                // 4th = a little more apparent (70% opacity)
+                                // 5th = slightly transparent (35% opacity)
+                                let styleClasses = "text-[16px] font-bold text-[#8AAFC8] opacity-35 scale-90 hover:opacity-70";
+                                if (isCurrent || distance === 0) {
+                                    styleClasses = "text-[32px] font-extrabold text-[#00629D] opacity-100 scale-110 tracking-tight";
+                                } else if (distance === 1) {
+                                    styleClasses = "text-[22px] font-bold text-[#404750] opacity-70 scale-95 hover:opacity-100 hover:text-[#00629D]";
+                                } else if (distance >= 2) {
+                                    styleClasses = "text-[16px] font-bold text-[#8AAFC8] opacity-35 scale-90 hover:opacity-70 hover:text-[#00629D]";
+                                }
 
                                 return (
-                                    <div key={m.id} className="flex flex-col items-center">
+                                    <div key={`spine-${item.id}`} className="flex flex-col items-center">
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setActiveYear(m.year);
-                                                scrollToMilestone(m.year);
+                                                setActiveYear(item.year);
+                                                scrollToMilestone(item.year);
                                             }}
-                                            className={`font-['JetBrains_Mono'] font-bold transition-[colors,shadow,opacity,transform] duration-300 cursor-pointer ${isActive
-                                                ? 'text-[28px] sm:text-[34px] text-[#00629D] scale-110 tracking-tight'
-                                                : 'text-[16px] sm:text-[18px] text-[#8AAFC8] hover:text-[#00629D]'
-                                                }`}
+                                            className={`font-['JetBrains_Mono'] transition-all duration-300 cursor-pointer ${styleClasses}`}
                                         >
-                                            {m.year}
+                                            {item.year}
                                         </button>
 
-                                        {/* Display gap dots representing missing years between milestones */}
+                                        {/* Display . . . gap dots representing missing years between non-consecutive milestones */}
                                         {hasYearGap && (
-                                            <span className="text-[#8AAFC8] font-bold text-[14px] tracking-widest my-2 select-none">
+                                            <span className="font-['JetBrains_Mono'] text-[#8AAFC8] font-bold text-[13px] opacity-45 select-none my-1 tracking-widest">
                                                 . . .
                                             </span>
                                         )}
                                     </div>
                                 );
                             })}
+
+                            {/* Bottom Ellipsis for later years */}
+                            {spineWindow.hasLater && (
+                                <span className="font-['JetBrains_Mono'] text-[#8AAFC8] font-bold text-[13px] opacity-40 select-none -mt-1 tracking-widest">
+                                    . . .
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -384,7 +491,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
                     </div>
 
                     {/* Desktop Stream (>= lg): Spacious 2-column staggered masonry stream with generous offset */}
-                    <div className="hidden lg:grid grid-cols-12 gap-10 xl:gap-14 items-start">
+                    <div ref={desktopStreamRef} className="hidden lg:grid grid-cols-12 gap-10 xl:gap-14 items-start">
                         {/* Left Column (Even Index Milestones: 1999, 2025) — Gap matched to staggered 320px step */}
                         <div className="col-span-5 flex flex-col gap-16 lg:gap-[280px] xl:gap-[300px]">
                             {milestones

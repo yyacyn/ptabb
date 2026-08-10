@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import CtaBanner from '@/Components/CtaBanner';
 import JobApplyModal from '@/Components/JobApplyModal';
+import NotificationPopup from '@/Components/NotificationPopup';
 import {
     ArrowRight, Shield, TrendingUp, Anchor, Award,
     FileText, Search, Wrench, BriefcaseMedical,
@@ -11,7 +12,21 @@ import {
     Briefcase, MapPin, Clock, CheckCircle2, X
 } from 'lucide-react';
 
-export default function Careers({ careers = [] }) {
+const EMPTY_NOTIFICATIONS = [];
+
+export default function Careers({ careers = [], notifications: initialNotifications = EMPTY_NOTIFICATIONS }) {
+    const [notificationsList, setNotificationsList] = useState(initialNotifications);
+
+    useEffect(() => {
+        if (!initialNotifications || initialNotifications.length === 0) {
+            fetch('/notifications', { headers: { 'Accept': 'application/json' } })
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setNotificationsList(data);
+                })
+                .catch(err => console.error("Error loading notifications:", err));
+        }
+    }, [initialNotifications]);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -395,14 +410,20 @@ export default function Careers({ careers = [] }) {
                 {filtered.length === 0 ? (
                     <div className="py-14 text-center bg-[#F9FAFB] rounded-[8px] border border-dashed border-[#E5E7EB]">
                         <Briefcase className="w-10 h-10 text-slate-400 mx-auto mb-3 stroke-[1.5]" />
-                        <h3 className="font-['Hanken_Grotesk'] font-bold text-lg text-[#141B2C] mb-1">No Vacancies Found</h3>
+                        <h3 className="font-['Hanken_Grotesk'] font-bold text-lg text-[#141B2C] mb-1">
+                            {searchQuery || activeFiltersCount > 0 ? "No Matching Positions Found" : "No Open Positions Currently Available"}
+                        </h3>
                         <p className="text-[14px] text-[#404750] max-w-md mx-auto mb-5 font-['Hanken_Grotesk'] leading-relaxed">
-                            No open positions match your current search or filters.
+                            {searchQuery || activeFiltersCount > 0
+                                ? "No open positions match your current search or filters."
+                                : "There are currently no active job vacancies posted. Please check back soon or send your CV via our contact form."}
                         </p>
-                        <button type="button" onClick={resetFilters}
-                            className="px-4 py-2 bg-[#00629D] text-white text-xs font-semibold rounded-[4px] hover:bg-[#004e7e] transition-colors cursor-pointer">
-                            Reset Filters
-                        </button>
+                        {(searchQuery || activeFiltersCount > 0) && (
+                            <button type="button" onClick={resetFilters}
+                                className="px-4 py-2 bg-[#00629D] text-white text-xs font-semibold rounded-[4px] hover:bg-[#004e7e] transition-colors cursor-pointer">
+                                Reset Filters
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -564,6 +585,8 @@ export default function Careers({ careers = [] }) {
                     </motion.div>
                 )}
             </AnimatePresence>
+            {/* Pop-up Banner Alert Modal for Career Page */}
+            <NotificationPopup notifications={notificationsList} targetType="career" />
         </GuestLayout>
     );
 }

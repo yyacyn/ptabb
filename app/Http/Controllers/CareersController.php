@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Career;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -49,6 +50,7 @@ class CareersController extends Controller
 
         return Inertia::render('Careers', [
             'careers' => $careers,
+            'notifications' => Notification::where('status', 'active')->get(),
         ]);
     }
 

@@ -220,99 +220,107 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, ease: 'easeOut' }}
-                        className="flex-1 bg-white rounded-[8px] p-6 lg:p-10 flex flex-col justify-between border border-[#E5E7EB]"
+                        className="flex-1 bg-white rounded-[8px] p-6 lg:p-8 flex flex-col justify-between border border-[#E5E7EB]"
                     >
-                        <div>
-                            <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] lg:text-[40px] text-[#141B2C] leading-[1.12] tracking-tight mb-2">
-                                Send Us a Message
-                            </h2>
-                            <p className="font-['Hanken_Grotesk'] font-medium text-[15px] lg:text-[16px] text-[#404750] leading-relaxed mb-6">
-                                Have a specific inquiry? Please fill out the form below and our team will get back to you promptly.
-                            </p>
+                        <div className="flex flex-col h-full flex-1 justify-between">
+                            <div>
+                                <h2 className="font-['Hanken_Grotesk'] font-bold text-[32px] lg:text-[40px] text-[#141B2C] leading-[1.12] tracking-tight mb-2">
+                                    Send Us a Message
+                                </h2>
+                                <p className="font-['Hanken_Grotesk'] font-medium text-[15px] lg:text-[16px] text-[#404750] leading-relaxed mb-6">
+                                    Have a specific inquiry? Please fill out the form below and our team will get back to you promptly.
+                                </p>
+                            </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4 font-['Hanken_Grotesk']">
-                                {/* Name Field */}
-                                <div>
-                                    <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
-                                        Your Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        maxLength={255}
-                                        value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        placeholder="Jane Doe"
-                                        className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors"
-                                        required
-                                    />
-                                    {(data.name || '').length >= 255 && (
-                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
-                                    )}
-                                    {errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
+                            <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between space-y-4 font-['Hanken_Grotesk']">
+                                {/* Name and Email Side-by-Side */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Name Field */}
+                                    <div>
+                                        <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
+                                            Your Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            maxLength={255}
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            placeholder="Jane Doe"
+                                            className="w-full px-4 py-2.5 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors"
+                                            required
+                                        />
+                                        {(data.name || '').length >= 255 && (
+                                            <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
+                                        )}
+                                        {errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
+                                    </div>
+
+                                    {/* Email Address Field */}
+                                    <div>
+                                        <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
+                                            Email Address <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            maxLength={255}
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            placeholder="jane@company.com"
+                                            className="w-full px-4 py-2.5 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
+                                            required
+                                        />
+                                        {(data.email || '').length >= 255 && (
+                                            <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
+                                        )}
+                                        {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
+                                    </div>
                                 </div>
 
-                                {/* Email Address Field */}
-                                <div>
-                                    <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
-                                        Email Address
-                                    </label>
-                                    <input
-                                        type="email"
-                                        maxLength={255}
-                                        value={data.email}
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        placeholder="jane@company.com"
-                                        className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
-                                        required
-                                    />
-                                    {(data.email || '').length >= 255 && (
-                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
-                                    )}
-                                    {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
-                                </div>
+                                {/* Company and Phone Side-by-Side */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Company Field (Optional) */}
+                                    <div>
+                                        <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
+                                            Company Name <span className="text-[#A0AEC0] font-normal text-[13px]">(Optional)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            maxLength={255}
+                                            value={data.company}
+                                            onChange={(e) => setData('company', e.target.value)}
+                                            placeholder="Acme Logistics Corp."
+                                            className="w-full px-4 py-2.5 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
+                                        />
+                                        {(data.company || '').length >= 255 && (
+                                            <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
+                                        )}
+                                        {errors.company && <div className="text-red-500 text-xs mt-1">{errors.company}</div>}
+                                    </div>
 
-                                {/* Company Field (Optional) */}
-                                <div>
-                                    <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
-                                        Company Name <span className="text-[#A0AEC0] font-normal text-[13px]">(Optional)</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        maxLength={255}
-                                        value={data.company}
-                                        onChange={(e) => setData('company', e.target.value)}
-                                        placeholder="Acme Logistics Corp."
-                                        className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
-                                    />
-                                    {(data.company || '').length >= 255 && (
-                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (255 chars).</p>
-                                    )}
-                                    {errors.company && <div className="text-red-500 text-xs mt-1">{errors.company}</div>}
-                                </div>
-
-                                {/* Phone / WhatsApp Field (Optional) */}
-                                <div>
-                                    <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
-                                        Phone / WhatsApp <span className="text-[#A0AEC0] font-normal text-[13px]">(Optional)</span>
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        maxLength={20}
-                                        value={data.phone || ''}
-                                        onChange={handlePhoneChange}
-                                        placeholder="+62 812 3456 7890"
-                                        className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
-                                    />
-                                    {(data.phone || '').length >= 20 && (
-                                        <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (20 chars).</p>
-                                    )}
-                                    {errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
+                                    {/* Phone / WhatsApp Field (Optional) */}
+                                    <div>
+                                        <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
+                                            Phone / WhatsApp <span className="text-[#A0AEC0] font-normal text-[13px]">(Optional)</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            maxLength={20}
+                                            value={data.phone || ''}
+                                            onChange={handlePhoneChange}
+                                            placeholder="+62 812 3456 7890"
+                                            className="w-full px-4 py-2.5 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-[#FFF] transition-colors"
+                                        />
+                                        {(data.phone || '').length >= 20 && (
+                                            <p className="text-xs text-amber-600 mt-1 font-medium font-['Hanken_Grotesk']">Maximum limit reached (20 chars).</p>
+                                        )}
+                                        {errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
+                                    </div>
                                 </div>
 
                                 {/* Subject Field */}
                                 <div>
                                     <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
-                                        Subject
+                                        Subject <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -320,7 +328,7 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                         value={data.subject}
                                         onChange={(e) => setData('subject', e.target.value)}
                                         placeholder="Chartering Inquiry"
-                                        className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors"
+                                        className="w-full px-4 py-2.5 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors"
                                         required
                                     />
                                     {(data.subject || '').length >= 255 && (
@@ -329,18 +337,17 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                     {errors.subject && <div className="text-red-500 text-xs mt-1">{errors.subject}</div>}
                                 </div>
 
-                                {/* Message Field */}
-                                <div>
+                                {/* Message Field (Stretches vertically to align button with left card) */}
+                                <div className="flex-1 flex flex-col min-h-[120px]">
                                     <label className="block text-[14px] font-bold text-[#141B2C] mb-1">
-                                        Message
+                                        Message <span className="text-red-500">*</span>
                                     </label>
                                     <textarea
-                                        rows={4}
                                         maxLength={2000}
                                         value={data.message}
                                         onChange={(e) => setData('message', e.target.value)}
                                         placeholder="How can we assist you?"
-                                        className="w-full px-4 py-3 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors resize-none"
+                                        className="w-full flex-1 px-4 py-2.5 text-[15px] bg-[#F5F5F5] border border-[#E5E7EB] rounded-[6px] text-[#141B2C] placeholder-[#A0AEC0] focus:outline-none focus:border-[#00629D] focus:bg-white transition-colors resize-none"
                                         required
                                     />
                                     {(data.message || '').length >= 2000 && (
@@ -350,7 +357,7 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
                                 </div>
 
                                 {/* Submit Button (Bottom Right) */}
-                                <div className="flex justify-end pt-2">
+                                <div className="flex justify-end pt-1">
                                     <button
                                         type="submit"
                                         disabled={processing}

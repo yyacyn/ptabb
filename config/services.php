@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+    ],
+
+    'openrouter' => [
+        'api_key' => env('OPENROUTER_API_KEY'),
+        'key' => env('OPENROUTER_API_KEY'),
+    ],
+
 ];

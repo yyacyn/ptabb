@@ -57,7 +57,7 @@ Return ONLY raw valid JSON. Do not include markdown code block backticks.
 PROMPT;
 
         // 2. Try Groq API for ultra-fast PDF spec parsing if GROQ_API_KEY is configured
-        $groqApiKey = env('GROQ_API_KEY');
+        $groqApiKey = config('services.groq.key', env('GROQ_API_KEY'));
         if (!empty($groqApiKey)) {
             $groqModels = [
                 'openai/gpt-oss-20b',
@@ -112,7 +112,7 @@ PROMPT;
         }
 
         // 3. Try OpenRouter AI for advanced machinery & equipment parsing if key exists
-        $apiKey = env('OPENROUTER_API_KEY');
+        $apiKey = config('services.openrouter.api_key', config('services.openrouter.key', env('OPENROUTER_API_KEY')));
         if (!empty($apiKey)) {
             $models = [
                 'nvidia/nemotron-3-ultra-550b-a55b:free',

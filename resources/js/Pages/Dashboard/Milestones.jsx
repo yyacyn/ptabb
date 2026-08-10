@@ -376,20 +376,29 @@ export default function Milestones({ milestones = [] }) {
                         {/* Milestone Image File Upload */}
                         <div>
                             <label className="block text-xs font-bold text-[#141B2C] mb-1">
-                                Milestone Image (Optional)
+                                Milestone Image <span className="text-red-500">*</span> <span className="text-[11px] font-normal text-[#8AAFC8] ml-1">(Max 10MB)</span>
                             </label>
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                required={!editingMilestone || !previewImage}
                                 onChange={(e) => {
                                     const file = e.target.files[0];
                                     if (file) {
+                                        if (file.size > 10 * 1024 * 1024) {
+                                            alert('File size exceeds 10MB limit. Please upload a smaller image.');
+                                            e.target.value = '';
+                                            return;
+                                        }
                                         setData('image', file);
                                         setPreviewImage(URL.createObjectURL(file));
                                     }
                                 }}
                                 className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 bg-[#F5F5F5] file:mr-3 file:py-1 file:px-2.5 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
                             />
+                            {errors?.image && (
+                                <span className="text-rose-500 text-[11px] mt-1 block">{errors.image}</span>
+                            )}
 
                             {previewImage && (
                                 <div className="mt-3 flex items-center gap-3 bg-[#F5F5F5] p-3 rounded-[6px] border border-[#E5E7EB]">

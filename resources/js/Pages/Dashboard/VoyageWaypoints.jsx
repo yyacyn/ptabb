@@ -7,17 +7,62 @@ import { renderToString } from 'react-dom/server';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+// Lucide React MapPin Icon for Leaflet Default Markers (100% pure Lucide icon, zero PNG images)
+const createLucideMarkerIcon = (IconComponent = MapPin, color = '#00629D', size = 26) => {
+    const iconHtml = renderToString(
+        <IconComponent
+            size={size}
+            style={{
+                color: color,
+                fill: color,
+                filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.35))'
+            }}
+        />
+    );
 
-const DefaultIcon = L.icon({
-    iconUrl: markerIcon,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+    return L.divIcon({
+        className: 'custom-lucide-pin',
+        html: `
+            <div style="display: flex; align-items: center; justify-content: center; width: ${size}px; height: ${size}px;">
+                ${iconHtml}
+            </div>
+        `,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -size / 2]
+    });
+};
+
+L.Marker.prototype.options.icon = createLucideMarkerIcon(MapPin, '#00629D', 26);
+
+// Custom SVG waypoint marker icon for intermediate route stops
+const createWaypointDotIcon = (label = 'Waypoint', color = '#00629D') => {
+    const pinHtml = renderToString(
+        <MapPin
+            size={18}
+            style={{
+                color: color,
+                fill: color,
+                filter: 'drop-shadow(0px 2px 3px rgba(0,0,0,0.3))'
+            }}
+        />
+    );
+
+    return L.divIcon({
+        className: 'custom-waypoint-pin',
+        html: `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
+                ${pinHtml}
+                <div style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 9px; color: #141B2C; background: rgba(255,255,255,0.92); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; border: 1px solid rgba(0,0,0,0.12); box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                    ${label}
+                </div>
+            </div>
+        `,
+        iconSize: [80, 34],
+        iconAnchor: [40, 18],
+        popupAnchor: [0, -18]
+    });
+};
 
 // Custom live vessel navigation pointer icon (Direction arrow + Vessel name label)
 const createVesselIcon = (vesselName = 'Vessel', heading = 0, pinColor = '#00629D') => {
@@ -108,8 +153,10 @@ function LeafletViewer({ waypoint }) {
                         </div>
                     `;
 
-                    // Strictly only the single current position gets the vessel pointer icon
-                    const markerOptions = isLive ? { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading), zIndexOffset: 1000 } : {};
+                    // Live position gets vessel direction icon, intermediate stops get custom waypoint pin
+                    const markerOptions = isLive
+                        ? { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading), zIndexOffset: 1000 }
+                        : { icon: createWaypointDotIcon(p.name || 'Waypoint', '#00629D') };
                     const m = L.marker([p.lat, p.lng], markerOptions).addTo(mapInstance.current).bindPopup(popupText);
                     if (isLive) {
                         m.openPopup();

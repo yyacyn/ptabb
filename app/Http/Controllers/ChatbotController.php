@@ -46,8 +46,8 @@ class ChatbotController extends Controller
             [['role' => 'user', 'content' => $userMessage]]
         );
 
-        $groqApiKey = env('GROQ_API_KEY');
-        $openRouterApiKey = config('services.openrouter.api_key', env('OPENROUTER_API_KEY'));
+        $groqApiKey = config('services.groq.key', env('GROQ_API_KEY'));
+        $openRouterApiKey = config('services.openrouter.api_key', config('services.openrouter.key', env('OPENROUTER_API_KEY')));
 
         // 5. & 6. Generation & Fallback Chain
         // Priority 1: Groq API (High Speed & Free Tier)
@@ -221,7 +221,7 @@ class ChatbotController extends Controller
             }
 
             if ($news->isEmpty()) {
-                $news = News::where('status', 'published')->latest()->take(4)->get();
+                $news = News::where('status', 'published')->latest()->get();
             }
 
             foreach ($news as $n) {
