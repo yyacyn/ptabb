@@ -297,11 +297,17 @@ class FleetsController extends Controller
         if ($request->hasFile('featured_image')) {
             $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('featured_image'), 'fleets');
             $validated['featured_image'] = '/storage/' . $path;
+        } else {
+            // Retain existing featured image untouched when no new image file is uploaded
+            unset($validated['featured_image']);
         }
 
         if ($request->hasFile('ship_particular_pdf')) {
             $path = $request->file('ship_particular_pdf')->store('documents/fleets', 'public');
             $validated['ship_particular_pdf'] = '/storage/' . $path;
+        } else {
+            // Retain existing specification document untouched when no new PDF file is uploaded
+            unset($validated['ship_particular_pdf']);
         }
 
         $fleet->update($validated);

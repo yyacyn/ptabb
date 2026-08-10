@@ -68,10 +68,19 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
         currentPage * itemsPerPage
     );
 
+    const normalizeCategory = (cat) => {
+        if (!cat) return 'Domestic';
+        const str = String(cat).trim();
+        if (str.toLowerCase() === 'international') return 'International';
+        if (str.toLowerCase() === 'domestic') return 'Domestic';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+
     const { data, setData, post, processing, reset, errors = {} } = useForm({
         _method: 'POST',
         name: '',
         category: 'Domestic',
+        country: 'Indonesia',
         logo: null,
     });
 
@@ -92,19 +101,27 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
 
     const openModal = (client = null) => {
         setEditingClient(client);
+        setLogoError(null);
         if (client) {
             setPreviewLogo(getLogoPath(client));
+            const formattedCat = normalizeCategory(client.category);
             setData({
                 _method: 'PUT',
                 name: client.name || '',
-                category: client.category || 'Domestic',
-                country: client.country || 'Indonesia',
+                category: formattedCat,
+                country: client.country || (formattedCat === 'Domestic' ? 'Indonesia' : ''),
                 logo: null,
             });
         } else {
             setPreviewLogo(null);
             reset();
-            setData('_method', 'POST');
+            setData({
+                _method: 'POST',
+                name: '',
+                category: 'Domestic',
+                country: 'Indonesia',
+                logo: null,
+            });
         }
         setIsModalOpen(true);
     };
@@ -250,10 +267,19 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                                 return (
                                     <div key={item.id} className="bg-white rounded-[8px] border border-[#E5E7EB] p-5 hover:border-[#00629D] hover:shadow-md transition-[colors,shadow,opacity,transform] flex flex-col justify-between group">
                                         <div>
-                                            <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center justify-between gap-1.5 mb-3">
                                                 <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-[#00629D] uppercase tracking-wider bg-[#F5F5F5] px-2 py-0.5 rounded border border-[#E5E7EB]">
-                                                    {item.category || 'Partner'}
+                                                    {normalizeCategory(item.category)}
                                                 </span>
+                                                {item.country ? (
+                                                    <span className="font-['JetBrains_Mono'] text-[10px] font-medium text-[#404750] truncate max-w-[120px]" title={item.country}>
+                                                        {item.country}
+                                                    </span>
+                                                ) : (
+                                                    <span className="font-['JetBrains_Mono'] text-[10px] text-slate-400 italic">
+                                                        No Country
+                                                    </span>
+                                                )}
                                             </div>
 
                                             {/* Client Logo Image Frame */}
@@ -277,7 +303,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                                             </div>
 
                                             {/* Client Info */}
-                                            <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-1 line-clamp-1">
+                                            <h3 className="font-bold text-base text-[#141B2C] group-hover:text-[#00629D] transition-colors leading-snug mb-1 break-words whitespace-normal">
                                                 {item.name}
                                             </h3>
                                         </div>
@@ -390,7 +416,18 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                                 <label className="block text-xs font-bold text-[#141B2C] mb-1">Category</label>
                                 <select
                                     value={data.category}
-                                    onChange={(e) => setData('category', e.target.value)}
+                                    onChange={(e) => {
+                                        const newCat = e.target.value;
+                                        if (newCat === 'Domestic') {
+                                            setData(prev => ({ ...prev, category: newCat, country: 'Indonesia' }));
+                                        } else {
+                                            setData(prev => ({
+                                                ...prev,
+                                                category: newCat,
+                                                country: prev.country === 'Indonesia' ? '' : prev.country
+                                            }));
+                                        }
+                                    }}
                                     className="w-full border border-[#E5E7EB] rounded-[6px] text-xs p-2.5 focus:border-[#00629D] focus:ring-[#00629D]"
                                 >
                                     <option value="Domestic">Domestic</option>

@@ -51,10 +51,12 @@ class ClientsController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:50',
+            'country' => 'nullable|string|max:100',
             'logo' => 'nullable|file|mimes:jpeg,png,jpg,webp,svg|max:5120',
         ], [
             'name.required' => 'The client name is required.',
             'name.max' => 'The client name must not be greater than 255 characters.',
+            'country.max' => 'The country must not be greater than 100 characters.',
             'logo.file' => 'The logo must be a valid file.',
             'logo.mimes' => 'The logo must be a file of type: jpeg, png, jpg, webp, svg.',
             'logo.max' => 'The logo file may not be greater than 5MB.',
@@ -89,10 +91,12 @@ class ClientsController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:50',
+            'country' => 'nullable|string|max:100',
             'logo' => 'nullable|file|mimes:jpeg,png,jpg,webp,svg|max:5120',
         ], [
             'name.required' => 'The client name is required.',
             'name.max' => 'The client name must not be greater than 255 characters.',
+            'country.max' => 'The country must not be greater than 100 characters.',
             'logo.file' => 'The logo must be a valid file.',
             'logo.mimes' => 'The logo must be a file of type: jpeg, png, jpg, webp, svg.',
             'logo.max' => 'The logo file may not be greater than 5MB.',

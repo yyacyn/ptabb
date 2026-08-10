@@ -488,7 +488,7 @@ export default function Index({
                         <div className={`${userRole === 'pr_admin' ? 'lg:col-span-6' : 'lg:col-span-7'}`}>
                             <div className="bg-white rounded-[8px] border border-[#E5E7EB] p-6 h-full flex flex-col justify-between shadow-xs">
                                 <div>
-                                    <div className="flex items-center justify-between pb-4 border-b border-[#E5E7EB] mb-4">
+                                    <div className="flex items-center justify-between pb-4">
                                         <span className="font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider text-[#404750]">
                                             RECENT ACTIVITY
                                         </span>

@@ -22,6 +22,8 @@ export default function Edit({ fleet = null, categories = [] }) {
     const [newCatDesc, setNewCatDesc] = useState('');
     const [submittingCat, setSubmittingCat] = useState(false);
     const [catError, setCatError] = useState(null);
+    const [nameError, setNameError] = useState(null);
+    const [imoError, setImoError] = useState(null);
     const [imageError, setImageError] = useState(null);
     const [pdfError, setPdfError] = useState(null);
     const [showDeleteCatModal, setShowDeleteCatModal] = useState(false);
@@ -414,19 +416,30 @@ export default function Edit({ fleet = null, categories = [] }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setNameError(null);
+        setImoError(null);
+        setImageError(null);
+        setPdfError(null);
+
+        if (!data.ship_name?.trim()) {
+            setNameError('The ship name field is required.');
+            setActiveTab('basic');
+            return;
+        }
+
+        const imoStr = String(data.imo_number || '').trim();
+        if (!imoStr || !/^(IMO\s*)?\d{7}$/i.test(imoStr)) {
+            setImoError('The IMO number must consist of 7 digits (e.g. 9123456 or IMO 9123456).');
+            setActiveTab('basic');
+            return;
+        }
+
         if (!isEditing && !data.featured_image) {
             setImageError('The featured image field is required.');
             setActiveTab('basic');
             return;
         }
-        if (!data.vessel_type && !data.category_id) {
-            setActiveTab('basic');
-            return;
-        }
-        if (!/^(IMO\s*)?\d{7}$/i.test((data.imo_number || '').trim())) {
-            setActiveTab('basic');
-            return;
-        }
+
         const targetUrl = isEditing ? route('fleets.update', fleet.id) : route('fleets.store');
         post(targetUrl, {
             forceFormData: true,
@@ -500,13 +513,12 @@ export default function Edit({ fleet = null, categories = [] }) {
                                                 onChange={(e) => setData('ship_name', e.target.value.slice(0, 255))}
                                                 placeholder="e.g. MV. PRILLY / MV. MUMBAI"
                                                 maxLength={255}
-                                                required
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
                                             {(data.ship_name || '').length >= 255 && (
                                                 <p className="text-xs text-amber-600 mt-1 font-medium">Maximum limit reached (255 chars).</p>
                                             )}
-                                            {errors.ship_name && <p className="text-xs text-red-500 mt-1">{errors.ship_name}</p>}
+                                            {(nameError || errors.ship_name) && <p className="text-xs text-red-500 mt-1 font-medium">{nameError || errors.ship_name}</p>}
                                         </div>
 
                                         <div>
@@ -527,13 +539,11 @@ export default function Edit({ fleet = null, categories = [] }) {
                                                     }
                                                 }}
                                                 placeholder="e.g. 9123456 or IMO 9123456"
-                                                pattern="(IMO\s*)?[0-9]{7}"
                                                 title="IMO number must be 7 digits (e.g. 9123456 or IMO 9123456)"
                                                 maxLength={11}
-                                                required
                                                 className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
                                             />
-                                            {errors.imo_number && <p className="text-xs text-red-500 mt-1">{errors.imo_number}</p>}
+                                            {(imoError || errors.imo_number) && <p className="text-xs text-red-500 mt-1 font-medium">{imoError || errors.imo_number}</p>}
                                         </div>
                                     </div>
 
@@ -583,7 +593,6 @@ export default function Edit({ fleet = null, categories = [] }) {
                                             </div>
                                             <select
                                                 value={data.category_id || ''}
-                                                required
                                                 onChange={(e) => {
                                                     const val = e.target.value;
                                                     if (val === '__ADD_NEW__') {

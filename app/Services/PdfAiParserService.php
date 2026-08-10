@@ -50,7 +50,7 @@ You are a maritime specification parser for PT. ABB. Read the vessel specificati
   "mmsi": "525012357",
   "hull_no": "323",
   "speed": "10.0",
-  "description": "Vessel overview summary"
+  "description": "Vessel overview summary (less than 200 chars)"
 }
 
 Return ONLY raw valid JSON. Do not include markdown code block backticks.

@@ -103,7 +103,7 @@ class DashboardController extends Controller
         $activities = collect();
 
         // Contacts Activity (Filtered strictly by role per RBAC & BR-04)
-        (clone $contactsQuery)->latest()->take(3)->get()->each(function ($contact) use (&$activities) {
+        (clone $contactsQuery)->latest()->take(10)->get()->each(function ($contact) use (&$activities) {
             $activities->push([
                 'id' => 'contact-' . $contact->id,
                 'color' => 'rose',
@@ -116,7 +116,7 @@ class DashboardController extends Controller
 
         // News Activity (Visible to Super Admin & PR Admin)
         if (in_array($userRole, ['super_admin', 'pr_admin'])) {
-            News::latest()->take(3)->get()->each(function ($article) use (&$activities) {
+            News::latest()->take(10)->get()->each(function ($article) use (&$activities) {
                 $activities->push([
                     'id' => 'news-' . $article->id,
                     'color' => 'emerald',
@@ -127,7 +127,7 @@ class DashboardController extends Controller
                 ]);
             });
 
-            Client::latest()->take(2)->get()->each(function ($client) use (&$activities) {
+            Client::latest()->take(10)->get()->each(function ($client) use (&$activities) {
                 $activities->push([
                     'id' => 'client-' . $client->id,
                     'color' => 'emerald',
@@ -141,7 +141,7 @@ class DashboardController extends Controller
 
         // Career Activity (Visible to Super Admin, HR Admin, Crew Admin)
         if (in_array($userRole, ['super_admin', 'hr_admin', 'crew_admin'])) {
-            (clone $careersQuery)->latest()->take(3)->get()->each(function ($career) use (&$activities) {
+            (clone $careersQuery)->latest()->take(10)->get()->each(function ($career) use (&$activities) {
                 $activities->push([
                     'id' => 'career-' . $career->id,
                     'color' => 'sky',
@@ -155,7 +155,7 @@ class DashboardController extends Controller
 
         // Fleet Activity (Visible to Super Admin)
         if ($userRole === 'super_admin') {
-            Fleet::latest()->take(3)->get()->each(function ($vessel) use (&$activities) {
+            Fleet::latest()->take(10)->get()->each(function ($vessel) use (&$activities) {
                 $activities->push([
                     'id' => 'fleet-' . $vessel->id,
                     'color' => 'blue',
@@ -169,7 +169,7 @@ class DashboardController extends Controller
 
         // Notification & Pop-up Banner Activity (Visible to Super Admin & HR Admin)
         if (in_array($userRole, ['super_admin', 'hr_admin'])) {
-            Notification::latest()->take(2)->get()->each(function ($notif) use (&$activities) {
+            Notification::latest()->take(10)->get()->each(function ($notif) use (&$activities) {
                 $activities->push([
                     'id' => 'notif-' . $notif->id,
                     'color' => 'amber',
@@ -183,7 +183,7 @@ class DashboardController extends Controller
 
         // User Account Activity (Visible to Super Admin)
         if ($userRole === 'super_admin') {
-            User::latest()->take(2)->get()->each(function ($u) use (&$activities) {
+            User::latest()->take(10)->get()->each(function ($u) use (&$activities) {
                 $activities->push([
                     'id' => 'user-' . $u->id,
                     'color' => 'indigo',
@@ -195,7 +195,7 @@ class DashboardController extends Controller
             });
 
             // Voyage Waypoints / Telemetry Activity
-            VoyageWaypoint::latest()->take(2)->get()->each(function ($wp) use (&$activities) {
+            VoyageWaypoint::latest()->take(10)->get()->each(function ($wp) use (&$activities) {
                 $activities->push([
                     'id' => 'voyage-' . $wp->id,
                     'color' => 'blue',
@@ -207,7 +207,7 @@ class DashboardController extends Controller
             });
 
             // Fleet Category Activity
-            FleetCategory::latest()->take(2)->get()->each(function ($cat) use (&$activities) {
+            FleetCategory::latest()->take(10)->get()->each(function ($cat) use (&$activities) {
                 $activities->push([
                     'id' => 'fleetcat-' . $cat->id,
                     'color' => 'blue',
@@ -219,7 +219,7 @@ class DashboardController extends Controller
             });
 
             // HQ Contact Info Activity
-            ContactInfo::latest()->take(2)->get()->each(function ($ci) use (&$activities) {
+            ContactInfo::latest()->take(10)->get()->each(function ($ci) use (&$activities) {
                 $activities->push([
                     'id' => 'contactinfo-' . $ci->id,
                     'color' => 'indigo',
@@ -233,7 +233,7 @@ class DashboardController extends Controller
 
         // Branch Office Activity (Visible to Super Admin & PR Admin)
         if (in_array($userRole, ['super_admin', 'pr_admin'])) {
-            Branch::latest()->take(2)->get()->each(function ($b) use (&$activities) {
+            Branch::latest()->take(10)->get()->each(function ($b) use (&$activities) {
                 $activities->push([
                     'id' => 'branch-' . $b->id,
                     'color' => 'emerald',
@@ -244,7 +244,7 @@ class DashboardController extends Controller
                 ]);
             });
 
-            NewsCategory::latest()->take(2)->get()->each(function ($ncat) use (&$activities) {
+            NewsCategory::latest()->take(10)->get()->each(function ($ncat) use (&$activities) {
                 $activities->push([
                     'id' => 'newscat-' . $ncat->id,
                     'color' => 'emerald',
