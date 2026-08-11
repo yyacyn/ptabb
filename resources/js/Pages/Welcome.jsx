@@ -39,9 +39,19 @@ export default function Welcome({
     const [fleetsList, setFleetsList] = useState(initialFleets);
     const [notificationsList, setNotificationsList] = useState(initialNotifications);
 
-    // Auto-rotate Hero active vessel every 3 seconds (3000ms)
+    // Ensure vessels are strictly sorted by newest updated/added first
+    const sortedFleets = (fleetsList && fleetsList.length > 0)
+        ? [...fleetsList].sort((a, b) => {
+            const timeA = new Date(a.updated_at || a.created_at || 0).getTime();
+            const timeB = new Date(b.updated_at || b.created_at || 0).getTime();
+            if (timeA !== timeB) return timeB - timeA;
+            return (b.id || 0) - (a.id || 0);
+        })
+        : [];
+
+    // Auto-rotate Hero active vessel every 5 seconds across newest vessels
     useEffect(() => {
-        const vesselsCount = (fleetsList && fleetsList.length > 0) ? fleetsList.length : fleetVessels.length;
+        const vesselsCount = (sortedFleets && sortedFleets.length > 0) ? sortedFleets.length : 1;
         if (vesselsCount <= 1) return;
 
         const interval = setInterval(() => {
@@ -49,7 +59,7 @@ export default function Welcome({
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [fleetsList]);
+    }, [sortedFleets]);
 
     // Fetch all clients, fleets, and notifications from API endpoints if not provided via Inertia props
     useEffect(() => {
@@ -147,7 +157,7 @@ export default function Welcome({
 
     return (
         <GuestLayout onScrollToSection={scrollToSection}>
-            <Head title="Welcome - PT PABB" />
+            <Head title="Bulk Cement Maritime Logistics | PT. ABB" />
             <NotificationPopup notifications={notificationsList} targetType="home" />
 
             {/* 1. Hero Section */}
@@ -231,8 +241,8 @@ export default function Welcome({
                     className="lg:col-span-7 bg-[#141B2C] rounded-[8px] overflow-hidden relative min-h-[380px] lg:min-h-[606px] border border-[#E5E7EB] group"
                 >
                     {(() => {
-                        const vessels = (fleetsList && fleetsList.length > 0) ? fleetsList : fleetVessels;
-                        const safeIdx = Math.min(heroVesselIndex, vessels.length - 1);
+                        const vessels = sortedFleets;
+                        const safeIdx = Math.min(heroVesselIndex, vessels.length > 0 ? vessels.length - 1 : 0);
                         const heroVessel = vessels[safeIdx];
 
                         const heroImage = heroVessel?.featured_image_url
@@ -268,7 +278,7 @@ export default function Welcome({
                                             e.currentTarget.src = '/images/card_bulk_vessel.png';
                                         }}
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/75 rounded-[8px]" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-[8px] pointer-events-none" />
 
                                     <div className="absolute bottom-6 sm:bottom-10 left-6 sm:left-[51px] flex flex-col gap-[5px] text-white z-10">
                                         <div className="font-['JetBrains_Mono'] font-bold text-[11px] sm:text-[12px] text-white uppercase tracking-wide flex items-center gap-2">
@@ -683,8 +693,8 @@ export default function Welcome({
                 <div className="bg-[#F5F5F5] rounded-[8px] border border-[#E5E7EB] p-1 mb-8 overflow-hidden">
                     <AnimatePresence mode="wait" custom={activeFleetTab}>
                         {(() => {
-                            const currentVessel = (fleetsList && fleetsList.length > 0)
-                                ? fleetsList[Math.min(activeFleetTab, fleetsList.length - 1)]
+                            const currentVessel = (sortedFleets && sortedFleets.length > 0)
+                                ? sortedFleets[Math.min(activeFleetTab, sortedFleets.length - 1)]
                                 : null;
 
                             if (!currentVessel) return null;
@@ -816,7 +826,7 @@ export default function Welcome({
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     {/* Numbered Tab Controls */}
                     <div className="flex items-center gap-2">
-                        {((fleetsList && fleetsList.length > 0 ? fleetsList : fleetVessels).slice(0, 5)).map((vessel, idx) => (
+                        {(sortedFleets.slice(0, 5)).map((vessel, idx) => (
                             <button
                                 key={idx}
                                 type="button"

@@ -171,7 +171,7 @@ class CareersController extends Controller
             abort(403, 'PR Admin is not authorized to modify Careers.');
         }
 
-        $career = Career::findOrFail($id);
+        $career = Career::withTrashed()->findOrFail($id);
 
         if ($user->role === 'hr_admin' && $career->category !== 'corporate') {
             abort(403, 'Unauthorized.');
@@ -180,7 +180,7 @@ class CareersController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        $career->delete();
+        $career->forceDelete();
 
         return redirect()->route('careers.index')->with('success', 'Career vacancy deleted successfully.');
     }

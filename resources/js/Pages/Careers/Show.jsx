@@ -45,7 +45,7 @@ export default function CareerShow({ career }) {
 
     return (
         <GuestLayout>
-            <Head title={`${career.position} - Careers at PT PABB`} />
+            <Head title={`${career.position} — Maritime Careers | PT. ABB`} />
 
             <div className="space-y-[7px] font-['Hanken_Grotesk'] text-[#141B2C]">
 

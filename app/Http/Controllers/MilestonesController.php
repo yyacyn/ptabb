@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Milestone;
 use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class MilestonesController extends Controller
@@ -76,6 +77,13 @@ class MilestonesController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
+            if ($milestone->image && str_contains($milestone->image, '/storage/')) {
+                $oldImg = ltrim(str_replace('/storage/', '', $milestone->image), '/');
+                if (Storage::disk('public')->exists($oldImg)) {
+                    Storage::disk('public')->delete($oldImg);
+                }
+            }
+
             $path = ImageOptimizationService::uploadAndOptimize($request->file('image'), 'milestones');
             $validated['image'] = '/storage/' . $path;
         } else {
@@ -90,6 +98,14 @@ class MilestonesController extends Controller
     public function destroy($id)
     {
         $milestone = Milestone::findOrFail($id);
+
+        if ($milestone->image && str_contains($milestone->image, '/storage/')) {
+            $img = ltrim(str_replace('/storage/', '', $milestone->image), '/');
+            if (Storage::disk('public')->exists($img)) {
+                Storage::disk('public')->delete($img);
+            }
+        }
+
         $milestone->delete();
 
         return redirect()->route('milestones.index')->with('success', 'Milestone deleted successfully.');

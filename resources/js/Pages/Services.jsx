@@ -147,7 +147,7 @@ export default function Services({ fleets = EMPTY_FLEETS, clients = EMPTY_CLIENT
 
     return (
         <GuestLayout>
-            <Head title="Services - PT PABB" />
+            <Head title="Bulk Shipping & Maritime Logistics Services | PT. ABB" />
 
             {/* SECTION 01: HERO BANNER */}
             <motion.section

@@ -120,7 +120,7 @@ export default function Careers({ careers = [], notifications: initialNotificati
 
     return (
         <GuestLayout>
-            <Head title="Careers - PT PABB" />
+            <Head title="Maritime Careers & Job Vacancies | PT. ABB" />
 
             {/* 1. Hero */}
             <div id="about" className="grid grid-cols-1 lg:grid-cols-12 gap-[4px] items-stretch min-h-[606px]">

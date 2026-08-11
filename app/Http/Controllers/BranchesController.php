@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BranchesController extends Controller
@@ -134,6 +135,13 @@ class BranchesController extends Controller
         }
 
         if ($request->hasFile('image_file')) {
+            if ($branch->image_url && str_contains($branch->image_url, '/storage/')) {
+                $oldImg = ltrim(str_replace('/storage/', '', $branch->image_url), '/');
+                if (Storage::disk('public')->exists($oldImg)) {
+                    Storage::disk('public')->delete($oldImg);
+                }
+            }
+
             $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('image_file'), 'branches');
             $validated['image_url'] = '/storage/' . $path;
         }
@@ -156,6 +164,14 @@ class BranchesController extends Controller
     public function destroy(string $id)
     {
         $branch = Branch::findOrFail($id);
+
+        if ($branch->image_url && str_contains($branch->image_url, '/storage/')) {
+            $img = ltrim(str_replace('/storage/', '', $branch->image_url), '/');
+            if (Storage::disk('public')->exists($img)) {
+                Storage::disk('public')->delete($img);
+            }
+        }
+
         $branch->delete();
 
         if (request()->wantsJson()) {

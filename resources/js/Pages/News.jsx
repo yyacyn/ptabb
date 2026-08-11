@@ -159,7 +159,7 @@ export default function NewsPage({ news = EMPTY_NEWS, categories = EMPTY_CATEGOR
 
     return (
         <GuestLayout>
-            <Head title="News & Media - PT Pelayaran Pelangi Tunggal Ikan (ABB)" />
+            <Head title="Press Releases & Maritime News | PT. ABB" />
 
             <div className="space-y-2">
 

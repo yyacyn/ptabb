@@ -62,7 +62,7 @@ export default function Clients({ clients = [] }) {
 
     return (
         <GuestLayout>
-            <Head title="Our Trusted Clients & Partners - PT. ABB" />
+            <Head title="Trusted Industrial Clients & Partners | PT. ABB" />
 
             {/* GPU-Accelerated Hardware Marquee Animation Styles */}
             <style>{`

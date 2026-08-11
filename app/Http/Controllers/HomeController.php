@@ -21,7 +21,7 @@ class HomeController extends Controller
             // 'laravelVersion' => Application::VERSION,
             // 'phpVersion' => PHP_VERSION,
             'clients' => Client::all(),
-            'fleets' => Fleet::latest()->take(3)->get(),
+            'fleets' => Fleet::orderBy('updated_at', 'desc')->get(),
             'totalFleets' => Fleet::count(),
             'totalClients' => Client::count(),
             'news' => News::where('status', 'published')->latest()->take(6)->get(),

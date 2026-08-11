@@ -8,6 +8,12 @@ use Smalot\PdfParser\Parser as PdfParser;
 
 class PdfAiParserService
 {
+    public function parseVesselParticularsPdf($file): array
+    {
+        $filePath = is_string($file) ? $file : $file->getRealPath();
+        return $this->parsePdfDocument($filePath);
+    }
+
     /**
      * Parse vessel PDF specification document using OpenRouter AI Models with fallback chain.
      */

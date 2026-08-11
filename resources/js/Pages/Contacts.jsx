@@ -96,7 +96,7 @@ export default function Contacts({ contactInfos = EMPTY_CONTACT_INFOS, branches 
 
     return (
         <GuestLayout>
-            <Head title="Contact Us - PT PABB" />
+            <Head title="Contact Us & Freight Inquiries | PT. ABB" />
 
             <div className="space-y-[7px]">
                 {/* 1. HERO BANNER SECTION WITH BOTTOM-TO-TOP DARK BLUE GRADIENT */}

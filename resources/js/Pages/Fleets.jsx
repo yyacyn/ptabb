@@ -449,7 +449,7 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
 
     return (
         <GuestLayout>
-            <Head title="Fleet - PT PABB" />
+            <Head title="Vessel Fleet Register & Live AIS Tracking | PT. ABB" />
 
             {/* 1. HERO BANNER SECTION WITH 7S RANDOMIZED IMAGE SLIDESHOW & BOTTOM-TO-TOP DARK BLUE GRADIENT */}
             <motion.section

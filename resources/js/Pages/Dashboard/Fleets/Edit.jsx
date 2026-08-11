@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { useState } from 'react';
-import { Ship, ArrowLeft, ArrowRight, FileText, CheckCircle2, Loader2, Sparkles, Plus, X, Trash2, AlertTriangle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Ship, ArrowLeft, ArrowRight, FileText, CheckCircle2, Loader2, Sparkles, Plus, X, Trash2, AlertTriangle, ChevronDown, Eye } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import axios from 'axios';
 
@@ -24,12 +24,26 @@ export default function Edit({ fleet = null, categories = [] }) {
     const [catError, setCatError] = useState(null);
     const [nameError, setNameError] = useState(null);
     const [imoError, setImoError] = useState(null);
+    const [categoryError, setCategoryError] = useState(null);
+    const [areaError, setAreaError] = useState(null);
     const [imageError, setImageError] = useState(null);
     const [pdfError, setPdfError] = useState(null);
     const [showDeleteCatModal, setShowDeleteCatModal] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
     const [deletingCat, setDeletingCat] = useState(false);
     const [deleteCatError, setDeleteCatError] = useState(null);
+    const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
+    const areaDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (areaDropdownRef.current && !areaDropdownRef.current.contains(event.target)) {
+                setIsAreaDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const resolveImage = (img) => {
         if (!img) return null;
@@ -232,6 +246,51 @@ export default function Edit({ fleet = null, categories = [] }) {
         }
     };
 
+    const autoSelectCategory = (extractedVesselType, extractedShipName, currentCategories = []) => {
+        let typeToMatch = extractedVesselType || '';
+
+        if (!typeToMatch && extractedShipName) {
+            const lowerName = String(extractedShipName).toLowerCase();
+            if (lowerName.includes('tug')) typeToMatch = 'Tugboat';
+            else if (lowerName.includes('barge')) typeToMatch = 'Deck Barge';
+            else if (lowerName.includes('cement') || lowerName.includes('mv')) typeToMatch = 'Cement Carrier';
+        }
+
+        if (!typeToMatch && currentCategories.length > 0) {
+            return { category_id: currentCategories[0].id, vessel_type: currentCategories[0].name };
+        }
+
+        if (!typeToMatch) return null;
+
+        const normType = String(typeToMatch).toLowerCase().trim();
+
+        // 1. Exact match against DB categories
+        let found = currentCategories.find(c => String(c.name).toLowerCase().trim() === normType);
+        if (found) return { category_id: found.id, vessel_type: found.name };
+
+        // 2. Substring match against DB categories
+        found = currentCategories.find(c => {
+            const cName = String(c.name).toLowerCase().trim();
+            return normType.includes(cName) || cName.includes(normType);
+        });
+        if (found) return { category_id: found.id, vessel_type: found.name };
+
+        // 3. Keyword matching (cement, carrier, tug, barge, bulk, cargo)
+        const keywords = ['cement', 'tug', 'barge', 'carrier', 'bulk', 'tanker', 'container'];
+        for (const kw of keywords) {
+            if (normType.includes(kw)) {
+                const catMatch = currentCategories.find(c => String(c.name).toLowerCase().includes(kw));
+                if (catMatch) return { category_id: catMatch.id, vessel_type: catMatch.name };
+            }
+        }
+
+        if (currentCategories.length > 0) {
+            return { category_id: currentCategories[0].id, vessel_type: currentCategories[0].name };
+        }
+
+        return { category_id: '', vessel_type: typeToMatch };
+    };
+
     // AI PDF Specification Parser with OpenRouter + Local Fallback
     const handlePdfUpload = async (e) => {
         const file = e.target.files[0];
@@ -278,22 +337,33 @@ export default function Edit({ fleet = null, categories = [] }) {
             if (aiRes.data && aiRes.data.success && aiRes.data.data) {
                 const parsed = aiRes.data.data;
                 let countExtracted = 0;
+                const updateValues = {};
+
                 detailedSpecKeys.forEach(k => {
                     if (parsed[k] !== undefined && parsed[k] !== null && parsed[k] !== '' && parsed[k] !== 'N/A') {
-                        setData(k, parsed[k]);
+                        updateValues[k] = parsed[k];
                         countExtracted++;
                     }
                 });
 
-                if (countExtracted < 5) {
-                    setPdfError('The uploaded PDF does not appear to be a valid vessel specification document (less than 5 vessel specifications detected). Please check the file and try again.');
-                    setParseSuccessMessage(null);
-                    setParsingPdf(false);
-                    return;
+                const catMatch = autoSelectCategory(updateValues.vessel_type || parsed.vessel_type, updateValues.ship_name || parsed.ship_name, categoriesList);
+                if (catMatch) {
+                    if (catMatch.category_id) updateValues.category_id = catMatch.category_id;
+                    if (catMatch.vessel_type) updateValues.vessel_type = catMatch.vessel_type;
                 }
 
-                setPdfError(null);
-                setParseSuccessMessage(`AI parsed PDF successful! Auto-filled ${countExtracted} vessel specifications.`);
+                if (countExtracted > 0) {
+                    setData(prev => ({
+                        ...prev,
+                        ...updateValues,
+                    }));
+                    setCategoryError(null);
+                    setPdfError(null);
+                    setParseSuccessMessage(`AI parsed PDF successful! Auto-filled ${countExtracted} vessel specifications and selected category.`);
+                } else {
+                    setPdfError(null);
+                    setParseSuccessMessage('PDF attached! No text specifications could be automatically parsed — please re-check or fill in vessel details manually.');
+                }
                 setParsingPdf(false);
                 return;
             }
@@ -392,18 +462,40 @@ export default function Edit({ fleet = null, categories = [] }) {
             const hullMatch = fullText.match(/Hull\s*No\.?\s*:?\s*([A-Z0-9\-]+)/i);
             if (hullMatch) { extracted.hull_no = hullMatch[1]; countExtracted++; }
 
-            if (countExtracted < 5) {
-                setPdfError('The uploaded PDF does not appear to be a valid vessel specification document (less than 5 vessel specifications detected). Please check the file and try again.');
-                setParseSuccessMessage(null);
-            } else {
-                detailedSpecKeys.forEach(key => {
-                    if (extracted[key]) {
-                        setData(key, extracted[key]);
-                    }
-                });
+            const nameMatch = fullText.match(/(?:MV\.|M\/V)\s*([A-Z0-9\s\-]{3,30})/i) || fullText.match(/\b(PRILLY|MUMBAI|IRIANA|BARUNA|KANYO|RYUOH)\b/i);
+            if (nameMatch) { extracted.ship_name = trim(nameMatch[0]); countExtracted++; }
 
+            const imoMatch = fullText.match(/IMO\s*(?:No\.?|Number)?\s*:?\s*(\d{7})/i) || fullText.match(/\b9\d{6}\b/) || fullText.match(/\b8\d{6}\b/);
+            if (imoMatch) { extracted.imo_number = imoMatch[1] || imoMatch[0]; countExtracted++; }
+
+            const typeMatch = fullText.match(/(?:Vessel\s*Type|Type\s*of\s*Vessel|Type)\s*:?\s*([A-Za-z0-9\s\-\(\)]+)/i)
+                || fullText.match(/(Cement Carrier|Bulk Carrier|Tugboat|Deck Cargo Barge|Pneumatic Bulk Cement Carrier)/i);
+            if (typeMatch) { extracted.vessel_type = trim(typeMatch[1]); countExtracted++; }
+
+            const updateValues = {};
+            detailedSpecKeys.forEach(key => {
+                if (extracted[key]) {
+                    updateValues[key] = extracted[key];
+                }
+            });
+
+            const catMatch = autoSelectCategory(updateValues.vessel_type || extracted.vessel_type, updateValues.ship_name || extracted.ship_name, categoriesList);
+            if (catMatch) {
+                if (catMatch.category_id) updateValues.category_id = catMatch.category_id;
+                if (catMatch.vessel_type) updateValues.vessel_type = catMatch.vessel_type;
+            }
+
+            if (countExtracted > 0) {
+                setData(prev => ({
+                    ...prev,
+                    ...updateValues,
+                }));
+                setCategoryError(null);
                 setPdfError(null);
-                setParseSuccessMessage(`PDF uploaded! Auto-filled ${countExtracted} detailed vessel specifications into the form. Please re-check all fields to ensure accuracy.`);
+                setParseSuccessMessage(`PDF uploaded! Auto-filled ${countExtracted} vessel specification(s) into the form.`);
+            } else {
+                setPdfError(null);
+                setParseSuccessMessage('PDF uploaded & attached! No text specifications could be automatically parsed — please re-check or fill in vessel details manually.');
             }
         } catch (err) {
             console.error('PDF processing error:', err);
@@ -418,24 +510,40 @@ export default function Edit({ fleet = null, categories = [] }) {
         e.preventDefault();
         setNameError(null);
         setImoError(null);
+        setCategoryError(null);
+        setAreaError(null);
         setImageError(null);
         setPdfError(null);
 
+        let hasError = false;
+
         if (!data.ship_name?.trim()) {
             setNameError('The ship name field is required.');
-            setActiveTab('basic');
-            return;
+            hasError = true;
         }
 
         const imoStr = String(data.imo_number || '').trim();
         if (!imoStr || !/^(IMO\s*)?\d{7}$/i.test(imoStr)) {
             setImoError('The IMO number must consist of 7 digits (e.g. 9123456 or IMO 9123456).');
-            setActiveTab('basic');
-            return;
+            hasError = true;
         }
 
-        if (!isEditing && !data.featured_image) {
+        if (!data.category_id && !data.vessel_type?.trim()) {
+            setCategoryError('The vessel category field is required.');
+            hasError = true;
+        }
+
+        if (!data.operational_area?.trim()) {
+            setAreaError('The operational area field is required.');
+            hasError = true;
+        }
+
+        if (!isEditing && !data.featured_image && !previewImage) {
             setImageError('The featured image field is required.');
+            hasError = true;
+        }
+
+        if (hasError) {
             setActiveTab('basic');
             return;
         }
@@ -503,8 +611,92 @@ export default function Edit({ fleet = null, categories = [] }) {
                         <div className="p-6 sm:p-8">
 
                             {/* TAB 1: BASIC INFO */}
-                            {activeTab === 'basic' && (
-                                <div className="space-y-6">
+                            <div className={activeTab === 'basic' ? 'space-y-6' : 'hidden'}>
+
+                                    {/* 1. AI PDF File Input */}
+                                    <div className=" border-[#E5E7EB]">
+                                        <label className="text-xs font-bold text-[#141B2C] mb-1.5 flex items-center gap-1.5">
+                                            <Sparkles className="w-4 h-4 text-amber-500" />
+                                            Ship Particular Document (PDF) - AI Intelligent Auto-Fill
+                                        </label>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            onChange={handlePdfUpload}
+                                            className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 file:mr-4 file:py-1.5 file:px-3 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
+                                        />
+                                        <p className="text-[11px] text-slate-400 mt-1">
+                                            Upload a PDF specification sheet. AI will automatically extract and fill in vessel specifications. Please re-check all fields after uploading.
+                                        </p>
+                                        {(pdfError || errors.ship_particular_pdf) && (
+                                            <p className="text-xs text-red-500 mt-1.5 font-medium">{pdfError || errors.ship_particular_pdf}</p>
+                                        )}
+
+                                        {parsingPdf && (
+                                            <p className="text-xs font-semibold text-[#00629D] mt-2 flex items-center gap-1.5">
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00629D]" /> AI model is analyzing PDF document...
+                                            </p>
+                                        )}
+
+                                        {parseSuccessMessage && (
+                                            <div className="mt-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-[6px] flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                                <span>{parseSuccessMessage}</span>
+                                            </div>
+                                        )}
+
+                                        {data.ship_particular_pdf instanceof File && (
+                                            <div className="mt-2.5 flex items-center justify-between bg-sky-50 border border-sky-200 rounded-[8px] p-3">
+                                                <div className="flex items-center gap-2 font-['JetBrains_Mono'] text-xs text-[#00629D] font-bold">
+                                                    <FileText className="w-4 h-4 text-[#00629D] shrink-0" />
+                                                    <span className="truncate max-w-[260px] sm:max-w-[360px]">
+                                                        Attached PDF: {data.ship_particular_pdf.name} ({(data.ship_particular_pdf.size / 1024).toFixed(1)} KB)
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-3 shrink-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const url = URL.createObjectURL(data.ship_particular_pdf);
+                                                            window.open(url, '_blank');
+                                                        }}
+                                                        className="text-xs font-semibold text-[#00629D] hover:underline flex items-center gap-1 cursor-pointer"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                        View PDF
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setData('ship_particular_pdf', null)}
+                                                        className="text-xs font-semibold text-red-600 hover:underline flex items-center gap-1 cursor-pointer"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {fleet?.ship_particular_pdf && !data.ship_particular_pdf && (
+                                            <div className="mt-2.5 flex items-center justify-between bg-[#F5F5F5] border border-[#E5E7EB] rounded-[8px] p-3">
+                                                <div className="flex items-center gap-2 font-['JetBrains_Mono'] text-xs text-[#00629D] font-bold">
+                                                    <FileText className="w-4 h-4 text-[#00629D] shrink-0" />
+                                                    <span className="truncate max-w-[300px] sm:max-w-[400px]">
+                                                        Current File: {fleet.ship_particular_pdf.split('/').pop()}
+                                                    </span>
+                                                </div>
+                                                <a
+                                                    href={fleet.ship_particular_pdf.startsWith('/documents/') || fleet.ship_particular_pdf.startsWith('/storage/') ? fleet.ship_particular_pdf : `/documents/fleets/${fleet.ship_particular_pdf}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="text-xs font-semibold text-[#00629D] hover:underline flex items-center gap-1 shrink-0"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                    View PDF
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                         <div>
                                             <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
@@ -637,32 +829,87 @@ export default function Edit({ fleet = null, categories = [] }) {
                                                     + Add Category...
                                                 </option>
                                             </select>
-                                            {(errors.vessel_type || errors.category_id) && (
-                                                <p className="text-xs text-red-500 mt-1">{errors.vessel_type || errors.category_id}</p>
+                                            {(categoryError || errors.vessel_type || errors.category_id) && (
+                                                <p className="text-xs text-red-500 mt-1 font-medium">{categoryError || errors.vessel_type || errors.category_id}</p>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Operational Area Selection */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
-                                            Operational Area <span className="text-red-500">*</span>
-                                        </label>
-                                        <div className="border border-[#E5E7EB] rounded-[8px] p-3 max-h-40 overflow-y-auto space-y-1.5 bg-[#F5F5F5]/30">
-                                            {operationalAreasList.map((area) => {
-                                                const checked = selectedAreas.includes(area);
-                                                return (
-                                                    <label key={area} className="flex items-center gap-2 text-xs text-[#141B2C] cursor-pointer hover:text-[#00629D]">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={checked}
-                                                            onChange={() => toggleOperationalArea(area)}
-                                                            className="rounded border-[#E5E7EB] text-[#00629D] focus:ring-[#00629D]"
-                                                        />
-                                                        <span>{area}</span>
-                                                    </label>
-                                                );
-                                            })}
+                                    {/* Operational Area & Featured Image Grid */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                        {/* Operational Area Selection (Dropdown Checkbox) */}
+                                        <div ref={areaDropdownRef} className="relative">
+                                            <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
+                                                Operational Area <span className="text-red-500">*</span>
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
+                                                className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 bg-white text-left flex items-center justify-between focus:border-[#00629D] focus:ring-1 focus:ring-[#00629D] transition-colors cursor-pointer"
+                                            >
+                                                <span className="truncate text-[#141B2C] font-medium">
+                                                    {selectedAreas.length > 0
+                                                        ? selectedAreas.join(', ')
+                                                        : '-- Select Operational Area(s) --'}
+                                                </span>
+                                                <ChevronDown className={`w-4 h-4 text-[#404750] shrink-0 transition-transform duration-200 ${isAreaDropdownOpen ? 'rotate-180' : ''}`} />
+                                            </button>
+
+                                            {isAreaDropdownOpen && (
+                                                <div className="absolute z-30 left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-[8px] shadow-lg p-2 max-h-56 overflow-y-auto space-y-1">
+                                                    {operationalAreasList.map((area) => {
+                                                        const checked = selectedAreas.includes(area);
+                                                        return (
+                                                            <label
+                                                                key={area}
+                                                                className={`flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-xs cursor-pointer transition-colors ${
+                                                                    checked ? 'bg-[#00629D]/10 text-[#00629D] font-bold' : 'hover:bg-slate-50 text-[#141B2C]'
+                                                                }`}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={checked}
+                                                                    onChange={() => toggleOperationalArea(area)}
+                                                                    className="rounded border-[#E5E7EB] text-[#00629D] focus:ring-[#00629D] cursor-pointer"
+                                                                />
+                                                                <span>{area}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                            {(areaError || errors.operational_area) && (
+                                                <p className="text-xs text-red-500 mt-1 font-medium">{areaError || errors.operational_area}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Featured Vessel Image Upload & Preview */}
+                                        <div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
+                                                    Featured Image <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageChange}
+                                                    required={!isEditing && !previewImage}
+                                                    className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 file:mr-4 file:py-1.5 file:px-3 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
+                                                />
+                                                <p className="text-[11px] text-slate-400 mt-1">Max 5MB, JPG / PNG / WEBP format</p>
+                                                {(imageError || errors.featured_image) && (
+                                                    <p className="text-xs text-red-500 mt-1.5 font-medium">{imageError || errors.featured_image}</p>
+                                                )}
+                                            </div>
+
+                                            {previewImage && (
+                                                <div className="mt-3">
+                                                    <span className="text-xs font-bold text-[#141B2C] block mb-1">Current Image Preview:</span>
+                                                    <div className="w-full aspect-[16/10] rounded-[8px] border border-[#E5E7EB] overflow-hidden bg-[#141B2C] shadow-inner relative">
+                                                        <img src={previewImage} alt="Vessel Preview" className="w-full h-full object-cover" />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -688,33 +935,6 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
                                     </div>
 
-                                    {/* Featured Vessel Image Upload & Preview */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
-                                            Featured Image <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            required={!isEditing && !previewImage}
-                                            className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 file:mr-4 file:py-1.5 file:px-3 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
-                                        />
-                                        <p className="text-[11px] text-slate-400 mt-1">Max 5MB, JPG / PNG / WEBP format</p>
-                                        {(imageError || errors.featured_image) && (
-                                            <p className="text-xs text-red-500 mt-1.5 font-medium">{imageError || errors.featured_image}</p>
-                                        )}
-
-                                        {previewImage && (
-                                            <div className="mt-3">
-                                                <span className="text-xs font-bold text-[#141B2C] block mb-1">Current Image Preview:</span>
-                                                <div className="w-64 h-36 rounded-[8px] border border-[#E5E7EB] overflow-hidden bg-slate-100 shadow-inner">
-                                                    <img src={previewImage} alt="Vessel Preview" className="w-full h-full object-cover" />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
                                     {/* Action Buttons */}
                                     <div className="pt-6  border-[#E5E7EB] flex items-center justify-between">
                                         <button
@@ -736,63 +956,9 @@ export default function Edit({ fleet = null, categories = [] }) {
                                         </button>
                                     </div>
                                 </div>
-                            )}
 
                             {/* TAB 2: DETAILED SPECS */}
-                            {activeTab === 'detailed' && (
-                                <div className="space-y-6">
-
-                                    {/* 1. AI PDF File Input */}
-                                    <div className="pb-6">
-                                        <label className="text-xs font-bold text-[#141B2C] mb-1.5 flex items-center gap-1.5">
-                                            <Sparkles className="w-4 h-4 text-amber-500" />
-                                            Ship Particular Document (PDF) — AI Intelligent Auto-Fill
-                                        </label>
-                                        <input
-                                            type="file"
-                                            accept="application/pdf"
-                                            onChange={handlePdfUpload}
-                                            className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-2.5 file:mr-4 file:py-1.5 file:px-3 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#00629D] file:text-white hover:file:bg-[#3F96DD] cursor-pointer"
-                                        />
-                                        <p className="text-[11px] text-slate-400 mt-1">
-                                            Upload a PDF specification sheet. AI will automatically extract and fill in detailed specs below. Please re-check all fields after uploading.
-                                        </p>
-                                        {(pdfError || errors.ship_particular_pdf) && (
-                                            <p className="text-xs text-red-500 mt-1.5 font-medium">{pdfError || errors.ship_particular_pdf}</p>
-                                        )}
-
-                                        {parsingPdf && (
-                                            <p className="text-xs font-semibold text-[#00629D] mt-2 flex items-center gap-1.5">
-                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00629D]" /> AI model is analyzing PDF document...
-                                            </p>
-                                        )}
-
-                                        {parseSuccessMessage && (
-                                            <div className="mt-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-[6px] flex items-center gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                                                <span>{parseSuccessMessage}</span>
-                                            </div>
-                                        )}
-
-                                        {fleet?.ship_particular_pdf && (
-                                            <div className="mt-2.5 flex items-center justify-between bg-[#F5F5F5] border border-[#E5E7EB] rounded-[8px] p-3">
-                                                <div className="flex items-center gap-2 font-['JetBrains_Mono'] text-xs text-[#00629D] font-bold">
-                                                    <FileText className="w-4 h-4 text-[#00629D] shrink-0" />
-                                                    <span className="truncate max-w-[320px] sm:max-w-[420px]">
-                                                        Current File: {fleet.ship_particular_pdf.split('/').pop()}
-                                                    </span>
-                                                </div>
-                                                <a
-                                                    href={fleet.ship_particular_pdf.startsWith('/documents/') || fleet.ship_particular_pdf.startsWith('/storage/') ? fleet.ship_particular_pdf : `/documents/fleets/${fleet.ship_particular_pdf}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="text-xs font-semibold text-[#00629D] hover:underline flex items-center gap-1 shrink-0"
-                                                >
-                                                    View PDF Document &rarr;
-                                                </a>
-                                            </div>
-                                        )}
-                                    </div>
+                            <div className={activeTab === 'detailed' ? 'space-y-6' : 'hidden'}>
 
                                     {/* 2. Primary Tonnage & Capacity Grid */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -1042,7 +1208,6 @@ export default function Edit({ fleet = null, categories = [] }) {
                                     </div>
 
                                 </div>
-                            )}
 
                         </div>
                     </form>

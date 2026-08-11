@@ -6,6 +6,8 @@ use App\Models\Fleet;
 use App\Models\FleetCategory;
 use App\Services\PdfAiParserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class FleetsController extends Controller
@@ -129,21 +131,35 @@ class FleetsController extends Controller
         ]);
     }
 
+    public function dashboardIndex()
+    {
+        $fleets = Fleet::with('category')->latest()->get();
+        $categories = FleetCategory::all();
+
+        return Inertia::render('Dashboard/Fleets', [
+            'fleets' => $fleets,
+            'categories' => $categories,
+        ]);
+    }
+
     public function create()
     {
+        $categories = FleetCategory::all();
+
         return Inertia::render('Dashboard/Fleets/Edit', [
             'fleet' => null,
-            'categories' => FleetCategory::all(),
+            'categories' => $categories,
         ]);
     }
 
     public function edit($id)
     {
         $fleet = Fleet::with('category')->findOrFail($id);
+        $categories = FleetCategory::all();
 
         return Inertia::render('Dashboard/Fleets/Edit', [
             'fleet' => $fleet,
-            'categories' => FleetCategory::all(),
+            'categories' => $categories,
         ]);
     }
 
@@ -154,49 +170,42 @@ class FleetsController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $validated['slug'] = \Illuminate\Support\Str::slug($validated['name']);
-
         $category = FleetCategory::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'category' => $category,
-            'categories' => FleetCategory::all(),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'category' => $category,
+                'categories' => FleetCategory::all(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Vessel category created successfully.');
     }
 
-    public function parsePdf(Request $request, PdfAiParserService $parserService)
+    public function destroyCategory($id)
+    {
+        $category = FleetCategory::findOrFail($id);
+        $category->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'categories' => FleetCategory::all(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Vessel category deleted successfully.');
+    }
+
+    public function parsePdf(Request $request, PdfAiParserService $parser)
     {
         $request->validate([
             'ship_particular_pdf' => 'required|file|mimes:pdf|max:10240',
-        ], [
-            'ship_particular_pdf.mimes' => 'The specification document must be a file of type: pdf.',
-            'ship_particular_pdf.max' => 'The specification document may not be greater than 10MB.',
         ]);
 
         $file = $request->file('ship_particular_pdf');
-        $tempPath = $file->getRealPath();
-
-        $result = $parserService->parsePdfDocument($tempPath);
-
-        $extractedData = $result['data'] ?? [];
-        $filledCount = 0;
-        if (is_array($extractedData)) {
-            foreach ($extractedData as $val) {
-                if ($val !== null && $val !== '' && $val !== 'N/A') {
-                    $filledCount++;
-                }
-            }
-        }
-
-        if ($filledCount < 5) {
-            return response()->json([
-                'success' => false,
-                'message' => 'The uploaded PDF does not appear to be a valid vessel specification document. Please upload the proper vessel spec and try again.',
-                'data' => null,
-                'filled_count' => $filledCount,
-            ], 422);
-        }
+        $result = $parser->parseVesselParticularsPdf($file);
 
         return response()->json($result);
     }
@@ -205,7 +214,7 @@ class FleetsController extends Controller
     {
         $validated = $request->validate([
             'ship_name' => 'required|string|max:255',
-            'imo_number' => ['required', 'string', 'regex:/^(IMO\s*)?\d{7}$/i', 'unique:fleets,imo_number'],
+            'imo_number' => ['required', 'string', 'regex:/^(IMO\s*)?\d{7}$/i', Rule::unique('fleets', 'imo_number')->whereNull('deleted_at')],
             'category_id' => 'nullable|exists:fleet_categories,id',
             'vessel_type' => 'required|string|max:100',
             'status' => 'required|string',
@@ -260,7 +269,7 @@ class FleetsController extends Controller
 
         $validated = $request->validate([
             'ship_name' => 'required|string|max:255',
-            'imo_number' => ['required', 'string', 'regex:/^(IMO\s*)?\d{7}$/i', 'unique:fleets,imo_number,' . $fleet->id],
+            'imo_number' => ['required', 'string', 'regex:/^(IMO\s*)?\d{7}$/i', Rule::unique('fleets', 'imo_number')->ignore($fleet->id)->whereNull('deleted_at')],
             'category_id' => 'nullable|exists:fleet_categories,id',
             'vessel_type' => 'required|string|max:100',
             'status' => 'required|string',
@@ -295,18 +304,30 @@ class FleetsController extends Controller
         ]);
 
         if ($request->hasFile('featured_image')) {
+            if ($fleet->featured_image && str_contains($fleet->featured_image, '/storage/')) {
+                $oldImgPath = ltrim(str_replace('/storage/', '', $fleet->featured_image), '/');
+                if (Storage::disk('public')->exists($oldImgPath)) {
+                    Storage::disk('public')->delete($oldImgPath);
+                }
+            }
+
             $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('featured_image'), 'fleets');
             $validated['featured_image'] = '/storage/' . $path;
         } else {
-            // Retain existing featured image untouched when no new image file is uploaded
             unset($validated['featured_image']);
         }
 
         if ($request->hasFile('ship_particular_pdf')) {
+            if ($fleet->ship_particular_pdf && str_contains($fleet->ship_particular_pdf, '/storage/')) {
+                $oldPdfPath = ltrim(str_replace('/storage/', '', $fleet->ship_particular_pdf), '/');
+                if (Storage::disk('public')->exists($oldPdfPath)) {
+                    Storage::disk('public')->delete($oldPdfPath);
+                }
+            }
+
             $path = $request->file('ship_particular_pdf')->store('documents/fleets', 'public');
             $validated['ship_particular_pdf'] = '/storage/' . $path;
         } else {
-            // Retain existing specification document untouched when no new PDF file is uploaded
             unset($validated['ship_particular_pdf']);
         }
 
@@ -317,8 +338,23 @@ class FleetsController extends Controller
 
     public function destroy($id)
     {
-        $fleet = Fleet::findOrFail($id);
-        $fleet->delete();
+        $fleet = Fleet::withTrashed()->findOrFail($id);
+
+        if ($fleet->ship_particular_pdf && str_contains($fleet->ship_particular_pdf, '/storage/')) {
+            $pdfPath = ltrim(str_replace('/storage/', '', $fleet->ship_particular_pdf), '/');
+            if (Storage::disk('public')->exists($pdfPath)) {
+                Storage::disk('public')->delete($pdfPath);
+            }
+        }
+
+        if ($fleet->featured_image && str_contains($fleet->featured_image, '/storage/')) {
+            $imgPath = ltrim(str_replace('/storage/', '', $fleet->featured_image), '/');
+            if (Storage::disk('public')->exists($imgPath)) {
+                Storage::disk('public')->delete($imgPath);
+            }
+        }
+
+        $fleet->forceDelete();
 
         return redirect()->route('fleets.index')->with('success', 'Vessel deleted successfully.');
     }

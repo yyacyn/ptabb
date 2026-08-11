@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ClientsController extends Controller
@@ -103,6 +104,13 @@ class ClientsController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
+            if ($client->logo && str_contains($client->logo, '/storage/')) {
+                $oldLogo = ltrim(str_replace('/storage/', '', $client->logo), '/');
+                if (Storage::disk('public')->exists($oldLogo)) {
+                    Storage::disk('public')->delete($oldLogo);
+                }
+            }
+
             $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('logo'), 'clients');
             $validated['logo'] = '/storage/' . $path;
         } else {
@@ -130,6 +138,14 @@ class ClientsController extends Controller
         }
 
         $client = Client::findOrFail($id);
+
+        if ($client->logo && str_contains($client->logo, '/storage/')) {
+            $logo = ltrim(str_replace('/storage/', '', $client->logo), '/');
+            if (Storage::disk('public')->exists($logo)) {
+                Storage::disk('public')->delete($logo);
+            }
+        }
+
         $client->delete();
 
         if (request()->wantsJson()) {

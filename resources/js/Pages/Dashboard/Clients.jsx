@@ -175,7 +175,7 @@ export default function Clients({ clients = EMPTY_CLIENTS }) {
                 </div>
             }
         >
-            <Head title="Client Partners - PT. ABB" />
+            <Head title="Clients Management | PT. ABB" />
 
             <div className="py-8 bg-[#F5F5F5] min-h-[calc(100vh-120px)] font-['Hanken_Grotesk'] text-[#141B2C]">
                 <div className="max-w-[1270px] mx-auto px-4 sm:px-6 space-y-6">

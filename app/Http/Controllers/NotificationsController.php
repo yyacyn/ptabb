@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class NotificationsController extends Controller
@@ -88,6 +89,13 @@ class NotificationsController extends Controller
         }
 
         if ($request->hasFile('image')) {
+            if ($notification->image && str_contains($notification->image, '/storage/')) {
+                $oldImg = ltrim(str_replace('/storage/', '', $notification->image), '/');
+                if (Storage::disk('public')->exists($oldImg)) {
+                    Storage::disk('public')->delete($oldImg);
+                }
+            }
+
             $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('image'), 'notifications');
             $validated['image'] = '/storage/' . $path;
         } elseif (!empty($validated['image']) && is_string($validated['image'])) {
@@ -108,6 +116,14 @@ class NotificationsController extends Controller
         }
 
         $notification = Notification::findOrFail($id);
+
+        if ($notification->image && str_contains($notification->image, '/storage/')) {
+            $img = ltrim(str_replace('/storage/', '', $notification->image), '/');
+            if (Storage::disk('public')->exists($img)) {
+                Storage::disk('public')->delete($img);
+            }
+        }
+
         $notification->delete();
 
         return redirect()->back()->with('success', 'Notification banner deleted successfully.');

@@ -147,7 +147,7 @@ export default function AboutUs({ milestones: initialMilestones = [] }) {
 
     return (
         <GuestLayout>
-            <Head title="About Us - PT PABB" />
+            <Head title="About Us — Maritime Infrastructure & Scale | PT. ABB" />
 
             {/* 1. Hero Banner Section */}
             <motion.section

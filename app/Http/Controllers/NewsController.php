@@ -6,6 +6,7 @@ use App\Models\News;
 use App\Models\NewsCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class NewsController extends Controller
@@ -205,6 +206,13 @@ class NewsController extends Controller
         ];
 
         if ($request->hasFile('featured_image')) {
+            if ($news->featured_image && str_contains($news->featured_image, '/storage/')) {
+                $oldImg = ltrim(str_replace('/storage/', '', $news->featured_image), '/');
+                if (Storage::disk('public')->exists($oldImg)) {
+                    Storage::disk('public')->delete($oldImg);
+                }
+            }
+
             $path = \App\Services\ImageOptimizationService::uploadAndOptimize($request->file('featured_image'), 'news');
             $dataToSave['featured_image'] = '/storage/' . $path;
         }
@@ -228,8 +236,16 @@ class NewsController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        $news = News::findOrFail($id);
-        $news->delete();
+        $news = News::withTrashed()->findOrFail($id);
+
+        if ($news->featured_image && str_contains($news->featured_image, '/storage/')) {
+            $img = ltrim(str_replace('/storage/', '', $news->featured_image), '/');
+            if (Storage::disk('public')->exists($img)) {
+                Storage::disk('public')->delete($img);
+            }
+        }
+
+        $news->forceDelete();
 
         return redirect()->route('news.index')->with('success', 'Article deleted successfully.');
     }

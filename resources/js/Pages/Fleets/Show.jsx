@@ -310,7 +310,7 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
 
     return (
         <GuestLayout>
-            <Head title={`${vesselName} - PT PABB`} />
+            <Head title={`${vesselName} — Vessel Specifications & Live Telemetry | PT. ABB`} />
 
             <div className="bg-[#F5F5F5] min-h-screen">
                 <div className="max-w-full mx-auto space-y-[7px] font-['Hanken_Grotesk'] text-[#141B2C]">
