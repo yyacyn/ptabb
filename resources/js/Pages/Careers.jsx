@@ -18,11 +18,14 @@ export default function Careers({ careers = [], notifications: initialNotificati
     const [notificationsList, setNotificationsList] = useState(initialNotifications);
 
     useEffect(() => {
-        if (!initialNotifications || initialNotifications.length === 0) {
+        if (initialNotifications && initialNotifications.length > 0) {
+            setNotificationsList(initialNotifications);
+        } else {
             fetch('/notifications', { headers: { 'Accept': 'application/json' } })
                 .then(res => res.json())
                 .then(data => {
-                    if (Array.isArray(data)) setNotificationsList(data);
+                    const list = Array.isArray(data) ? data : (data?.notifications || []);
+                    if (list.length > 0) setNotificationsList(list);
                 })
                 .catch(err => console.error("Error loading notifications:", err));
         }

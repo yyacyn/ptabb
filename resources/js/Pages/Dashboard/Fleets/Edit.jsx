@@ -452,17 +452,20 @@ export default function Edit({ fleet = null, categories = [] }) {
             header={
                 <div className="flex items-center justify-between font-['Hanken_Grotesk']">
                     <div>
-                        <Link
-                            href={route('fleets.index')}
-                            className="font-['JetBrains_Mono'] text-xs font-bold text-[#00629D] hover:underline uppercase tracking-wider mb-1 flex items-center gap-1.5"
-                        >
-                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Fleet List
-                        </Link>
-                        <h2 className="text-2xl font-bold text-[#141B2C] tracking-tight flex items-center gap-2">
-                            <Ship className="w-6 h-6 text-[#00629D]" />
+                        <div className="font-['JetBrains_Mono'] text-[11px] font-bold text-[#00629D] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <Ship className="w-3.5 h-3.5" /> FLEET & MARITIME OPERATIONS
+                        </div>
+                        <h2 className="text-2xl font-bold text-[#141B2C] tracking-tight">
                             {isEditing ? `Edit Ship: ${fleet.ship_name}` : 'Add New Vessel Specs'}
                         </h2>
                     </div>
+
+                    <Link
+                        href={route('fleets.index')}
+                        className="inline-flex items-center gap-2 text-xs font-semibold text-[#404750] bg-white border border-[#E5E7EB] px-4 py-2.5 rounded-[8px] hover:bg-slate-50 hover:text-[#141B2C] transition-all"
+                    >
+                        <ArrowLeft className="w-4 h-4" /> Back to Fleet Overview
+                    </Link>
                 </div>
             }
         >

@@ -53,40 +53,49 @@ export default function Welcome({
 
     // Fetch all clients, fleets, and notifications from API endpoints if not provided via Inertia props
     useEffect(() => {
-        if (!initialClients || initialClients.length === 0) {
+        if (initialClients && initialClients.length > 0) {
+            setClientsList(initialClients);
+        } else {
             fetch('/clients', {
                 headers: { 'Accept': 'application/json' }
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (Array.isArray(data) && data.length > 0) {
-                        setClientsList(data);
+                    const list = Array.isArray(data) ? data : (data?.clients || []);
+                    if (list.length > 0) {
+                        setClientsList(list);
                     }
                 })
                 .catch(err => console.error("Error loading clients:", err));
         }
 
-        if (!initialFleets || initialFleets.length === 0) {
+        if (initialFleets && initialFleets.length > 0) {
+            setFleetsList(initialFleets);
+        } else {
             fetch('/fleets', {
                 headers: { 'Accept': 'application/json' }
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (Array.isArray(data) && data.length > 0) {
-                        setFleetsList(data);
+                    const list = Array.isArray(data) ? data : (data?.fleets || []);
+                    if (list.length > 0) {
+                        setFleetsList(list);
                     }
                 })
                 .catch(err => console.error("Error loading fleets:", err));
         }
 
-        if (!initialNotifications || initialNotifications.length === 0) {
+        if (initialNotifications && initialNotifications.length > 0) {
+            setNotificationsList(initialNotifications);
+        } else {
             fetch('/notifications', {
                 headers: { 'Accept': 'application/json' }
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (Array.isArray(data) && data.length > 0) {
-                        setNotificationsList(data);
+                    const list = Array.isArray(data) ? data : (data?.notifications || []);
+                    if (list.length > 0) {
+                        setNotificationsList(list);
                     }
                 })
                 .catch(err => console.error("Error loading notifications:", err));
@@ -118,7 +127,7 @@ export default function Welcome({
 
     const getLogoPath = (item) => {
         if (!item) return '/images/clients/placeholder.png';
-        const logoFile = item.logo_url || item.logo || item.logo_path || item.pathfile || item.image || item.featured_image;
+        const logoFile = item.logo || item.logo_path || item.pathfile || item.image || item.featured_image;
         if (!logoFile) return '/images/clients/placeholder.png';
 
         if (logoFile.startsWith('http://') || logoFile.startsWith('https://')) return logoFile;

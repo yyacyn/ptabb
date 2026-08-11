@@ -13,7 +13,7 @@ export default function Clients({ clients = [] }) {
     // Helper function imitating getLogoPath from Dashboard/Clients.jsx
     const getLogoPath = (item) => {
         if (!item) return '/images/clients/placeholder.png';
-        const logoFile = item.logo_url || item.logo || item.logo_path || item.pathfile || item.image || item.featured_image;
+        const logoFile = item.logo || item.logo_path || item.pathfile || item.image || item.featured_image;
         if (!logoFile) return '/images/clients/placeholder.png';
 
         if (logoFile.startsWith('http://') || logoFile.startsWith('https://')) return logoFile;
