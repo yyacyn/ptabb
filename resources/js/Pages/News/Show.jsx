@@ -54,7 +54,7 @@ export default function NewsShow({ article, relatedNews = [] }) {
 
     return (
         <GuestLayout>
-            <Head title={`${article?.title || 'Article Detail'} — Press & Media | PT. ABB`} />
+            <Head title={`${article?.title || 'Article Detail'} | Press & Media | PT. ABB`} />
 
             <div className="w-full max-w-[1440px] mx-auto font-['Hanken_Grotesk'] text-[#141B2C]">
 

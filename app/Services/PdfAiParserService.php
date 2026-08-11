@@ -56,7 +56,8 @@ You are a maritime specification parser for PT. ABB. Read the vessel specificati
   "mmsi": "525012357",
   "hull_no": "323",
   "speed": "10.0",
-  "description": "Vessel overview summary (less than 200 chars)"
+  "operational_area": "Asia, Southeast Asia",
+  "description": "Vessel description, like actually describe (less than 200 chars)"
 }
 
 Return ONLY raw valid JSON. Do not include markdown code block backticks.
@@ -270,6 +271,30 @@ PROMPT;
 
         // Hull No
         if (preg_match('/Hull\s*No\.?\s*:?\s*([A-Z0-9\-]+)/i', $fullText, $m)) $extracted['hull_no'] = $m[1];
+
+        // Operational Area
+        $areaSearch = strtolower(($extracted['flag'] ?? '') . ' ' . ($extracted['port_of_registry'] ?? '') . ' ' . $fullText);
+        $areas = [];
+        if (str_contains($areaSearch, 'southeast asia') || str_contains($areaSearch, 'indonesia') || str_contains($areaSearch, 'jakarta') || str_contains($areaSearch, 'surabaya') || str_contains($areaSearch, 'priok') || str_contains($areaSearch, 'rina') || str_contains($areaSearch, 'bki')) {
+            $areas[] = 'Asia';
+            $areas[] = 'Southeast Asia';
+        }
+        if (str_contains($areaSearch, 'far east') || str_contains($areaSearch, 'china') || str_contains($areaSearch, 'japan') || str_contains($areaSearch, 'korea')) {
+            $areas[] = 'Far East';
+        }
+        if (str_contains($areaSearch, 'middle east') || str_contains($areaSearch, 'dubai') || str_contains($areaSearch, 'uae')) {
+            $areas[] = 'Middle East';
+        }
+        if (str_contains($areaSearch, 'europe')) {
+            $areas[] = 'Europe';
+        }
+        if (str_contains($areaSearch, 'africa')) {
+            $areas[] = 'Africa';
+        }
+        if (str_contains($areaSearch, 'global') || str_contains($areaSearch, 'international') || str_contains($areaSearch, 'worldwide')) {
+            $areas[] = 'Global';
+        }
+        $extracted['operational_area'] = implode(', ', array_unique($areas));
 
         // Overview description
         $extracted['description'] = "Vessel Particulars: " . ($extracted['ship_name'] ?? 'Ship') . " (IMO " . ($extracted['imo_number'] ?? '-') . ") - DWT: " . ($extracted['dwt'] ?? '-') . "t, LOA: " . ($extracted['loa'] ?? '-') . "m, Speed: " . ($extracted['speed'] ?? '-') . " Knots.";

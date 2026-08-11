@@ -64,7 +64,7 @@ export default function Edit({ fleet = null, categories = [] }) {
         category_id: fleet?.category_id || '',
         vessel_type: fleet?.vessel_type || (isEditing ? '' : 'Cement Carrier'),
         status: fleet?.status || 'in_service',
-        operational_area: fleet?.operational_area || (isEditing ? '' : 'Asia, Southeast Asia'),
+        operational_area: fleet?.operational_area || '',
         build_year: fleet?.build_year || (isEditing ? '' : new Date().getFullYear()),
         dwt: fleet?.dwt || '',
         capacity: fleet?.capacity || '',
@@ -291,6 +291,33 @@ export default function Edit({ fleet = null, categories = [] }) {
         return { category_id: '', vessel_type: typeToMatch };
     };
 
+    const autoDetectOperationalArea = (parsed = {}, fullText = '') => {
+        const combined = `${parsed.operational_area || ''} ${parsed.flag || ''} ${parsed.port_of_registry || ''} ${parsed.description || ''} ${fullText}`.toLowerCase();
+        const areas = new Set();
+
+        if (combined.includes('southeast asia') || combined.includes('indonesia') || combined.includes('jakarta') || combined.includes('surabaya') || combined.includes('priok') || combined.includes('rina') || combined.includes('bki')) {
+            areas.add('Asia');
+            areas.add('Southeast Asia');
+        }
+        if (combined.includes('far east') || combined.includes('china') || combined.includes('japan') || combined.includes('korea')) {
+            areas.add('Far East');
+        }
+        if (combined.includes('middle east') || combined.includes('dubai') || combined.includes('uae')) {
+            areas.add('Middle East');
+        }
+        if (combined.includes('europe')) {
+            areas.add('Europe');
+        }
+        if (combined.includes('africa')) {
+            areas.add('Africa');
+        }
+        if (combined.includes('global') || combined.includes('international') || combined.includes('worldwide')) {
+            areas.add('Global');
+        }
+
+        return Array.from(areas).join(', ');
+    };
+
     // AI PDF Specification Parser with OpenRouter + Local Fallback
     const handlePdfUpload = async (e) => {
         const file = e.target.files[0];
@@ -322,7 +349,7 @@ export default function Edit({ fleet = null, categories = [] }) {
         formData.append('ship_particular_pdf', file);
 
         const detailedSpecKeys = [
-            'ship_name', 'imo_number', 'vessel_type', 'description',
+            'ship_name', 'imo_number', 'vessel_type', 'operational_area', 'description',
             'loa', 'lbp', 'breadth', 'depth', 'dwt', 'capacity',
             'gross_tonnage', 'net_tonnage', 'light_ship', 'summer_draft',
             'build_year', 'flag', 'classification_society', 'port_of_registry',
@@ -352,14 +379,20 @@ export default function Edit({ fleet = null, categories = [] }) {
                     if (catMatch.vessel_type) updateValues.vessel_type = catMatch.vessel_type;
                 }
 
+                const autoArea = autoDetectOperationalArea(updateValues, '');
+                if (autoArea) {
+                    updateValues.operational_area = autoArea;
+                }
+
                 if (countExtracted > 0) {
                     setData(prev => ({
                         ...prev,
                         ...updateValues,
                     }));
                     setCategoryError(null);
+                    setAreaError(null);
                     setPdfError(null);
-                    setParseSuccessMessage(`AI parsed PDF successful! Auto-filled ${countExtracted} vessel specifications and selected category.`);
+                    setParseSuccessMessage(`AI parsed PDF successful! Auto-filled ${countExtracted} vessel specifications, category, and operational areas.`);
                 } else {
                     setPdfError(null);
                     setParseSuccessMessage('PDF attached! No text specifications could be automatically parsed — please re-check or fill in vessel details manually.');
@@ -485,14 +518,20 @@ export default function Edit({ fleet = null, categories = [] }) {
                 if (catMatch.vessel_type) updateValues.vessel_type = catMatch.vessel_type;
             }
 
+            const autoArea = autoDetectOperationalArea(updateValues, fullText);
+            if (autoArea) {
+                updateValues.operational_area = autoArea;
+            }
+
             if (countExtracted > 0) {
                 setData(prev => ({
                     ...prev,
                     ...updateValues,
                 }));
                 setCategoryError(null);
+                setAreaError(null);
                 setPdfError(null);
-                setParseSuccessMessage(`PDF uploaded! Auto-filled ${countExtracted} vessel specification(s) into the form.`);
+                setParseSuccessMessage(`PDF uploaded! Auto-filled ${countExtracted} vessel specification(s), category, and operational areas into the form.`);
             } else {
                 setPdfError(null);
                 setParseSuccessMessage('PDF uploaded & attached! No text specifications could be automatically parsed — please re-check or fill in vessel details manually.');
