@@ -50,7 +50,7 @@ class CareersController extends Controller
 
         return Inertia::render('Careers', [
             'careers' => $careers,
-            'notifications' => Notification::where('status', 'active')->get(),
+            'notifications' => Notification::activeOrScheduled()->get(),
         ]);
     }
 

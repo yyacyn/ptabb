@@ -130,6 +130,8 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     // Notifications Management
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
     Route::post('/notifications', [NotificationsController::class, 'store'])->name('notifications.store');
+    Route::post('/notifications/sync-holidays', [NotificationsController::class, 'syncHolidays'])->name('notifications.sync-holidays');
+    Route::post('/notifications/generate-ai-content', [NotificationsController::class, 'generateAiContent'])->name('notifications.generate-ai-content');
     Route::put('/notifications/{id}', [NotificationsController::class, 'update'])->name('notifications.update');
     Route::delete('/notifications/{id}', [NotificationsController::class, 'destroy'])->name('notifications.destroy');
 

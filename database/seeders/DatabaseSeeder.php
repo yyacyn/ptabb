@@ -704,5 +704,8 @@ class DatabaseSeeder extends Seeder
             ['id' => 6, 'setting_key' => 'secondary_color', 'setting_value' => '#743c3a', 'setting_type' => 'text', 'description' => 'Warna sekunder website', 'created_at' => now(), 'updated_at' => now()],
             ['id' => 7, 'setting_key' => 'logo_url', 'setting_value' => 'assets/images/logo-abb.jpg', 'setting_type' => 'text', 'description' => 'URL logo perusahaan', 'created_at' => now(), 'updated_at' => now()],
         ]);
+
+        // 12. Seed Indonesian Celebration Days popups
+        $this->call(IndonesianCelebrationDaysSeeder::class);
     }
 }

@@ -25,7 +25,7 @@ class HomeController extends Controller
             'totalFleets' => Fleet::count(),
             'totalClients' => Client::count(),
             'news' => News::where('status', 'published')->latest()->take(6)->get(),
-            'notifications' => Notification::where('status', 'active')->get(),
+            'notifications' => Notification::activeOrScheduled()->get(),
             'careers' => Career::where('status', 'open')->get(),
         ]);
     }
