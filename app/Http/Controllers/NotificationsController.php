@@ -44,14 +44,16 @@ class NotificationsController extends Controller
             abort(403, 'Only Super Admin and HR Admin can create notifications.');
         }
 
+        $isCelebration = $request->input('type') === 'celebration';
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string|in:home,career,celebration',
-            'content' => 'nullable|string|max:255',
+            'content' => $isCelebration ? 'nullable|string|max:255' : 'required|string|max:255',
             'status' => 'required|string|in:active,inactive,scheduled',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'image' => 'nullable|image|mimes:jpeg,jpg,png,webp,svg|max:5120',
+            'start_date' => $isCelebration ? 'required|date' : 'nullable|date',
+            'end_date' => $isCelebration ? 'required|date|after_or_equal:start_date' : 'nullable|date|after_or_equal:start_date',
+            'image' => $isCelebration ? 'required|image|mimes:jpeg,jpg,png,webp,svg|max:5120' : 'nullable|image|mimes:jpeg,jpg,png,webp,svg|max:5120',
         ]);
 
         // Enforce BR-06: Max 1 active popup banner per type (home, career, celebration)
@@ -79,16 +81,25 @@ class NotificationsController extends Controller
         }
 
         $notification = Notification::findOrFail($id);
+        $isCelebration = $request->input('type') === 'celebration';
 
-        $validated = $request->validate([
+        $rules = [
             'title' => 'required|string|max:255',
             'type' => 'required|string|in:home,career,celebration',
-            'content' => 'nullable|string|max:255',
+            'content' => $isCelebration ? 'nullable|string|max:255' : 'required|string|max:255',
             'status' => 'required|string|in:active,inactive,scheduled',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_date' => $isCelebration ? 'required|date' : 'nullable|date',
+            'end_date' => $isCelebration ? 'required|date|after_or_equal:start_date' : 'nullable|date|after_or_equal:start_date',
             'image' => 'nullable',
-        ]);
+        ];
+
+        if ($isCelebration && !$request->hasFile('image') && empty($notification->image)) {
+            $rules['image'] = 'required|image|mimes:jpeg,jpg,png,webp,svg|max:5120';
+        } elseif ($request->hasFile('image')) {
+            $rules['image'] = 'image|mimes:jpeg,jpg,png,webp,svg|max:5120';
+        }
+
+        $validated = $request->validate($rules);
 
         // Enforce BR-06: Max 1 active popup banner per type (home, career, celebration)
         if ($validated['status'] === 'active') {
@@ -151,7 +162,7 @@ class NotificationsController extends Controller
 
         $count = IndonesianHolidayService::syncHolidays();
 
-        return redirect()->back()->with('success', "Indonesian holiday celebration popups ({$count}) updated successfully from SKB 3 Menteri Kemendesa API.");
+        return redirect()->back()->with('success', "Indonesian holiday celebration popups ({$count}) updated successfully.");
     }
 
     /**
@@ -176,7 +187,7 @@ class NotificationsController extends Controller
         $startDate = $validated['start_date'] ?? null;
         $endDate = $validated['end_date'] ?? null;
 
-        $prompt = "Create a professional, warm, and inspiring website pop-up announcement message (in Bahasa Indonesia) for PT. Pelayaran Andalas Bahtera Baruna (PT. ABB), a leading Indonesian maritime shipping & logistics company.\n\n";
+        $prompt = "Create a professional, warm, and inspiring website pop-up announcement message (in English) for PT. Pelayaran Andalas Bahtera Baruna (PT. ABB), a leading Indonesian maritime shipping & logistics company.\n\n";
         $prompt .= "Topic / Title: {$title}\n";
         $prompt .= "Pop-up Category: {$type}\n";
         if (!empty($startDate)) {
@@ -249,7 +260,7 @@ class NotificationsController extends Controller
                 'messages' => [
                     ['role' => 'user', 'content' => $prompt]
                 ],
-                'temperature' => 0.6,
+                'temperature' => 0.9,
                 'max_tokens' => 300,
             ]);
 

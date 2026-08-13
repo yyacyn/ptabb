@@ -98,11 +98,11 @@ export default function NotificationPopup({ notifications = EMPTY_NOTIFICATIONS,
                     >
                         {/* Poster Card Container */}
                         {hasValidImage ? (
-                            <div className="relative w-full rounded-[24px] overflow-hidden  cursor-pointer" onClick={handleClose}>
+                            <div className="relative w-full rounded-md overflow-hidden  cursor-pointer" onClick={handleClose}>
                                 <img
                                     src={activeNotification.image}
                                     alt={activeNotification.title}
-                                    className="w-full h-auto max-h-[75vh] object-contain rounded-[24px]"
+                                    className="w-full h-auto max-h-[75vh] object-contain rounded-md"
                                     onError={() => setImageError(true)}
                                 />
                             </div>
