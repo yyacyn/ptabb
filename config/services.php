@@ -44,4 +44,10 @@ return [
         'key' => env('OPENROUTER_API_KEY'),
     ],
 
+    'sailink' => [
+        'base_url' => env('SAILINK_API_BASE_URL', 'https://navigatorplus.sailink.id/api/v22/remote'),
+        'key' => env('SAILINK_API_KEY'),
+    ],
+
 ];
+

@@ -5,19 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Fleet;
 use App\Models\FleetCategory;
 use App\Services\PdfAiParserService;
+use App\Services\SailinkApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class FleetsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, SailinkApiService $sailinkService)
     {
         $fleets = Fleet::with('category')->latest()->get();
 
         $allWaypointsGrouped = \App\Models\VoyageWaypoint::orderBy('sequence', 'asc')->get()->groupBy('fleet_id');
-        $voyageWaypoints = \App\Models\Fleet::all()->map(function ($fleet) use ($allWaypointsGrouped) {
+        $voyageWaypoints = \App\Models\Fleet::all()->map(function ($fleet) use ($allWaypointsGrouped, $sailinkService) {
             $waypoints = $allWaypointsGrouped->get($fleet->id, collect());
             $liveWp = $waypoints->firstWhere('sequence', 1) ?? $waypoints->first();
 
@@ -29,6 +31,24 @@ class FleetsController extends Controller
                 }
                 if (preg_match('/COG:\s*([0-9.]+)/', $liveWp->notes, $cogMatches)) {
                     $cog = (float) $cogMatches[1];
+                }
+            }
+
+            $lat = $liveWp ? (float) $liveWp->latitude : 15.2;
+            $lng = $liveWp ? (float) $liveWp->longitude : 73.8;
+            $weather = null;
+
+            if ($fleet->ip_address) {
+                $telemetry = Cache::remember('sailink_telemetry_' . $fleet->id, 60, function () use ($sailinkService, $fleet) {
+                    return $sailinkService->getVesselPosition($fleet->ip_address);
+                });
+
+                if ($telemetry && isset($telemetry['latitude'], $telemetry['longitude'])) {
+                    $lat = $telemetry['latitude'];
+                    $lng = $telemetry['longitude'];
+                    $speed = $telemetry['speed_knots'] . ' knots';
+                    $cog = $telemetry['heading'];
+                    $weather = $telemetry['weather'] ?? null;
                 }
             }
 
@@ -46,10 +66,11 @@ class FleetsController extends Controller
             return [
                 'id' => $fleet->id,
                 'vessel' => $fleet->ship_name,
-                'lat' => $liveWp ? (float) $liveWp->latitude : 15.2,
-                'lng' => $liveWp ? (float) $liveWp->longitude : 73.8,
+                'lat' => $lat,
+                'lng' => $lng,
                 'speed' => $speed,
                 'cog' => $cog,
+                'weather' => $weather,
                 'status' => $fleet->status ?? 'Active - In Service',
                 'route_points' => $routePoints,
             ];
@@ -74,7 +95,7 @@ class FleetsController extends Controller
         ]);
     }
 
-    public function show(Request $request, $id)
+    public function show(Request $request, $id, SailinkApiService $sailinkService)
     {
         $fleet = Fleet::with(['category', 'waypoints'])->find($id);
 
@@ -96,6 +117,24 @@ class FleetsController extends Controller
             }
         }
 
+        $lat = $liveWp ? (float) $liveWp->latitude : -6.1;
+        $lng = $liveWp ? (float) $liveWp->longitude : 106.8;
+        $weather = null;
+
+        if ($fleet && $fleet->ip_address) {
+            $telemetry = Cache::remember('sailink_telemetry_' . $fleet->id, 60, function () use ($sailinkService, $fleet) {
+                return $sailinkService->getVesselPosition($fleet->ip_address);
+            });
+
+            if ($telemetry && isset($telemetry['latitude'], $telemetry['longitude'])) {
+                $lat = $telemetry['latitude'];
+                $lng = $telemetry['longitude'];
+                $speed = $telemetry['speed_knots'] . ' knots';
+                $cog = $telemetry['heading'];
+                $weather = $telemetry['weather'] ?? null;
+            }
+        }
+
         $routePoints = $waypoints->map(function ($w) {
             return [
                 'id' => $w->id,
@@ -110,10 +149,11 @@ class FleetsController extends Controller
         $voyageWaypoint = [
             'id' => $fleet ? $fleet->id : 1,
             'vessel' => $fleet ? $fleet->ship_name : 'MV. IRIANA',
-            'lat' => $liveWp ? (float) $liveWp->latitude : -6.1,
-            'lng' => $liveWp ? (float) $liveWp->longitude : 106.8,
+            'lat' => $lat,
+            'lng' => $lng,
             'speed' => $speed,
             'cog' => $cog,
+            'weather' => $weather,
             'status' => $fleet ? ($fleet->status ?? 'Active - In Service') : 'Active - In Service',
             'route_points' => $routePoints,
         ];
@@ -229,6 +269,7 @@ class FleetsController extends Controller
             'port_of_registry' => 'nullable|string|max:100',
             'call_sign' => 'nullable|string|max:50',
             'mmsi' => 'nullable|string|max:50',
+            'ip_address' => 'nullable|string|ip|max:45',
             'hull_no' => 'nullable|string|max:50',
             'flag' => 'nullable|string|max:100',
             'classification_society' => 'nullable|string|max:100',
@@ -244,6 +285,7 @@ class FleetsController extends Controller
             'ship_particular_pdf' => 'nullable|file|mimes:pdf|max:10240',
         ], [
             'imo_number.regex' => 'The IMO number must consist of 7 digits (e.g. 9123456 or IMO 9123456).',
+            'ip_address.ip' => 'The Sailink IP must be a valid IP address (e.g. 10.161.126.81).',
             'featured_image.max' => 'The featured image may not be greater than 5MB.',
             'ship_particular_pdf.max' => 'The specification document may not be greater than 10MB.',
         ]);
@@ -284,6 +326,7 @@ class FleetsController extends Controller
             'port_of_registry' => 'nullable|string|max:100',
             'call_sign' => 'nullable|string|max:50',
             'mmsi' => 'nullable|string|max:50',
+            'ip_address' => 'nullable|string|ip|max:45',
             'hull_no' => 'nullable|string|max:50',
             'flag' => 'nullable|string|max:100',
             'classification_society' => 'nullable|string|max:100',
@@ -299,6 +342,7 @@ class FleetsController extends Controller
             'ship_particular_pdf' => 'nullable|file|mimes:pdf|max:10240',
         ], [
             'imo_number.regex' => 'The IMO number must consist of 7 digits (e.g. 9123456 or IMO 9123456).',
+            'ip_address.ip' => 'The Sailink IP must be a valid IP address (e.g. 10.161.126.81).',
             'featured_image.max' => 'The featured image may not be greater than 5MB.',
             'ship_particular_pdf.max' => 'The specification document may not be greater than 10MB.',
         ]);

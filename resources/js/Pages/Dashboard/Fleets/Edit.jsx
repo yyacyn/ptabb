@@ -77,6 +77,7 @@ export default function Edit({ fleet = null, categories = [] }) {
         port_of_registry: fleet?.port_of_registry || '',
         call_sign: fleet?.call_sign || '',
         mmsi: fleet?.mmsi || '',
+        ip_address: fleet?.ip_address || '',
         hull_no: fleet?.hull_no || '',
         loa: fleet?.loa || '',
         lbp: fleet?.lbp || '',
@@ -353,7 +354,7 @@ export default function Edit({ fleet = null, categories = [] }) {
             'loa', 'lbp', 'breadth', 'depth', 'dwt', 'capacity',
             'gross_tonnage', 'net_tonnage', 'light_ship', 'summer_draft',
             'build_year', 'flag', 'classification_society', 'port_of_registry',
-            'call_sign', 'mmsi', 'hull_no', 'speed'
+            'call_sign', 'mmsi', 'ip_address', 'hull_no', 'speed'
         ];
 
         try {
@@ -876,50 +877,70 @@ export default function Edit({ fleet = null, categories = [] }) {
 
                                     {/* Operational Area & Featured Image Grid */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                        {/* Operational Area Selection (Dropdown Checkbox) */}
-                                        <div ref={areaDropdownRef} className="relative">
-                                            <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
-                                                Operational Area <span className="text-red-500">*</span>
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
-                                                className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 bg-white text-left flex items-center justify-between focus:border-[#00629D] focus:ring-1 focus:ring-[#00629D] transition-colors cursor-pointer"
-                                            >
-                                                <span className="truncate text-[#141B2C] font-medium">
-                                                    {selectedAreas.length > 0
-                                                        ? selectedAreas.join(', ')
-                                                        : '-- Select Operational Area(s) --'}
-                                                </span>
-                                                <ChevronDown className={`w-4 h-4 text-[#404750] shrink-0 transition-transform duration-200 ${isAreaDropdownOpen ? 'rotate-180' : ''}`} />
-                                            </button>
+                                        {/* Left Column: Operational Area & Sailink Device IP */}
+                                        <div className="space-y-4">
+                                            {/* Operational Area Selection (Dropdown Checkbox) */}
+                                            <div ref={areaDropdownRef} className="relative">
+                                                <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
+                                                    Operational Area <span className="text-red-500">*</span>
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
+                                                    className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 bg-white text-left flex items-center justify-between focus:border-[#00629D] focus:ring-1 focus:ring-[#00629D] transition-colors cursor-pointer"
+                                                >
+                                                    <span className="truncate text-[#141B2C] font-medium">
+                                                        {selectedAreas.length > 0
+                                                            ? selectedAreas.join(', ')
+                                                            : '-- Select Operational Area(s) --'}
+                                                    </span>
+                                                    <ChevronDown className={`w-4 h-4 text-[#404750] shrink-0 transition-transform duration-200 ${isAreaDropdownOpen ? 'rotate-180' : ''}`} />
+                                                </button>
 
-                                            {isAreaDropdownOpen && (
-                                                <div className="absolute z-30 left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-[8px] shadow-lg p-2 max-h-56 overflow-y-auto space-y-1">
-                                                    {operationalAreasList.map((area) => {
-                                                        const checked = selectedAreas.includes(area);
-                                                        return (
-                                                            <label
-                                                                key={area}
-                                                                className={`flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-xs cursor-pointer transition-colors ${
-                                                                    checked ? 'bg-[#00629D]/10 text-[#00629D] font-bold' : 'hover:bg-slate-50 text-[#141B2C]'
-                                                                }`}
-                                                            >
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={checked}
-                                                                    onChange={() => toggleOperationalArea(area)}
-                                                                    className="rounded border-[#E5E7EB] text-[#00629D] focus:ring-[#00629D] cursor-pointer"
-                                                                />
-                                                                <span>{area}</span>
-                                                            </label>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                            {(areaError || errors.operational_area) && (
-                                                <p className="text-xs text-red-500 mt-1 font-medium">{areaError || errors.operational_area}</p>
-                                            )}
+                                                {isAreaDropdownOpen && (
+                                                    <div className="absolute z-30 left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-[8px] shadow-lg p-2 max-h-56 overflow-y-auto space-y-1">
+                                                        {operationalAreasList.map((area) => {
+                                                            const checked = selectedAreas.includes(area);
+                                                            return (
+                                                                <label
+                                                                    key={area}
+                                                                    className={`flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-xs cursor-pointer transition-colors ${
+                                                                        checked ? 'bg-[#00629D]/10 text-[#00629D] font-bold' : 'hover:bg-slate-50 text-[#141B2C]'
+                                                                    }`}
+                                                                >
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={checked}
+                                                                        onChange={() => toggleOperationalArea(area)}
+                                                                        className="rounded border-[#E5E7EB] text-[#00629D] focus:ring-[#00629D] cursor-pointer"
+                                                                    />
+                                                                    <span>{area}</span>
+                                                                </label>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                                {(areaError || errors.operational_area) && (
+                                                    <p className="text-xs text-red-500 mt-1 font-medium">{areaError || errors.operational_area}</p>
+                                                )}
+                                            </div>
+
+                                            {/* Sailink Device IP */}
+                                            <div>
+                                                <label className="block text-xs font-bold text-[#141B2C] mb-1.5">
+                                                    Sailink Device IP
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={data.ip_address}
+                                                    onChange={(e) => setData('ip_address', e.target.value)}
+                                                    placeholder="e.g. 10.161.126.81"
+                                                    className="w-full border border-[#E5E7EB] rounded-[8px] text-xs p-3 font-['JetBrains_Mono'] focus:border-[#00629D] focus:ring-[#00629D]"
+                                                />
+                                                {errors.ip_address && (
+                                                    <p className="text-xs text-red-500 mt-1 font-medium">{errors.ip_address}</p>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Featured Vessel Image Upload & Preview */}

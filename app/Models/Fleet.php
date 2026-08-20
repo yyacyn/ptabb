@@ -36,6 +36,7 @@ class Fleet extends Model
         'port_of_registry',
         'call_sign',
         'mmsi',
+        'ip_address',
         'hull_no',
         'vessel_type',
         'loa',

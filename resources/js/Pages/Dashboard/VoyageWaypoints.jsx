@@ -169,12 +169,14 @@ function LeafletViewer({ waypoint }) {
                     mapInstance.current.fitBounds(polyline.getBounds(), { padding: [40, 40] });
                 }
             } else {
+                const weatherInfo = waypoint.weather ? `<br/><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${waypoint.weather.weather}, ${waypoint.weather.temperature}</span>` : '';
                 const popupContent = `
                     <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
                         <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel}</strong><br/>
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed}</span><br/>
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status}</span>
+                        ${weatherInfo}
                     </div>
                 `;
                 liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();

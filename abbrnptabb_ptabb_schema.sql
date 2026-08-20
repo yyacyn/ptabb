@@ -197,7 +197,8 @@ CREATE TABLE IF NOT EXISTS `contacts` (
   `phone` varchar(20) DEFAULT NULL,
   `subject` varchar(255) DEFAULT NULL,
   `message` text NOT NULL,
-  `department` enum('commercial','operation','hrd','general') NOT NULL DEFAULT 'general',
+  `resume_path` varchar(255) DEFAULT NULL,
+  `department` enum('commercial','operation','hrd','crew','general') NOT NULL DEFAULT 'general',
   `status` enum('new','read','replied') NOT NULL DEFAULT 'new',
   `ip_address` varchar(45) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -230,6 +231,7 @@ CREATE TABLE IF NOT EXISTS `clients` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `category` enum('international','domestic') NOT NULL DEFAULT 'international',
+  `country` varchar(100) DEFAULT NULL,
   `logo` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -242,10 +244,10 @@ CREATE TABLE IF NOT EXISTS `clients` (
 
 CREATE TABLE IF NOT EXISTS `milestones` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `year` int(11) NOT NULL,
-  `title` varchar(255) NOT NULL,
+  `year` varchar(20) NOT NULL,
+  `milestone` varchar(255) NOT NULL,
   `description` text DEFAULT NULL,
-  `display_order` int(11) NOT NULL DEFAULT 0,
+  `image` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -258,10 +260,12 @@ CREATE TABLE IF NOT EXISTS `milestones` (
 CREATE TABLE IF NOT EXISTS `notifications` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
-  `type` enum('home','career') NOT NULL DEFAULT 'home',
-  `content` text NOT NULL,
+  `type` enum('home','career','celebration') NOT NULL DEFAULT 'home',
+  `content` text DEFAULT NULL,
   `image` varchar(255) DEFAULT NULL,
-  `status` enum('active','inactive') NOT NULL DEFAULT 'inactive',
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `status` enum('active','inactive','scheduled') NOT NULL DEFAULT 'inactive',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -279,8 +283,8 @@ CREATE TABLE IF NOT EXISTS `branches` (
   `company_name` varchar(255) NOT NULL,
   `short_desc` varchar(255) DEFAULT NULL,
   `address` text DEFAULT NULL,
-  `phone` VARCHAR(50) DEFAULT NULL,
-  `email` VARCHAR(100) DEFAULT NULL,
+  `phone` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
   `map_url` text DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `sort_order` int(11) NOT NULL DEFAULT 0,
@@ -289,6 +293,83 @@ CREATE TABLE IF NOT EXISTS `branches` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `branches_slug_unique` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for table `pages`
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `pages` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `slug` varchar(255) NOT NULL,
+  `content` longtext DEFAULT NULL,
+  `meta_title` varchar(255) DEFAULT NULL,
+  `meta_description` text DEFAULT NULL,
+  `status` enum('published','draft') NOT NULL DEFAULT 'published',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pages_slug_unique` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for table `page_views`
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `page_views` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `page_url` varchar(500) NOT NULL,
+  `route_name` varchar(100) DEFAULT NULL,
+  `view_date` date NOT NULL,
+  `view_count` int(11) NOT NULL DEFAULT 1,
+  `unique_visitors` int(11) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_page_date` (`page_url`(255),`view_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for table `settings`
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `settings` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `setting_type` enum('text','json','boolean') NOT NULL DEFAULT 'text',
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `settings_setting_key_unique` (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for table `visitor_analytics`
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `visitor_analytics` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `session_id` varchar(255) NOT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `page_url` varchar(500) DEFAULT NULL,
+  `route_name` varchar(100) DEFAULT NULL,
+  `referrer` varchar(500) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `device_type` enum('desktop','tablet','mobile') DEFAULT NULL,
+  `browser` varchar(100) DEFAULT NULL,
+  `operating_system` varchar(100) DEFAULT NULL,
+  `visit_date` date DEFAULT NULL,
+  `visit_time` time DEFAULT NULL,
+  `time_spent` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `visitor_analytics_visit_date_index` (`visit_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
