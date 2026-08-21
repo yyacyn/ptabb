@@ -53,6 +53,7 @@ Route::post('/contacts', [ContactsController::class, 'store'])->name('contacts.s
 // AISStream.io Telemetry Ingestion Endpoint & Simulator Trigger
 Route::post('/api/ais/ingest', [AisIngestController::class, 'ingest'])->name('ais.ingest');
 Route::get('/api/ais/simulate', [AisIngestController::class, 'simulate'])->name('ais.simulate');
+Route::get('/api/sailink/sync', [AisIngestController::class, 'syncSailink'])->name('sailink.sync');
 
 // AI RAG Chatbot Endpoint
 Route::post('/api/chat', [ChatbotController::class, 'chat'])->name('api.chat');

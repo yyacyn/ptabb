@@ -114,7 +114,7 @@ function LeafletViewer({ waypoint }) {
         const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
         if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([lat, lng], 5);
+            mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([lat, lng], 6);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 minZoom: 2,
@@ -122,65 +122,20 @@ function LeafletViewer({ waypoint }) {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(mapInstance.current);
 
-            if (routePoints.length > 0) {
-                const latLngs = routePoints.map(p => [p.lat, p.lng]);
-
-                // Draw dashed ocean blue route line connecting waypoints
-                const polyline = L.polyline(latLngs, {
-                    color: '#00629D',
-                    weight: 4,
-                    opacity: 0.85,
-                    dashArray: '8, 8',
-                }).addTo(mapInstance.current);
-
-                // Identify the single live current position (sequence 1 or first point)
-                const liveIndex = routePoints.findIndex(p => p.sequence === 1) >= 0
-                    ? routePoints.findIndex(p => p.sequence === 1)
-                    : 0;
-
-                // Add markers for each waypoint/stop on the route
-                routePoints.forEach((p, idx) => {
-                    const isLive = idx === liveIndex;
-                    const iconHeader = isLive ? shipIconHtml : pinIconHtml;
-                    const popupText = `
-                        <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                            <strong style="font-size: 13px;">${iconHeader}${isLive ? `${waypoint.vessel} (Current Position)` : p.name}</strong><br/>
-                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Type: ${p.type}</span><br/>
-                            ${isLive ? `
-                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00629D;">Speed: ${waypoint.speed}</span><br/>
-                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00629D;">Heading: ${heading}°</span>
-                            ` : ''}
-                        </div>
-                    `;
-
-                    // Live position gets vessel direction icon, intermediate stops get custom waypoint pin
-                    const markerOptions = isLive
-                        ? { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading), zIndexOffset: 1000 }
-                        : { icon: createWaypointDotIcon(p.name || 'Waypoint', '#00629D') };
-                    const m = L.marker([p.lat, p.lng], markerOptions).addTo(mapInstance.current).bindPopup(popupText);
-                    if (isLive) {
-                        m.openPopup();
-                        liveMarkerRef.current = m;
-                    }
-                });
-
-                // Automatically zoom and center map to show the entire route
-                if (latLngs.length > 1) {
-                    mapInstance.current.fitBounds(polyline.getBounds(), { padding: [40, 40] });
-                }
-            } else {
-                const weatherInfo = waypoint.weather ? `<br/><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${waypoint.weather.weather}, ${waypoint.weather.temperature}</span>` : '';
-                const popupContent = `
-                    <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                        <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel}</strong><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed}</span><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status}</span>
-                        ${weatherInfo}
-                    </div>
-                `;
-                liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();
-            }
+            const weatherInfo = waypoint.weather ? `<br/><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${waypoint.weather.weather}, ${waypoint.weather.temperature}</span>` : '';
+            const popupContent = `
+                <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
+                    <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel}</strong><br/>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed || '0 knots'}</span><br/>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status || 'En Route'}</span>
+                    ${weatherInfo}
+                </div>
+            `;
+            liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading) })
+                .addTo(mapInstance.current)
+                .bindPopup(popupContent)
+                .openPopup();
         } else {
             // Live position dynamic update on poll
             if (liveMarkerRef.current) {
@@ -289,8 +244,8 @@ function GlobalFleetMapViewer({ waypoints = [], onSelectVessel }) {
                     <h3 className="font-bold text-sm text-[#141B2C]">Live Fleet Real-Time Overview Map</h3>
                 </div>
                 <span className="font-['JetBrains_Mono'] text-xs text-[#404750] font-semibold flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    {waypoints.length} Active Fleet Vessels Tracked (Live Sync)
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    {waypoints.length} Active Fleet Vessels Tracked
                 </span>
             </div>
             <div ref={mapRef} className="h-[580px] w-full rounded-[8px] overflow-hidden border border-[#E5E7EB] z-0" />
@@ -357,7 +312,6 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                             <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase">
                                 <tr>
                                     <th className="p-4">Vessel Name</th>
-                                    <th className="p-4">Current Route</th>
                                     <th className="p-4">GPS Coordinates</th>
                                     <th className="p-4">Speed</th>
                                     <th className="p-4">Status</th>
@@ -369,9 +323,6 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                                     <tr key={item.id} className="hover:bg-[#F5F5F5] transition-colors">
                                         <td className="p-4 font-bold text-[#141B2C] text-sm">
                                             {item.vessel || 'Vessel'}
-                                        </td>
-                                        <td className="p-4 text-[#404750] font-semibold">
-                                            {item.origin} ➔ {item.destination}
                                         </td>
                                         <td className="p-4 font-['JetBrains_Mono'] text-[#00629D]">
                                             {item.lat || '0.00'}, {item.lng || '0.00'}
@@ -454,8 +405,90 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                     </div>
 
                     {mapWaypoint && (
-                        <div className="h-[520px] w-full rounded-[8px] overflow-hidden border border-[#E5E7EB] z-0 relative">
-                            <LeafletViewer waypoint={mapWaypoint} />
+                        <div className="space-y-4">
+                            {/* Map Viewer */}
+                            <div className="h-[400px] w-full rounded-[8px] overflow-hidden border border-[#E5E7EB] z-0 relative">
+                                <LeafletViewer waypoint={mapWaypoint} />
+                            </div>
+
+                            {/* Telemetry & Active Position Details Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                {/* Active Coordinates Card */}
+                                <div className="p-4 bg-white rounded-[8px] border border-[#E5E7EB] space-y-2.5">
+                                    <div className="border-b border-[#E5E7EB] pb-2">
+                                        <span className="font-bold text-[#141B2C] uppercase tracking-wider text-[11px] font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                            <Navigation className="w-3.5 h-3.5 text-[#00629D]" /> Active Coordinates
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2.5 font-['JetBrains_Mono'] text-[11px]">
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Latitude</span>
+                                            <span className="font-bold text-[#141B2C]">{Number(mapWaypoint.lat).toFixed(6)}°</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Longitude</span>
+                                            <span className="font-bold text-[#141B2C]">{Number(mapWaypoint.lng).toFixed(6)}°</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Speed (SOG)</span>
+                                            <span className="font-bold text-[#00629D]">{mapWaypoint.speed || '0 Knots'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Heading (COG)</span>
+                                            <span className="font-bold text-[#00629D]">{mapWaypoint.cog || 0}°</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Weather Telemetry Card */}
+                                <div className="p-4 bg-white rounded-[8px] border border-[#E5E7EB] space-y-2.5">
+                                    <div className="border-b border-[#E5E7EB] pb-2">
+                                        <span className="font-bold text-[#141B2C] uppercase tracking-wider text-[11px] font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                            <Compass className="w-3.5 h-3.5 text-[#00629D]" /> Weather Telemetry
+                                        </span>
+                                    </div>
+
+                                    {mapWaypoint.weather ? (
+                                        <div className="grid grid-cols-3 gap-2 font-['JetBrains_Mono'] text-[11px]">
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px]">Condition</span>
+                                                <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.weather || 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px]">Temperature</span>
+                                                <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.temperature || 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px]">Wind Speed</span>
+                                                <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.windSpeed || 'N/A'}</span>
+                                            </div>
+                                            {mapWaypoint.weather.windDirection && (
+                                                <div>
+                                                    <span className="text-slate-400 block text-[10px]">Wind Dir</span>
+                                                    <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.windDirection}</span>
+                                                </div>
+                                            )}
+                                            {mapWaypoint.weather.humidity && (
+                                                <div>
+                                                    <span className="text-slate-400 block text-[10px]">Humidity</span>
+                                                    <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.humidity}</span>
+                                                </div>
+                                            )}
+                                            {mapWaypoint.weather.waveSignificantHeight && (
+                                                <div>
+                                                    <span className="text-slate-400 block text-[10px]">Wave Height</span>
+                                                    <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.waveSignificantHeight}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="py-4 text-center text-slate-400 font-['JetBrains_Mono'] text-[11px] italic">
+                                            Weather telemetry not available for this provider.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
 

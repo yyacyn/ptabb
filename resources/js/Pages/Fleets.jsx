@@ -163,11 +163,13 @@ function RealTimeFleetMap({ waypoints = EMPTY_WAYPOINTS, onSelectVessel }) {
             const shipIconHtml = renderToString(<Ship size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
             const weatherHtml = vessel.weather ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${vessel.weather.weather}, ${vessel.weather.temperature}</span><br/>` : '';
+            const downWarningHtml = vessel.is_down ? `<span style="display:inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: #D97706; background: #FEF3C7; border: 1px solid #FCD34D; padding: 2px 6px; border-radius: 4px; margin-top: 4px;">⚠️ Device Offline (${vessel.provider || 'Thuraya'})</span><br/>` : '';
 
             const popupContainer = document.createElement('div');
             popupContainer.innerHTML = `
                 <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
                     <strong style="font-size: 13px;">${shipIconHtml}${vessel.vessel}</strong><br/>
+                    ${downWarningHtml}
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${vessel.speed || '11.4 knots'}</span><br/>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00629D;">Heading: ${heading}°</span><br/>
                     ${weatherHtml}
@@ -224,60 +226,17 @@ function LeafletViewer({ waypoint }) {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(mapInstance.current);
 
-            if (routePoints.length > 0) {
-                const latLngs = routePoints.map(p => [p.lat, p.lng]);
-
-                const polyline = L.polyline(latLngs, {
-                    color: '#00629D',
-                    weight: 4,
-                    opacity: 0.85,
-                    dashArray: '8, 8',
-                }).addTo(mapInstance.current);
-
-                const liveIndex = routePoints.findIndex(p => p.sequence === 1) >= 0
-                    ? routePoints.findIndex(p => p.sequence === 1)
-                    : 0;
-
-                routePoints.forEach((p, idx) => {
-                    const isLive = idx === liveIndex;
-                    const iconHeader = isLive ? shipIconHtml : pinIconHtml;
-                    const popupText = `
-                        <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                            <strong style="font-size: 13px;">${iconHeader}${isLive ? `${waypoint.vessel || waypoint.name} (Current Position)` : p.name}</strong><br/>
-                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Type: ${p.type}</span><br/>
-                            ${isLive ? `
-                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00629D;">Speed: ${waypoint.speed}</span><br/>
-                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00629D;">Heading: ${heading}°</span>
-                            ` : ''}
-                        </div>
-                    `;
-
-                    const markerOptions = isLive
-                        ? { icon: createVesselIcon(waypoint.vessel || waypoint.name || 'Vessel', heading), zIndexOffset: 1000 }
-                        : { icon: createWaypointDotIcon(p.name || 'Waypoint', '#00629D') };
-                    const m = L.marker([p.lat, p.lng], markerOptions).addTo(mapInstance.current).bindPopup(popupText);
-                    if (isLive) {
-                        m.openPopup();
-                        liveMarkerRef.current = m;
-                    }
-                });
-
-                if (latLngs.length > 1) {
-                    mapInstance.current.fitBounds(polyline.getBounds(), { padding: [40, 40] });
-                }
-            } else {
-                const weatherInfo = waypoint.weather ? `<br/><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${waypoint.weather.weather}, ${waypoint.weather.temperature}</span>` : '';
-                const popupContent = `
-                    <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                        <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel || waypoint.name}</strong><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed || '11.4 knots'}</span><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status || 'En Route'}</span>
-                        ${weatherInfo}
-                    </div>
-                `;
-                liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || waypoint.name || 'Vessel', heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();
-            }
+            const weatherInfo = waypoint.weather ? `<br/><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${waypoint.weather.weather}, ${waypoint.weather.temperature}</span>` : '';
+            const popupContent = `
+                <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
+                    <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel || waypoint.name}</strong><br/>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed || '0 knots'}</span><br/>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status || 'En Route'}</span>
+                    ${weatherInfo}
+                </div>
+            `;
+            liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || waypoint.name || 'Vessel', heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();
         }
 
         return () => {

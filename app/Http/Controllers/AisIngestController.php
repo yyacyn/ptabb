@@ -220,4 +220,21 @@ class AisIngestController extends Controller
             'vessels' => $simulated
         ], 200);
     }
+
+    /**
+     * Trigger Sailink real-time position sync across configured vessels.
+     * Can be invoked via web endpoint or cPanel curl cron job.
+     */
+    public function syncSailink()
+    {
+        \Illuminate\Support\Facades\Artisan::call('sailink:sync-positions');
+        $output = \Illuminate\Support\Facades\Artisan::output();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Sailink real-time position sync triggered.',
+            'timestamp' => now()->toIso8601String(),
+            'output' => trim($output),
+        ]);
+    }
 }

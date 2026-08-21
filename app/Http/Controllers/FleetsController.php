@@ -37,6 +37,9 @@ class FleetsController extends Controller
             $lat = $liveWp ? (float) $liveWp->latitude : 15.2;
             $lng = $liveWp ? (float) $liveWp->longitude : 73.8;
             $weather = null;
+            $telemetryStatus = 'UP';
+            $isDown = false;
+            $provider = 'sailink';
 
             if ($fleet->ip_address) {
                 $telemetry = Cache::remember('sailink_telemetry_' . $fleet->id, 60, function () use ($sailinkService, $fleet) {
@@ -49,6 +52,9 @@ class FleetsController extends Controller
                     $speed = $telemetry['speed_knots'] . ' knots';
                     $cog = $telemetry['heading'];
                     $weather = $telemetry['weather'] ?? null;
+                    $telemetryStatus = $telemetry['status'] ?? 'UP';
+                    $isDown = $telemetry['is_down'] ?? false;
+                    $provider = $telemetry['provider'] ?? 'sailink';
                 }
             }
 
@@ -71,7 +77,10 @@ class FleetsController extends Controller
                 'speed' => $speed,
                 'cog' => $cog,
                 'weather' => $weather,
-                'status' => $fleet->status ?? 'Active - In Service',
+                'telemetry_status' => $telemetryStatus,
+                'is_down' => $isDown,
+                'provider' => $provider,
+                'status' => $isDown ? "Offline (Sailink Down - via {$provider})" : ($fleet->status ?? 'Active - In Service'),
                 'route_points' => $routePoints,
             ];
         });
@@ -120,6 +129,9 @@ class FleetsController extends Controller
         $lat = $liveWp ? (float) $liveWp->latitude : -6.1;
         $lng = $liveWp ? (float) $liveWp->longitude : 106.8;
         $weather = null;
+        $telemetryStatus = 'UP';
+        $isDown = false;
+        $provider = 'sailink';
 
         if ($fleet && $fleet->ip_address) {
             $telemetry = Cache::remember('sailink_telemetry_' . $fleet->id, 60, function () use ($sailinkService, $fleet) {
@@ -132,6 +144,9 @@ class FleetsController extends Controller
                 $speed = $telemetry['speed_knots'] . ' knots';
                 $cog = $telemetry['heading'];
                 $weather = $telemetry['weather'] ?? null;
+                $telemetryStatus = $telemetry['status'] ?? 'UP';
+                $isDown = $telemetry['is_down'] ?? false;
+                $provider = $telemetry['provider'] ?? 'sailink';
             }
         }
 
@@ -154,7 +169,10 @@ class FleetsController extends Controller
             'speed' => $speed,
             'cog' => $cog,
             'weather' => $weather,
-            'status' => $fleet ? ($fleet->status ?? 'Active - In Service') : 'Active - In Service',
+            'telemetry_status' => $telemetryStatus,
+            'is_down' => $isDown,
+            'provider' => $provider,
+            'status' => $isDown ? "Offline (Sailink Down - via {$provider})" : ($fleet ? ($fleet->status ?? 'Active - In Service') : 'Active - In Service'),
             'route_points' => $routePoints,
         ];
 

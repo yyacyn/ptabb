@@ -9,11 +9,17 @@ class SailinkApiService
 {
     protected string $baseUrl;
     protected string $apiKey;
+    protected ?string $lastError = null;
 
     public function __construct()
     {
         $this->baseUrl = config('services.sailink.base_url', 'https://navigatorplus.sailink.id/api/v22/remote');
-        $this->apiKey = config('services.sailink.key', '');
+        $this->apiKey = config('services.sailink.key') ?: 'aa9eff47ff6c15793ae4752993975933';
+    }
+
+    public function getLastError(): ?string
+    {
+        return $this->lastError;
     }
 
     /**
@@ -24,29 +30,98 @@ class SailinkApiService
      */
     public function getVesselPosition(string $ipAddress): ?array
     {
-        if (empty($ipAddress) || empty($this->apiKey)) {
+        $this->lastError = null;
+
+        if (empty($ipAddress)) {
+            $this->lastError = 'Vessel IP address is empty';
+            return null;
+        }
+
+        if (empty($this->apiKey)) {
+            $this->lastError = 'Sailink API key is unconfigured';
             return null;
         }
 
         try {
             $url = rtrim($this->baseUrl, '/') . '/' . $this->apiKey . '/' . trim($ipAddress);
-            $response = Http::timeout(5)->get($url);
+            $json = null;
+            $rawBody = null;
 
-            if (!$response->successful()) {
-                Log::warning("Sailink API request failed for IP {$ipAddress}", [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
+            try {
+                $response = Http::timeout(15)
+                    ->withoutVerifying()
+                    ->withHeaders([
+                        'Accept' => 'application/json, text/plain, */*',
+                        'Accept-Language' => 'en-US,en;q=0.9',
+                    ])
+                    ->withUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+                    ->get($url);
+
+                $rawBody = $response->body();
+                if ($response->successful()) {
+                    $json = $response->json();
+                } else {
+                    $this->lastError = "HTTP error {$response->status()}: " . substr(strip_tags($rawBody), 0, 150);
+                }
+            } catch (\Throwable $httpEx) {
+                $this->lastError = "Http facade error: " . $httpEx->getMessage();
+                Log::warning("Laravel Http facade failed for IP {$ipAddress}, attempting raw cURL: " . $httpEx->getMessage());
+            }
+
+            // Fallback to raw cURL if Laravel Http failed on cPanel hosting
+            if (empty($json) && function_exists('curl_init')) {
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Accept: application/json, text/plain, */*',
+                    'Accept-Language: en-US,en;q=0.9',
                 ]);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+                $curlBody = curl_exec($ch);
+                $curlErr = curl_error($ch);
+                curl_close($ch);
+
+                if ($curlBody) {
+                    $rawBody = $curlBody;
+                    $json = json_decode($curlBody, true);
+                } else if ($curlErr) {
+                    $this->lastError = "cURL error: {$curlErr}";
+                }
+            }
+
+            if (empty($json) || empty($json['data'])) {
+                $snippet = $rawBody ? substr(trim(preg_replace('/\s+/', ' ', strip_tags($rawBody))), 0, 120) : 'No response';
+                $this->lastError = "API returned: [{$snippet}]";
+                Log::warning("Sailink API request returned empty or invalid data for IP {$ipAddress}: {$snippet}");
                 return null;
             }
 
-            $json = $response->json();
             $data = $json['data'] ?? [];
 
             $sailink = $data['sailink'] ?? null;
             $thuraya = $data['thuraya'] ?? null;
+            $iridium = $data['iridium'] ?? null;
 
-            $activeSource = ($sailink && !empty($sailink['lat'])) ? $sailink : $thuraya;
+            $sailinkIsUp = $sailink && strtoupper($sailink['status'] ?? '') === 'UP' && !empty($sailink['lat']);
+
+            if ($sailinkIsUp) {
+                $activeSource = $sailink;
+                $provider = 'sailink';
+            } elseif ($thuraya && !empty($thuraya['lat'])) {
+                $activeSource = $thuraya;
+                $provider = 'thuraya (fallback)';
+            } elseif ($iridium && !empty($iridium['lat'])) {
+                $activeSource = $iridium;
+                $provider = 'iridium (fallback)';
+            } else {
+                $activeSource = $sailink ?: ($thuraya ?: $iridium);
+                $provider = $sailink ? 'sailink' : ($thuraya ? 'thuraya' : 'iridium');
+            }
 
             if (!$activeSource || empty($activeSource['lat']) || empty($activeSource['lon'])) {
                 return null;
@@ -66,16 +141,20 @@ class SailinkApiService
             preg_match('/(\d+(\.\d+)?)/', $speedStr, $speedMatch);
             $speed = isset($speedMatch[1]) ? (float) $speedMatch[1] : 0.0;
 
+            $rawStatus = $sailink['status'] ?? ($activeSource['status'] ?? 'UNKNOWN');
+            $isDown = strtoupper($rawStatus) === 'DOWN';
+
             return [
-                'provider' => ($activeSource === $sailink) ? 'sailink' : 'thuraya',
-                'status' => $sailink['status'] ?? 'UP',
+                'provider' => $provider,
+                'status' => $isDown ? 'DOWN' : 'UP',
+                'is_down' => $isDown,
                 'latitude' => $lat,
                 'longitude' => $lon,
                 'heading' => $heading,
                 'speed_knots' => $speed,
                 'dms' => $activeSource['dms'] ?? null,
                 'date_time' => $activeSource['dateTime'] ?? null,
-                'weather' => $sailink['weather'] ?? null,
+                'weather' => $sailink['weather'] ?? ($activeSource['weather'] ?? null),
                 'raw' => $data,
             ];
         } catch (\Throwable $e) {

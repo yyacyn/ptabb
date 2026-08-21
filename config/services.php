@@ -46,7 +46,7 @@ return [
 
     'sailink' => [
         'base_url' => env('SAILINK_API_BASE_URL', 'https://navigatorplus.sailink.id/api/v22/remote'),
-        'key' => env('SAILINK_API_KEY'),
+        'key' => env('SAILINK_API_KEY', 'aa9eff47ff6c15793ae4752993975933'),
     ],
 
 ];

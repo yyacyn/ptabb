@@ -48,7 +48,8 @@ class SailinkSyncPositionsCommand extends Command
             $position = $sailinkService->getVesselPosition($fleet->ip_address);
 
             if (!$position || empty($position['latitude']) || empty($position['longitude'])) {
-                $this->error("Failed to fetch coordinates for vessel [{$fleet->ship_name}] (IP: {$fleet->ip_address}).");
+                $reason = $sailinkService->getLastError() ?: 'Unknown error';
+                $this->error("Failed to fetch coordinates for vessel [{$fleet->ship_name}] (IP: {$fleet->ip_address}). Reason: {$reason}");
                 continue;
             }
 
@@ -60,7 +61,8 @@ class SailinkSyncPositionsCommand extends Command
                 ->where('sequence', 1)
                 ->first();
 
-            $notes = "Live GPS (Sailink Provider: {$position['provider']}) - SOG: {$position['speed_knots']} kts, COG: {$position['heading']}°";
+            $statusLabel = $position['is_down'] ? " [SAILINK DOWN - Fallback via {$position['provider']}]" : " [UP]";
+            $notes = "Live GPS{$statusLabel} - SOG: {$position['speed_knots']} kts, COG: {$position['heading']}°";
             if (!empty($position['weather']['weather'])) {
                 $notes .= " | Weather: {$position['weather']['weather']}, {$position['weather']['temperature']}";
             }
@@ -84,7 +86,8 @@ class SailinkSyncPositionsCommand extends Command
             }
 
             $count++;
-            $this->info("-> Synced [{$fleet->ship_name}]: Lat {$position['latitude']}, Lon {$position['longitude']}, Speed: {$position['speed_knots']} kts, Heading: {$position['heading']}°");
+            $statusText = $position['is_down'] ? "<fg=red>SAILINK DOWN (Using {$position['provider']})</>" : "<fg=green>UP ({$position['provider']})</>";
+            $this->info("-> Synced [{$fleet->ship_name}] Status: {$statusText} | Lat {$position['latitude']}, Lon {$position['longitude']}, Speed: {$position['speed_knots']} kts, Heading: {$position['heading']}°");
         }
 
         $this->info("Sailink Position Sync finished successfully. Updated {$count} vessel(s).");

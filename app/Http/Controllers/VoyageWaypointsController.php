@@ -8,11 +8,11 @@ use Inertia\Inertia;
 
 class VoyageWaypointsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, \App\Services\SailinkApiService $sailinkService)
     {
         $allWaypointsGrouped = VoyageWaypoint::orderBy('sequence', 'asc')->get()->groupBy('fleet_id');
 
-        $voyage_waypoints = \App\Models\Fleet::all()->map(function ($fleet) use ($allWaypointsGrouped) {
+        $voyage_waypoints = \App\Models\Fleet::all()->map(function ($fleet) use ($allWaypointsGrouped, $sailinkService) {
             $waypoints = $allWaypointsGrouped->get($fleet->id, collect());
             
             // Find live position (sequence 1 or first transit)
@@ -26,6 +26,30 @@ class VoyageWaypointsController extends Controller
                 }
                 if (preg_match('/COG:\s*([0-9.]+)/', $liveWp->notes, $cogMatches)) {
                     $cog = (float) $cogMatches[1];
+                }
+            }
+
+            $lat = $liveWp ? (float) $liveWp->latitude : -6.1200;
+            $lng = $liveWp ? (float) $liveWp->longitude : 106.8400;
+            $weather = null;
+            $telemetryStatus = 'UP';
+            $isDown = false;
+            $provider = 'sailink';
+
+            if ($fleet->ip_address) {
+                $telemetry = \Illuminate\Support\Facades\Cache::remember('sailink_telemetry_' . $fleet->id, 60, function () use ($sailinkService, $fleet) {
+                    return $sailinkService->getVesselPosition($fleet->ip_address);
+                });
+
+                if ($telemetry && isset($telemetry['latitude'], $telemetry['longitude'])) {
+                    $lat = $telemetry['latitude'];
+                    $lng = $telemetry['longitude'];
+                    $speed = $telemetry['speed_knots'] . ' knots';
+                    $cog = $telemetry['heading'];
+                    $weather = $telemetry['weather'] ?? null;
+                    $telemetryStatus = $telemetry['status'] ?? 'UP';
+                    $isDown = $telemetry['is_down'] ?? false;
+                    $provider = $telemetry['provider'] ?? 'sailink';
                 }
             }
 
@@ -45,11 +69,15 @@ class VoyageWaypointsController extends Controller
                 'vessel' => $fleet->ship_name,
                 'origin' => $fleet->route_name ?: 'Local Sea',
                 'destination' => $liveWp ? ($liveWp->port_name ?: 'Port of Destination') : 'Destination',
-                'lat' => $liveWp ? number_format($liveWp->latitude, 4) : '-6.1200',
-                'lng' => $liveWp ? number_format($liveWp->longitude, 4) : '106.8400',
+                'lat' => $lat,
+                'lng' => $lng,
                 'speed' => $speed,
                 'cog' => $cog,
-                'status' => ($liveWp && $liveWp->waypoint_type === 'transit') ? 'En Route' : 'In Port',
+                'weather' => $weather,
+                'telemetry_status' => $telemetryStatus,
+                'is_down' => $isDown,
+                'provider' => $provider,
+                'status' => $isDown ? "Offline (Sailink Down - via {$provider})" : (($liveWp && $liveWp->waypoint_type === 'transit') ? 'En Route' : 'In Port'),
                 'route_points' => $routePoints,
             ];
         });
