@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
+import LeafletViewer from '@/Components/LeafletViewer';
 import { Head, usePoll } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
 import { Compass, MapPin, Navigation, Ship } from 'lucide-react';
@@ -35,35 +36,6 @@ const createLucideMarkerIcon = (IconComponent = MapPin, color = '#00629D', size 
 
 L.Marker.prototype.options.icon = createLucideMarkerIcon(MapPin, '#00629D', 26);
 
-// Custom SVG waypoint marker icon for intermediate route stops
-const createWaypointDotIcon = (label = 'Waypoint', color = '#00629D') => {
-    const pinHtml = renderToString(
-        <MapPin
-            size={18}
-            style={{
-                color: color,
-                fill: color,
-                filter: 'drop-shadow(0px 2px 3px rgba(0,0,0,0.3))'
-            }}
-        />
-    );
-
-    return L.divIcon({
-        className: 'custom-waypoint-pin',
-        html: `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
-                ${pinHtml}
-                <div style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 9px; color: #141B2C; background: rgba(255,255,255,0.92); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; border: 1px solid rgba(0,0,0,0.12); box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
-                    ${label}
-                </div>
-            </div>
-        `,
-        iconSize: [80, 34],
-        iconAnchor: [40, 18],
-        popupAnchor: [0, -18]
-    });
-};
-
 // Custom live vessel navigation pointer icon (Direction arrow + Vessel name label)
 const createVesselIcon = (vesselName = 'Vessel', heading = 0, pinColor = '#00629D') => {
     const arrowIconHtml = renderToString(
@@ -97,70 +69,6 @@ const createVesselIcon = (vesselName = 'Vessel', heading = 0, pinColor = '#00629
     });
 };
 
-function LeafletViewer({ waypoint }) {
-    const mapRef = useRef(null);
-    const mapInstance = useRef(null);
-    const liveMarkerRef = useRef(null);
-
-    useEffect(() => {
-        if (!mapRef.current || !waypoint) return;
-
-        const routePoints = waypoint.route_points || [];
-        const lat = parseFloat(waypoint.lat) || 0;
-        const lng = parseFloat(waypoint.lng) || 0;
-        const heading = waypoint.cog || 0;
-
-        const shipIconHtml = renderToString(<Ship size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
-        const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
-
-        if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([lat, lng], 6);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                minZoom: 2,
-                maxZoom: 18,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(mapInstance.current);
-
-            const weatherInfo = waypoint.weather ? `<br/><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${waypoint.weather.weather}, ${waypoint.weather.temperature}</span>` : '';
-            const popupContent = `
-                <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                    <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel}</strong><br/>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed || '0 knots'}</span><br/>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status || 'En Route'}</span>
-                    ${weatherInfo}
-                </div>
-            `;
-            liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading) })
-                .addTo(mapInstance.current)
-                .bindPopup(popupContent)
-                .openPopup();
-        } else {
-            // Live position dynamic update on poll
-            if (liveMarkerRef.current) {
-                liveMarkerRef.current.setLatLng([lat, lng]);
-                liveMarkerRef.current.setIcon(createVesselIcon(waypoint.vessel || 'Vessel', heading));
-            }
-        }
-
-        return () => {
-            // keep map intact for smooth updates, clean up on component unmount
-        };
-    }, [waypoint]);
-
-    useEffect(() => {
-        return () => {
-            if (mapInstance.current) {
-                mapInstance.current.remove();
-                mapInstance.current = null;
-            }
-        };
-    }, []);
-
-    return <div ref={mapRef} className="h-full w-full z-0" />;
-}
-
 function GlobalFleetMapViewer({ waypoints = [], onSelectVessel }) {
     const mapRef = useRef(null);
     const mapInstance = useRef(null);
@@ -190,7 +98,16 @@ function GlobalFleetMapViewer({ waypoints = [], onSelectVessel }) {
     useEffect(() => {
         if (!mapInstance.current || !waypoints || waypoints.length === 0) return;
 
-        const validPoints = waypoints.filter(w => !isNaN(parseFloat(w.lat)) && !isNaN(parseFloat(w.lng)));
+        const validPoints = waypoints.filter(w => {
+            if (!w.lat || !w.lng) return false;
+            const lat = parseFloat(w.lat);
+            const lng = parseFloat(w.lng);
+            if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return false;
+            if ((Math.abs(lat - 15.2) < 0.01 && Math.abs(lng - 73.8) < 0.01) || (Math.abs(lat - (-6.12)) < 0.01 && Math.abs(lng - 106.84) < 0.01)) {
+                return false;
+            }
+            return true;
+        });
         const colors = ['#00629D', '#F59E0B', '#8B5CF6', '#EF4444', '#10B981'];
 
         validPoints.forEach((vessel, idx) => {
@@ -261,6 +178,7 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
 
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [mapWaypoint, setMapWaypoint] = useState(null);
+    const [modalLogPage, setModalLogPage] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
 
@@ -272,6 +190,7 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
 
     const openMapModal = (waypoint) => {
         setMapWaypoint(waypoint);
+        setModalLogPage(1);
         setIsMapModalOpen(true);
     };
 
@@ -393,7 +312,7 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
 
             {/* Live Map Modal */}
             <Modal show={isMapModalOpen} onClose={closeMapModal} maxWidth="4xl">
-                <div className="p-6 font-['Hanken_Grotesk'] text-[#141B2C]">
+                <div className="p-5 sm:p-6 font-['Hanken_Grotesk'] text-[#141B2C] max-h-[85vh] overflow-y-auto">
                     <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
                         <div className="flex items-center gap-2">
                             <MapPin className="w-5 h-5 text-emerald-600" />
@@ -407,8 +326,8 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                     {mapWaypoint && (
                         <div className="space-y-4">
                             {/* Map Viewer */}
-                            <div className="h-[400px] w-full rounded-[8px] overflow-hidden border border-[#E5E7EB] z-0 relative">
-                                <LeafletViewer waypoint={mapWaypoint} />
+                            <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] z-0 relative">
+                                <LeafletViewer waypoint={mapWaypoint} height="h-[220px]" />
                             </div>
 
                             {/* Telemetry & Active Position Details Grid */}
@@ -488,6 +407,98 @@ export default function VoyageWaypoints({ voyage_waypoints = [] }) {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+
+                            {/* Historical Position Pings Log Table */}
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] overflow-hidden">
+                                <div className="p-3 bg-white border-b border-[#E5E7EB] flex items-center justify-between">
+                                    <span className="font-bold text-[#141B2C] uppercase tracking-wider text-[11px] font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                        <Compass className="w-3.5 h-3.5 text-[#00629D]" /> Historical Position Pings ({mapWaypoint.route_points?.length || 0})
+                                    </span>
+                                </div>
+
+                                {mapWaypoint.route_points && mapWaypoint.route_points.length > 0 ? (
+                                    <>
+                                        <table className="w-full text-left text-xs font-['Hanken_Grotesk']">
+                                            <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase text-[10px]">
+                                                <tr>
+                                                    <th className="p-3">Seq #</th>
+                                                    <th className="p-3">Recorded Time</th>
+                                                    <th className="p-3">GPS Coordinates</th>
+                                                    <th className="p-3">Dir (COG)</th>
+                                                    <th className="p-3">Speed (SOG)</th>
+                                                    <th className="p-3">Weather</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-[#E5E7EB] font-['JetBrains_Mono'] text-[11px]">
+                                                {mapWaypoint.route_points
+                                                    .slice((modalLogPage - 1) * 3, modalLogPage * 3)
+                                                    .map((point, index) => {
+                                                        const cogVal = point.cog !== undefined ? point.cog : (point.notes && point.notes.match(/COG:\s*([0-9.]+)/) ? parseFloat(point.notes.match(/COG:\s*([0-9.]+)/)[1]) : 0);
+                                                        const speedVal = point.speed || (point.notes && point.notes.match(/SOG:\s*([0-9.]+\s*kts)/) ? point.notes.match(/SOG:\s*([0-9.]+\s*kts)/)[1] : '0 kts');
+                                                        let weatherVal = 'N/A';
+                                                        if (point.notes && point.notes.includes('Weather:')) {
+                                                            weatherVal = point.notes.split('Weather:')[1].trim();
+                                                        }
+                                                        return (
+                                                            <tr key={point.id || index} className="hover:bg-slate-50/50 transition-colors">
+                                                                <td className="p-3 font-bold text-[#00629D]">
+                                                                    #{point.sequence || (index + 1)}
+                                                                </td>
+                                                                <td className="p-3 text-[#404750]">
+                                                                    {point.created_at || 'Recent Ping'}
+                                                                </td>
+                                                                <td className="p-3 text-[#141B2C]">
+                                                                    {Number(point.lat).toFixed(6)}°, {Number(point.lng).toFixed(6)}°
+                                                                </td>
+                                                                <td className="p-3 text-[#141B2C]">
+                                                                    <span className="inline-flex items-center gap-1 font-bold">
+                                                                        <Navigation className="w-3 h-3 text-[#00629D]" style={{ transform: `rotate(${cogVal}deg)` }} />
+                                                                        {cogVal}°
+                                                                    </span>
+                                                                </td>
+                                                                <td className="p-3 font-semibold text-[#00629D]">
+                                                                    {speedVal}
+                                                                </td>
+                                                                <td className="p-3 text-emerald-600 font-semibold text-[10px]">
+                                                                    {weatherVal}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                            </tbody>
+                                        </table>
+
+                                        {/* Pagination for Modal Log Table */}
+                                        {Math.ceil(mapWaypoint.route_points.length / 3) > 1 && (
+                                            <div className="px-4 py-2 bg-white border-t border-[#E5E7EB] flex items-center justify-between text-xs font-['JetBrains_Mono']">
+                                                <span className="text-slate-500 text-[11px]">
+                                                    Page {modalLogPage} of {Math.ceil(mapWaypoint.route_points.length / 3)}
+                                                </span>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => setModalLogPage(prev => Math.max(prev - 1, 1))}
+                                                        disabled={modalLogPage === 1}
+                                                        className="px-2.5 py-1 rounded border border-[#E5E7EB] bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[11px]"
+                                                    >
+                                                        ← Prev
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setModalLogPage(prev => Math.min(prev + 1, Math.ceil(mapWaypoint.route_points.length / 3)))}
+                                                        disabled={modalLogPage === Math.ceil(mapWaypoint.route_points.length / 3)}
+                                                        className="px-2.5 py-1 rounded border border-[#E5E7EB] bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[11px]"
+                                                    >
+                                                        Next →
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="p-4 text-center text-slate-400 font-['JetBrains_Mono'] text-[11px] italic">
+                                        No historical position pings recorded yet for this vessel.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

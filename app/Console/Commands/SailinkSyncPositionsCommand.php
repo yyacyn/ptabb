@@ -32,6 +32,12 @@ class SailinkSyncPositionsCommand extends Command
     {
         $this->info("Starting Sailink Real-Time Vessel Position Sync...");
 
+        // 1. Delete legacy/stale waypoint data from August 24th and older
+        $deletedOld = VoyageWaypoint::where('created_at', '<=', '2026-08-24 23:59:59')->delete();
+        if ($deletedOld > 0) {
+            $this->info("Cleaned up {$deletedOld} old waypoint log records (24th August and older).");
+        }
+
         $fleets = Fleet::whereNotNull('ip_address')
             ->where('ip_address', '!=', '')
             ->get();
@@ -56,9 +62,9 @@ class SailinkSyncPositionsCommand extends Command
             // 1. Cache the live telemetry (lifetime 5 minutes)
             Cache::put('sailink_telemetry_' . $fleet->id, $position, now()->addMinutes(5));
 
-            // 2. Update sequence 1 VoyageWaypoint in DB
-            $waypoint = VoyageWaypoint::where('fleet_id', $fleet->id)
-                ->where('sequence', 1)
+            // 2. Store or update VoyageWaypoint in DB at 1-hour intervals
+            $lastWp = VoyageWaypoint::where('fleet_id', $fleet->id)
+                ->orderBy('created_at', 'desc')
                 ->first();
 
             $statusLabel = $position['is_down'] ? " [SAILINK DOWN - Fallback via {$position['provider']}]" : " [UP]";
@@ -67,22 +73,39 @@ class SailinkSyncPositionsCommand extends Command
                 $notes .= " | Weather: {$position['weather']['weather']}, {$position['weather']['temperature']}";
             }
 
-            if ($waypoint) {
-                $waypoint->update([
-                    'latitude' => $position['latitude'],
-                    'longitude' => $position['longitude'],
-                    'notes' => $notes,
-                ]);
-            } else {
+            // Create a new waypoint if no waypoint exists OR if last waypoint is >= 60 minutes old
+            if (!$lastWp || $lastWp->created_at->diffInMinutes(now()) >= 60) {
+                $maxSeq = VoyageWaypoint::where('fleet_id', $fleet->id)->max('sequence') ?? 0;
                 VoyageWaypoint::create([
                     'fleet_id' => $fleet->id,
-                    'sequence' => 1,
-                    'port_name' => 'Current Live Position',
+                    'sequence' => $maxSeq + 1,
+                    'port_name' => 'Sailink GPS Ping #' . ($maxSeq + 1),
                     'latitude' => $position['latitude'],
                     'longitude' => $position['longitude'],
                     'waypoint_type' => 'transit',
                     'notes' => $notes,
                 ]);
+            } else {
+                // Update the current active position ping
+                $lastWp->update([
+                    'latitude' => $position['latitude'],
+                    'longitude' => $position['longitude'],
+                    'notes' => $notes,
+                ]);
+            }
+
+            // 3. Limit logged route to max 480 items per vessel, auto-deleting the oldest if exceeded
+            $idsToKeep = VoyageWaypoint::where('fleet_id', $fleet->id)
+                ->orderBy('created_at', 'desc')
+                ->take(480)
+                ->pluck('id');
+
+            $prunedCount = VoyageWaypoint::where('fleet_id', $fleet->id)
+                ->whereNotIn('id', $idsToKeep)
+                ->delete();
+
+            if ($prunedCount > 0) {
+                $this->info("-> Pruned {$prunedCount} old route ping(s) for [{$fleet->ship_name}] (keeping max 480).");
             }
 
             $count++;

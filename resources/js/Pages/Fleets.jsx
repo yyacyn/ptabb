@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import CtaBanner from '@/Components/CtaBanner';
 import Modal from '@/Components/Modal';
+import LeafletViewer from '@/Components/LeafletViewer';
 import {
     Ship,
     Anchor,
@@ -150,7 +151,16 @@ function RealTimeFleetMap({ waypoints = EMPTY_WAYPOINTS, onSelectVessel }) {
     useEffect(() => {
         if (!mapInstance.current || !waypoints || waypoints.length === 0) return;
 
-        const validPoints = waypoints.filter(w => !isNaN(parseFloat(w.lat)) && !isNaN(parseFloat(w.lng)));
+        const validPoints = waypoints.filter(w => {
+            if (!w.lat || !w.lng) return false;
+            const lat = parseFloat(w.lat);
+            const lng = parseFloat(w.lng);
+            if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return false;
+            if ((Math.abs(lat - 15.2) < 0.01 && Math.abs(lng - 73.8) < 0.01) || (Math.abs(lat - (-6.12)) < 0.01 && Math.abs(lng - 106.84) < 0.01)) {
+                return false;
+            }
+            return true;
+        });
         const colors = ['#00629D', '#F59E0B', '#8B5CF6', '#EF4444', '#10B981'];
 
         validPoints.forEach((vessel, idx) => {
@@ -201,54 +211,39 @@ function RealTimeFleetMap({ waypoints = EMPTY_WAYPOINTS, onSelectVessel }) {
     return <div ref={mapRef} className="w-full h-full z-0" />;
 }
 
-function LeafletViewer({ waypoint }) {
-    const mapRef = useRef(null);
-    const mapInstance = useRef(null);
-    const liveMarkerRef = useRef(null);
+// Calculate bearing in degrees between two coordinates
+const getBearing = (lat1, lng1, lat2, lng2) => {
+    const dLng = (lng2 - lng1) * (Math.PI / 180);
+    const y = Math.sin(dLng) * Math.cos(lat2 * (Math.PI / 180));
+    const x = Math.cos(lat1 * (Math.PI / 180)) * Math.sin(lat2 * (Math.PI / 180)) -
+              Math.sin(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.cos(dLng);
+    const brng = Math.atan2(y, x) * (180 / Math.PI);
+    return (brng + 360) % 360;
+};
 
-    useEffect(() => {
-        if (!mapRef.current || !waypoint) return;
+// Route segment direction arrow icon
+const createRouteArrowIcon = (heading = 0, color = '#00629D') => {
+    const arrowHtml = renderToString(
+        <Navigation
+            size={13}
+            style={{
+                color: color,
+                fill: color,
+                transform: `rotate(${heading}deg)`,
+                filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))'
+            }}
+        />
+    );
 
-        const routePoints = waypoint.route_points || [];
-        const lat = parseFloat(waypoint.lat) || 0;
-        const lng = parseFloat(waypoint.lng) || 0;
-        const heading = waypoint.cog || 0;
+    return L.divIcon({
+        className: 'custom-route-arrow',
+        html: `<div style="display: flex; align-items: center; justify-content: center; width: 14px; height: 14px;">${arrowHtml}</div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+    });
+};
 
-        const shipIconHtml = renderToString(<Ship size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
-        const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
 
-        if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current, { minZoom: 4 }).setView([lat, lng], 6);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                minZoom: 4,
-                maxZoom: 18,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(mapInstance.current);
-
-            const weatherInfo = waypoint.weather ? `<br/><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669;">Weather: ${waypoint.weather.weather}, ${waypoint.weather.temperature}</span>` : '';
-            const popupContent = `
-                <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                    <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel || waypoint.name}</strong><br/>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed || '0 knots'}</span><br/>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status || 'En Route'}</span>
-                    ${weatherInfo}
-                </div>
-            `;
-            liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || waypoint.name || 'Vessel', heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();
-        }
-
-        return () => {
-            if (mapInstance.current) {
-                mapInstance.current.remove();
-                mapInstance.current = null;
-            }
-        };
-    }, [waypoint]);
-
-    return <div ref={mapRef} className="h-full w-full z-0" />;
-}
 
 export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY_WAYPOINTS }) {
     // Automatically poll backend every 3000ms for real-time AIS telemetry updates
@@ -258,6 +253,7 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
 
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [mapWaypoint, setMapWaypoint] = useState(null);
+    const [modalLogPage, setModalLogPage] = useState(1);
 
     // Search and Filter state
     const [searchQuery, setSearchQuery] = useState('');
@@ -287,6 +283,7 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
 
     const openMapModal = (waypoint) => {
         setMapWaypoint(waypoint);
+        setModalLogPage(1);
         setIsMapModalOpen(true);
     };
 
@@ -944,60 +941,206 @@ export default function Fleets({ fleets = EMPTY_FLEETS, voyage_waypoints = EMPTY
 
             {/* 4. VOYAGE ROUTE INSPECTION MODAL */}
             <Modal show={isMapModalOpen} onClose={closeMapModal} maxWidth="4xl">
-                {mapWaypoint && (
-                    <div className="bg-white rounded-[12px] overflow-hidden font-['Hanken_Grotesk'] text-[#141B2C]">
-                        <div className="bg-[#141B2C] text-white p-5 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-[#00629D] rounded-[6px]">
-                                    <Ship className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg leading-tight">
-                                        {mapWaypoint.vessel || mapWaypoint.name}
-                                    </h3>
-                                    <p className="font-['JetBrains_Mono'] text-xs text-[#8AAFC8] mt-0.5">
-                                        Live AIS Telemetry & Voyage Route
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={closeMapModal}
-                                className="p-1.5 text-[#8AAFC8] hover:text-white hover:bg-white/10 rounded-[6px] transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                <div className="p-5 sm:p-6 font-['Hanken_Grotesk'] text-[#141B2C] max-h-[85vh] overflow-y-auto">
+                    <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-5">
+                        <div className="flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-emerald-600" />
+                            <h3 className="text-lg font-bold text-[#141B2C]">
+                                Live Location: {mapWaypoint?.vessel || mapWaypoint?.name}
+                            </h3>
                         </div>
+                        <button onClick={closeMapModal} className="text-slate-400 hover:text-[#141B2C] text-xl">&times;</button>
+                    </div>
 
-                        <div className="p-6 space-y-6">
-                            {/* Leaflet Map Viewer */}
-                            <div className="h-[360px] w-full rounded-[8px] overflow-hidden border border-[#E5E7EB]">
-                                <LeafletViewer waypoint={mapWaypoint} />
+                    {mapWaypoint && (
+                        <div className="space-y-4">
+                            {/* Map Viewer */}
+                            <div className="rounded-[8px] overflow-hidden border border-[#E5E7EB] z-0 relative">
+                                <LeafletViewer waypoint={mapWaypoint} height="h-[220px]" />
                             </div>
 
-                            {/* Telemetry Summary Cards */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-['JetBrains_Mono'] text-xs">
-                                <div className=" p-3 rounded-[6px] border border-[#E5E7EB]">
-                                    <span className="text-[#8AAFC8] block uppercase">SPEED (SOG)</span>
-                                    <span className="font-bold text-[#141B2C] text-sm">{mapWaypoint.speed || '11.4 knots'}</span>
+                            {/* Telemetry & Active Position Details Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                {/* Active Coordinates Card */}
+                                <div className="p-4 bg-white rounded-[8px] border border-[#E5E7EB] space-y-2.5">
+                                    <div className="border-b border-[#E5E7EB] pb-2">
+                                        <span className="font-bold text-[#141B2C] uppercase tracking-wider text-[11px] font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                            <Navigation className="w-3.5 h-3.5 text-[#00629D]" /> Active Coordinates
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2.5 font-['JetBrains_Mono'] text-[11px]">
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Latitude</span>
+                                            <span className="font-bold text-[#141B2C]">{Number(mapWaypoint.lat || 0).toFixed(6)}°</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Longitude</span>
+                                            <span className="font-bold text-[#141B2C]">{Number(mapWaypoint.lng || 0).toFixed(6)}°</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Speed (SOG)</span>
+                                            <span className="font-bold text-[#00629D]">{mapWaypoint.speed || '0 Knots'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-400 block text-[10px]">Heading (COG)</span>
+                                            <span className="font-bold text-[#00629D]">{mapWaypoint.cog || 0}°</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="p-3 rounded-[6px] border border-[#E5E7EB]">
-                                    <span className="text-[#8AAFC8] block uppercase">HEADING (COG)</span>
-                                    <span className="font-bold text-[#141B2C] text-sm">{mapWaypoint.cog || 0}°</span>
+
+                                {/* Weather Telemetry Card */}
+                                <div className="p-4 bg-white rounded-[8px] border border-[#E5E7EB] space-y-2.5">
+                                    <div className="border-b border-[#E5E7EB] pb-2">
+                                        <span className="font-bold text-[#141B2C] uppercase tracking-wider text-[11px] font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                            <Compass className="w-3.5 h-3.5 text-[#00629D]" /> Weather Telemetry
+                                        </span>
+                                    </div>
+
+                                    {mapWaypoint.weather ? (
+                                        <div className="grid grid-cols-3 gap-2 font-['JetBrains_Mono'] text-[11px]">
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px]">Condition</span>
+                                                <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.weather || 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px]">Temperature</span>
+                                                <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.temperature || 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px]">Wind Speed</span>
+                                                <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.windSpeed || 'N/A'}</span>
+                                            </div>
+                                            {mapWaypoint.weather.windDirection && (
+                                                <div>
+                                                    <span className="text-slate-400 block text-[10px]">Wind Dir</span>
+                                                    <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.windDirection}</span>
+                                                </div>
+                                            )}
+                                            {mapWaypoint.weather.humidity && (
+                                                <div>
+                                                    <span className="text-slate-400 block text-[10px]">Humidity</span>
+                                                    <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.humidity}</span>
+                                                </div>
+                                            )}
+                                            {mapWaypoint.weather.waveSignificantHeight && (
+                                                <div>
+                                                    <span className="text-slate-400 block text-[10px]">Wave Height</span>
+                                                    <span className="font-bold text-[#141B2C]">{mapWaypoint.weather.waveSignificantHeight}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="py-4 text-center text-slate-400 font-['JetBrains_Mono'] text-[11px] italic">
+                                            Weather telemetry not available for this provider.
+                                        </div>
+                                    )}
                                 </div>
-                                <div className=" p-3 rounded-[6px] border border-[#E5E7EB]">
-                                    <span className="text-[#8AAFC8] block uppercase">STATUS</span>
-                                    <span className="font-bold text-[#16a34a] text-sm">{mapWaypoint.status || 'En Route'}</span>
-                                </div>
-                                <div className=" p-3 rounded-[6px] border border-[#E5E7EB]">
-                                    <span className="text-[#8AAFC8] block uppercase">LAT / LNG</span>
-                                    <span className="font-bold text-[#141B2C] text-xs">
-                                        {parseFloat(mapWaypoint.lat || 0).toFixed(2)}°, {parseFloat(mapWaypoint.lng || 0).toFixed(2)}°
+                            </div>
+
+                            {/* Historical Position Pings Log Table */}
+                            <div className="bg-white rounded-[8px] border border-[#E5E7EB] overflow-hidden">
+                                <div className="p-3 bg-white border-b border-[#E5E7EB] flex items-center justify-between">
+                                    <span className="font-bold text-[#141B2C] uppercase tracking-wider text-[11px] font-['JetBrains_Mono'] flex items-center gap-1.5">
+                                        <Compass className="w-3.5 h-3.5 text-[#00629D]" /> Historical Position Pings ({mapWaypoint.route_points?.length || 0})
                                     </span>
                                 </div>
+
+                                {mapWaypoint.route_points && mapWaypoint.route_points.length > 0 ? (
+                                    <>
+                                        <table className="w-full text-left text-xs font-['Hanken_Grotesk']">
+                                            <thead className="bg-[#141B2C] text-white font-['JetBrains_Mono'] uppercase text-[10px]">
+                                                <tr>
+                                                    <th className="p-3">Seq #</th>
+                                                    <th className="p-3">Recorded Time</th>
+                                                    <th className="p-3">GPS Coordinates</th>
+                                                    <th className="p-3">Dir (COG)</th>
+                                                    <th className="p-3">Speed (SOG)</th>
+                                                    <th className="p-3">Weather</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-[#E5E7EB] font-['JetBrains_Mono'] text-[11px]">
+                                                {mapWaypoint.route_points
+                                                    .slice((modalLogPage - 1) * 3, modalLogPage * 3)
+                                                    .map((point, index) => {
+                                                        const cogVal = point.cog !== undefined ? point.cog : (point.notes && point.notes.match(/COG:\s*([0-9.]+)/) ? parseFloat(point.notes.match(/COG:\s*([0-9.]+)/)[1]) : 0);
+                                                        const speedVal = point.speed || (point.notes && point.notes.match(/SOG:\s*([0-9.]+\s*kts)/) ? point.notes.match(/SOG:\s*([0-9.]+\s*kts)/)[1] : '0 kts');
+                                                        let weatherVal = 'N/A';
+                                                        if (point.notes && point.notes.includes('Weather:')) {
+                                                            weatherVal = point.notes.split('Weather:')[1].trim();
+                                                        }
+                                                        return (
+                                                            <tr key={point.id || index} className="hover:bg-slate-50/50 transition-colors">
+                                                                <td className="p-3 font-bold text-[#00629D]">
+                                                                    #{point.sequence || (index + 1)}
+                                                                </td>
+                                                                <td className="p-3 text-[#404750]">
+                                                                    {point.created_at || 'Recent Ping'}
+                                                                </td>
+                                                                <td className="p-3 text-[#141B2C]">
+                                                                    {Number(point.lat).toFixed(6)}°, {Number(point.lng).toFixed(6)}°
+                                                                </td>
+                                                                <td className="p-3 text-[#141B2C]">
+                                                                    <span className="inline-flex items-center gap-1 font-bold">
+                                                                        <Navigation className="w-3 h-3 text-[#00629D]" style={{ transform: `rotate(${cogVal}deg)` }} />
+                                                                        {cogVal}°
+                                                                    </span>
+                                                                </td>
+                                                                <td className="p-3 font-semibold text-[#00629D]">
+                                                                    {speedVal}
+                                                                </td>
+                                                                <td className="p-3 text-emerald-600 font-semibold text-[10px]">
+                                                                    {weatherVal}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                            </tbody>
+                                        </table>
+
+                                        {/* Pagination for Modal Log Table */}
+                                        {Math.ceil(mapWaypoint.route_points.length / 3) > 1 && (
+                                            <div className="px-4 py-2 bg-white border-t border-[#E5E7EB] flex items-center justify-between text-xs font-['JetBrains_Mono']">
+                                                <span className="text-slate-500 text-[11px]">
+                                                    Page {modalLogPage} of {Math.ceil(mapWaypoint.route_points.length / 3)}
+                                                </span>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => setModalLogPage(prev => Math.max(prev - 1, 1))}
+                                                        disabled={modalLogPage === 1}
+                                                        className="px-2.5 py-1 rounded border border-[#E5E7EB] bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[11px]"
+                                                    >
+                                                        ← Prev
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setModalLogPage(prev => Math.min(prev + 1, Math.ceil(mapWaypoint.route_points.length / 3)))}
+                                                        disabled={modalLogPage === Math.ceil(mapWaypoint.route_points.length / 3)}
+                                                        className="px-2.5 py-1 rounded border border-[#E5E7EB] bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[11px]"
+                                                    >
+                                                        Next →
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="p-4 text-center text-slate-400 font-['JetBrains_Mono'] text-[11px] italic">
+                                        No historical position pings recorded yet for this vessel.
+                                    </div>
+                                )}
                             </div>
                         </div>
+                    )}
+
+                    <div className="mt-4 pt-4 border-t border-[#E5E7EB] flex justify-end">
+                        <button
+                            onClick={closeMapModal}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#141B2C] text-xs font-semibold rounded-[6px]"
+                        >
+                            Close Map
+                        </button>
                     </div>
-                )}
+                </div>
             </Modal>
         </GuestLayout>
     );

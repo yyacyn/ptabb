@@ -34,8 +34,13 @@ class FleetsController extends Controller
                 }
             }
 
-            $lat = $liveWp ? (float) $liveWp->latitude : 15.2;
-            $lng = $liveWp ? (float) $liveWp->longitude : 73.8;
+            $isSailinkWp = $liveWp && (
+                (isset($liveWp->notes) && str_contains($liveWp->notes, 'Live GPS')) ||
+                (isset($liveWp->port_name) && str_contains($liveWp->port_name, 'Sailink'))
+            );
+
+            $lat = $isSailinkWp ? (float) $liveWp->latitude : null;
+            $lng = $isSailinkWp ? (float) $liveWp->longitude : null;
             $weather = null;
             $telemetryStatus = 'UP';
             $isDown = false;
@@ -66,6 +71,8 @@ class FleetsController extends Controller
                     'lng' => (float) $w->longitude,
                     'type' => $w->waypoint_type,
                     'sequence' => $w->sequence,
+                    'notes' => $w->notes,
+                    'created_at' => $w->created_at ? $w->created_at->format('d M Y H:i') : null,
                 ];
             })->values();
 
@@ -126,8 +133,8 @@ class FleetsController extends Controller
             }
         }
 
-        $lat = $liveWp ? (float) $liveWp->latitude : -6.1;
-        $lng = $liveWp ? (float) $liveWp->longitude : 106.8;
+        $lat = $liveWp ? (float) $liveWp->latitude : null;
+        $lng = $liveWp ? (float) $liveWp->longitude : null;
         $weather = null;
         $telemetryStatus = 'UP';
         $isDown = false;

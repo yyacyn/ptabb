@@ -1,209 +1,10 @@
 import { Head, Link, usePoll } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import CtaBanner from '@/Components/CtaBanner';
+import LeafletViewer from '@/Components/LeafletViewer';
 import { ChevronLeft, Anchor, Weight, Gauge, File, ArrowRight, Ship, Navigation, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
-import { renderToString } from 'react-dom/server';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-// Lucide React MapPin Icon for Leaflet Default Markers (100% pure Lucide icon, zero PNG images)
-const createLucideMarkerIcon = (IconComponent = MapPin, color = '#00629D', size = 26) => {
-    const iconHtml = renderToString(
-        <IconComponent
-            size={size}
-            style={{
-                color: color,
-                fill: color,
-                filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.35))'
-            }}
-        />
-    );
-
-    return L.divIcon({
-        className: 'custom-lucide-pin',
-        html: `
-            <div style="display: flex; align-items: center; justify-content: center; width: ${size}px; height: ${size}px;">
-                ${iconHtml}
-            </div>
-        `,
-        iconSize: [size, size],
-        iconAnchor: [size / 2, size / 2],
-        popupAnchor: [0, -size / 2]
-    });
-};
-
-L.Marker.prototype.options.icon = createLucideMarkerIcon(MapPin, '#00629D', 26);
-
-// Custom SVG waypoint marker icon for intermediate route stops
-const createWaypointDotIcon = (label = 'Waypoint', color = '#00629D') => {
-    const pinHtml = renderToString(
-        <MapPin
-            size={18}
-            style={{
-                color: color,
-                fill: color,
-                filter: 'drop-shadow(0px 2px 3px rgba(0,0,0,0.3))'
-            }}
-        />
-    );
-
-    return L.divIcon({
-        className: 'custom-waypoint-pin',
-        html: `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
-                ${pinHtml}
-                <div style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 9px; color: #141B2C; background: rgba(255,255,255,0.92); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; border: 1px solid rgba(0,0,0,0.12); box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
-                    ${label}
-                </div>
-            </div>
-        `,
-        iconSize: [80, 34],
-        iconAnchor: [40, 18],
-        popupAnchor: [0, -18]
-    });
-};
-
-// Directional vessel marker icon generator (Exact copy from VoyageWaypoints.jsx / Fleets.jsx)
-const createVesselIcon = (vesselName = 'Vessel', heading = 0, pinColor = '#00629D') => {
-    const arrowIconHtml = renderToString(
-        <Navigation
-            size={22}
-            style={{
-                color: pinColor,
-                fill: pinColor,
-                transform: `rotate(${heading}deg)`,
-                transition: 'transform 0.4s ease-out',
-                filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.35))'
-            }}
-        />
-    );
-
-    return L.divIcon({
-        className: 'custom-fleet-pin',
-        html: `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                <div style="display: flex; align-items: center; justify-content: center;">
-                    ${arrowIconHtml}
-                </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 10px; color: #141B2C; background: rgba(255,255,255,0.92); backdrop-filter: blur(4px); padding: 2px 6px; border-radius: 3px; white-space: nowrap; margin-top: 3px; border: 1px solid rgba(0,0,0,0.12); box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
-                    ${vesselName}
-                </div>
-            </div>
-        `,
-        iconSize: [120, 50],
-        iconAnchor: [60, 15],
-        popupAnchor: [0, -15]
-    });
-};
-
-function VesselRouteMap({ waypoint }) {
-    const mapRef = useRef(null);
-    const mapInstance = useRef(null);
-    const liveMarkerRef = useRef(null);
-
-    useEffect(() => {
-        if (!mapRef.current || !waypoint) return;
-
-        const routePoints = waypoint.route_points || [];
-        const lat = parseFloat(waypoint.lat) || 0;
-        const lng = parseFloat(waypoint.lng) || 0;
-        const heading = waypoint.cog || 0;
-
-        const shipIconHtml = renderToString(<Ship size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
-        const pinIconHtml = renderToString(<MapPin size={15} style={{ color: '#00629D', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />);
-
-        if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current, { minZoom: 2 }).setView([lat, lng], 6);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                minZoom: 2,
-                maxZoom: 18,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(mapInstance.current);
-
-            if (routePoints.length > 0) {
-                const latLngs = routePoints.map(p => [p.lat, p.lng]);
-
-                // Draw dashed ocean blue route line connecting waypoints
-                const polyline = L.polyline(latLngs, {
-                    color: '#00629D',
-                    weight: 4,
-                    opacity: 0.85,
-                    dashArray: '8, 8',
-                }).addTo(mapInstance.current);
-
-                // Identify the single live current position (sequence 1 or first point)
-                const liveIndex = routePoints.findIndex(p => p.sequence === 1) >= 0
-                    ? routePoints.findIndex(p => p.sequence === 1)
-                    : 0;
-
-                // Add markers for each waypoint/stop on the route
-                routePoints.forEach((p, idx) => {
-                    const isLive = idx === liveIndex;
-                    const iconHeader = isLive ? shipIconHtml : pinIconHtml;
-                    const popupText = `
-                        <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                            <strong style="font-size: 13px;">${iconHeader}${isLive ? `${waypoint.vessel} (Current Position)` : p.name}</strong><br/>
-                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Type: ${p.type}</span><br/>
-                            ${isLive ? `
-                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00629D;">Speed: ${waypoint.speed}</span><br/>
-                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00629D;">Heading: ${heading}°</span>
-                            ` : ''}
-                        </div>
-                    `;
-
-                    // Live position gets vessel direction icon, intermediate stops get custom waypoint pin
-                    const markerOptions = isLive
-                        ? { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading), zIndexOffset: 1000 }
-                        : { icon: createWaypointDotIcon(p.name || 'Waypoint', '#00629D') };
-                    const m = L.marker([p.lat, p.lng], markerOptions).addTo(mapInstance.current).bindPopup(popupText);
-                    if (isLive) {
-                        m.openPopup();
-                        liveMarkerRef.current = m;
-                    }
-                });
-
-                // Automatically zoom and center map to show the entire route
-                if (latLngs.length > 1) {
-                    mapInstance.current.fitBounds(polyline.getBounds(), { padding: [40, 40] });
-                }
-            } else {
-                const popupContent = `
-                    <div style="font-family: 'Hanken Grotesk', sans-serif; color: #141B2C; padding: 2px;">
-                        <strong style="font-size: 14px; font-weight: 700;">${shipIconHtml}${waypoint.vessel}</strong><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Speed: ${waypoint.speed}</span><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Heading: ${heading}°</span><br/>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #404750;">Status: ${waypoint.status}</span>
-                    </div>
-                `;
-                liveMarkerRef.current = L.marker([lat, lng], { icon: createVesselIcon(waypoint.vessel || 'Vessel', heading) }).addTo(mapInstance.current).bindPopup(popupContent).openPopup();
-            }
-        } else {
-            // Smoothly update marker position without re-initializing or refreshing the map canvas
-            if (liveMarkerRef.current) {
-                liveMarkerRef.current.setLatLng([lat, lng]);
-                liveMarkerRef.current.setIcon(createVesselIcon(waypoint.vessel || 'Vessel', heading));
-            }
-        }
-
-        return () => {
-            // Keep map intact for smooth updates, clean up on component unmount
-        };
-    }, [waypoint]);
-
-    useEffect(() => {
-        return () => {
-            if (mapInstance.current) {
-                mapInstance.current.remove();
-                mapInstance.current = null;
-            }
-        };
-    }, []);
-
-    return <div ref={mapRef} className="h-full w-full z-0" />;
-}
 
 export default function FleetShow({ fleet, voyage_waypoint }) {
     // Poll telemetry every 3000ms for real-time live vessel route tracking
@@ -418,14 +219,14 @@ export default function FleetShow({ fleet, voyage_waypoint }) {
                         </div>
 
                         {/* Map Container */}
-                        <div className="w-full h-[450px] sm:h-[550px] rounded-[8px] overflow-hidden relative border border-white/10 shadow-lg bg-[#0F172A]">
+                        <div className="w-full rounded-[8px] overflow-hidden relative border border-white/10 shadow-lg bg-[#0F172A]">
                             {/* Live Badge */}
                             <div className="absolute top-4 right-4 z-20 bg-[#16a34a] text-white px-3 py-1 rounded-full text-[12px] font-['JetBrains_Mono'] font-bold flex items-center gap-1.5 shadow-sm">
                                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                                 LIVE
                             </div>
 
-                            <VesselRouteMap waypoint={currentWaypoint} />
+                            <LeafletViewer waypoint={currentWaypoint} height="h-[450px] sm:h-[550px]" />
                         </div>
                     </motion.div>
 

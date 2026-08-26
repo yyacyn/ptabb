@@ -29,8 +29,13 @@ class VoyageWaypointsController extends Controller
                 }
             }
 
-            $lat = $liveWp ? (float) $liveWp->latitude : -6.1200;
-            $lng = $liveWp ? (float) $liveWp->longitude : 106.8400;
+            $isSailinkWp = $liveWp && (
+                (isset($liveWp->notes) && str_contains($liveWp->notes, 'Live GPS')) ||
+                (isset($liveWp->port_name) && str_contains($liveWp->port_name, 'Sailink'))
+            );
+
+            $lat = $isSailinkWp ? (float) $liveWp->latitude : null;
+            $lng = $isSailinkWp ? (float) $liveWp->longitude : null;
             $weather = null;
             $telemetryStatus = 'UP';
             $isDown = false;
@@ -54,6 +59,12 @@ class VoyageWaypointsController extends Controller
             }
 
             $routePoints = $waypoints->map(function ($w) {
+                $cog = 0;
+                $speed = '0 kts';
+                if ($w->notes) {
+                    if (preg_match('/COG:\s*([0-9.]+)/', $w->notes, $m)) $cog = (float)$m[1];
+                    if (preg_match('/SOG:\s*([0-9.]+)\s*kts/', $w->notes, $s)) $speed = $s[1] . ' kts';
+                }
                 return [
                     'id' => $w->id,
                     'name' => $w->port_name ?: ('Waypoint ' . $w->sequence),
@@ -61,6 +72,10 @@ class VoyageWaypointsController extends Controller
                     'lng' => (float) $w->longitude,
                     'type' => $w->waypoint_type,
                     'sequence' => $w->sequence,
+                    'cog' => $cog,
+                    'speed' => $speed,
+                    'notes' => $w->notes,
+                    'created_at' => $w->created_at ? $w->created_at->format('d M Y H:i') : null,
                 ];
             })->values()->toArray();
 
